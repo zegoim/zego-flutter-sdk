@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - zegoliveroom_plugin (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `.symlinks/flutter/ios`)
+  - zegoliveroom_plugin (from `.symlinks/plugins/zegoliveroom_plugin/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: ".symlinks/flutter/ios"
+  zegoliveroom_plugin:
+    :path: ".symlinks/plugins/zegoliveroom_plugin/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
+  zegoliveroom_plugin: f6304e3e1bce992b3d2f262ef623cab283594adb
+
+PODFILE CHECKSUM: 1e5af4103afd21ca5ead147d7b81d06f494f51a2
+
+COCOAPODS: 1.5.3
