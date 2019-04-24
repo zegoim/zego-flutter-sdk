@@ -43,52 +43,52 @@ import 'package:zegoliveroom_plugin/zego_liveroom.dart';
 void main() => runApp(new MyApp());
 
 class MyApp extends StatefulWidget {
-@override
-_MyAppState createState() => new _MyAppState();
+  @override
+  _MyAppState createState() => new _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
 
-// 填入实际从即构官网获取到的AppID
-final int appID = 00000000;
-// 填入实际从即构官网获取到的AppSign
-final String appSign = '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,'
-'0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,'
-'0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,'
-'0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00';
+  // 填入实际从即构官网获取到的AppID
+  final int appID = 00000000;
+  // 填入实际从即构官网获取到的AppSign
+  final String appSign = '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,'
+                         '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,'
+                         '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,'
+                         '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00';
 
-String version = '';
+  String version = '';
 
-@override
-void initState() {
-super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-// 获取SDK版本号
-ZegoLiveRoomPlugin.getSdkVersion().then((ver) {
+    // 获取SDK版本号
+    ZegoLiveRoomPlugin.getSdkVersion().then((ver) {
 
-setState({
-version = ver;
-});
+      setState({
+        version = ver;
+      });
 
-});
+    });
 
-// 初始化SDK
-ZegoLiveRoomPlugin.initSDK(appID, appSign);
-}
+    // 初始化SDK
+    ZegoLiveRoomPlugin.initSDK(appID, appSign);
+  }
 
-@override
-Widget build(BuildContext context) {
-return new MaterialApp(
-home: new Scaffold(
-appBar: new AppBar(
-title: const Text('Zego Plugin example app'),
-),
-body: new Center(
-child: new Text('Version: $version'),
-),
-),
-);
-}
+  @override
+  Widget build(BuildContext context) {
+    return new MaterialApp(
+      home: new Scaffold(
+        appBar: new AppBar(
+          title: const Text('Zego Plugin example app'),
+        ),
+      body: new Center(
+        child: new Text('Version: $version'),
+        ),
+      ),
+    );
+  }
 }
 ```
 
