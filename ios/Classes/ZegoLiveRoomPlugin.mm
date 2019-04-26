@@ -982,27 +982,27 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
 - (bool)numberToBoolValue:(NSNumber *)number {
     
-    return number != nil ? [number boolValue] : false;
+    return [number isKindOfClass:[NSNull class]] ? false : [number boolValue];
 }
 
 - (int)numberToIntValue:(NSNumber *)number {
     
-    return number != nil ? [number intValue] : 0;
+    return [number isKindOfClass:[NSNull class]] ? 0 : [number intValue];
 }
 
 - (unsigned int)numberToUintValue:(NSNumber *)number {
    
-    return number != nil ? [number unsignedIntValue] : 0;
+    return [number isKindOfClass:[NSNull class]] ? 0 : [number unsignedIntValue];
 }
 
 - (unsigned long)numberToULongValue:(NSNumber *)number {
     
-    return number != nil ? [number unsignedLongValue] : 0;
+    return [number isKindOfClass:[NSNull class]] ? 0 : [number unsignedLongValue];
 }
 
 - (float)numberToFolatValue:(NSNumber *)number {
     
-    return number != nil ? [number floatValue] : 0.f;
+    return [number isKindOfClass:[NSNull class]] ? 0.f : [number floatValue];
 }
 
 NSData* convertStringToSign(NSString* strSign) {
@@ -1375,7 +1375,7 @@ Byte toByte(NSString* c) {
     FlutterEventSink sink = _eventSink;
     if(sink) {
         sink(@{@"type" : @(TYPE_PLAY_EVENT),
-               @"method": @{@"name" : @"onPlayQualityUpate",
+               @"method": @{@"name" : @"onPlayQualityUpdate",
                             @"streamID" : streamID,
                             
                             @"vnetFps" : @(quality.fps),

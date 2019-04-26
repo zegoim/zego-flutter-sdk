@@ -50,7 +50,7 @@
         _registry = registry;
         m_pRenderFrameBuffer = nil;
         m_output_texture = nil;
-        m_view_mode = ZegoRendererScaleAspectFill;
+        m_view_mode = ZegoRendererScaleAspectFit;
         _textureID  = [registry registerTexture:self];
         m_opengl_queue = dispatch_queue_create([[NSString stringWithFormat:@"opengl_queue%lld", _textureID] UTF8String], NULL);
        

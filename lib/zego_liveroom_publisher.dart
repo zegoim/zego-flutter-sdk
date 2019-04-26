@@ -25,7 +25,7 @@ class ZegoLiveRoomPublisherPlugin {
 
   ///设置本地预览视频视图的模式
   ///
-  ///@param mode 模式，参考 [ZegoViewMode] 定义。默认 [ZegoViewMode.ZegoVideoViewModeScaleAspectFill]
+  ///@param mode 模式，参考 [ZegoViewMode] 定义。默认 [ZegoViewMode.ZegoVideoViewModeScaleAspectFit]
   ///@return true 成功，false 失败
   ///@discussion 推流开始前调用本 API 进行参数配置
   static Future<bool> setPreviewViewMode(int mode) async {

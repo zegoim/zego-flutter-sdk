@@ -28,7 +28,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///设置观看直播的View的模式
   ///
   ///@param streamID 播放流 ID
-  ///@param mode 模式，参考 [ZegoViewMode] 定义。默认 [ZegoViewMode.ZegoRendererScaleAspectFill]
+  ///@param mode 模式，参考 [ZegoViewMode] 定义。默认 [ZegoViewMode.ZegoRendererScaleAspectFit]
   ///@return true 成功，false 失败
   ///@note 必须在拉流后调用才有效
   ///@discussion 一般在流播放、流新增、全屏切换等其他流尺寸可能变化的场合时调用
