@@ -2,6 +2,8 @@
   <library name="Flutter Plugins" type="FlutterPluginsLibraryType">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/.." />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.flutter-io.cn/shared_preferences-0.5.2" />
+      <root url="file://$USER_HOME$/.pub-cache/git/zego-flutter-permission-c85ed0386f06de79083bc2007b071aa042c5a3ca" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
