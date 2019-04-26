@@ -1,0 +1,3 @@
+*.m linguist-language=Dart
+*.mm linguist-language=Dart
+*.java linguist-language=Dart
