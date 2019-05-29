@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:example/config/zego_config.dart';
-import 'package:zegoliveroom_plugin/zego_api_defines.dart';
-import 'package:zegoliveroom_plugin/zego_liveroom.dart';
+import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
 import 'package:zego_permission/zego_permission.dart';
 import 'package:example/pages/publish_stream_page.dart';
 import 'package:example/pages/play_stream_page.dart';

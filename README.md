@@ -22,7 +22,7 @@
 
 ## 四、导入 zegoliveroom_plugin
 
-打开待导入工程中的`pubspec.yaml`，添加`zegoliveroom_plugin`依赖（以git依赖形式）：
+打开待导入工程中的`pubspec.yaml`，添加`zegoliveroom_plugin`依赖（以git依赖形式举例，也可用pub依赖形式）：
 
 ```
 dependencies:
@@ -38,7 +38,7 @@ dependencies:
 
 ```Dart
 import 'package:flutter/material.dart';
-import 'package:zegoliveroom_plugin/zego_liveroom.dart';
+import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
 
 void main() => runApp(new MyApp());
 
@@ -78,13 +78,13 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
           title: const Text('Zego Plugin example app'),
         ),
-      body: new Center(
-        child: new Text('Version: $version'),
+        body: Center(
+          child: Text('Version: $version'),
         ),
       ),
     );

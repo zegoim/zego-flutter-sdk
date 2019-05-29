@@ -1476,7 +1476,7 @@ Byte toByte(NSString* c) {
         sink(@{@"type": @(TYPE_MEDIA_SIDE_INFO_EVENT),
                @"method" : @{@"name" : @"onRecvMediaSideInfo",
                              @"streamID": streamID,
-                             @"data" : str_data}
+                             @"data" : str_data == nil ? @"" : str_data}
                });
     }
 }

@@ -75,7 +75,7 @@
  @param streamID 流 ID
  @param title 直播名称，可选，默认为主播用户名
  @param flag 直播属性，参考 ZegoApiPublishFlag 定义
- @param extraInfo 流附加信息
+ @param extraInfo 流附加信息, 最大为 1024 字节
  @return true 成功，false 失败
  @discussion 发布直播成功后，等待 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知
  */
@@ -84,7 +84,7 @@
 /**
  更新流附加信息
  
- @param extraInfo 流附加信息
+ @param extraInfo 流附加信息, 最大为 1024 字节
  @return true 成功，false 失败
  @discussion 通常在主播方的 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知中，或其他需更新流附加信息的场合下调用。更新流附加信息成功后，除调用方外，同一房间内的其他人会收到 [ZegoLiveRoomDelegate -onStreamExtraInfoUpdated:roomID] 通知
  */
@@ -437,7 +437,7 @@
 /**
  设置音频设备模式
  
- @param mode 模式
+ @param mode 模式， 默认 ZEGOAPI_AUDIO_DEVICE_MODE_AUTO
  @discussion 在 Init 前调用
  */
 + (void)setAudioDeviceMode:(ZegoAPIAudioDeviceMode) mode;
@@ -568,7 +568,7 @@
  
  @param bitrate 码率，单位为bps
  @attention InitSDK 之后调用有效
- @note 设置一个在traffic control中video码率的一个最小值，当网络不足以发送这个最小值的时候视频会被卡住，而不是以低于该码率继续发送。初始化SDK后默认情况下没有设置改值，即尽可能的保持视频流畅，InitSDK之后可以随时修改，未重新InitSDK之前如果需要取消该设置值的限制可以设置为0
+ @note 设置一个在traffic control中video码率的一个最小值，当网络不足以发送这个最小值的时候视频会被卡住，而不是以低于该码率继续发送。初始化SDK后默认情况下没有设置该值，即尽可能的保持视频流畅，InitSDK之后可以随时修改，未重新InitSDK之前如果需要取消该设置值的限制可以设置为0
  */
 - (void)setMinVideoBitrateForTrafficControl:(int)bitrate mode:(ZegoAPITrafficControlMinVideoBitrateMode)mode;
 

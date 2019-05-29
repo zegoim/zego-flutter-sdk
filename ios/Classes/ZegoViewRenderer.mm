@@ -357,7 +357,7 @@
         
         glViewport(0, 0, self.view_width, self.view_height);
         
-        /* 黑色背景用于填充黑边 */
+        // 黑色背景用于填充黑边
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(m_hProgram);
@@ -465,6 +465,7 @@
     
     dispatch_async(m_opengl_queue, ^{
         
+        [EAGLContext setCurrentContext:self.context];
         
         if(self->m_pInputFrameBuffer){
             CVBufferRelease(self->m_pInputFrameBuffer);
@@ -474,6 +475,11 @@
         if(self->m_pRenderFrameBuffer){
             CVBufferRelease(self->m_pRenderFrameBuffer);
             self->m_pRenderFrameBuffer = nil;
+        }
+        
+        if(self->m_output_texture) {
+            CFRelease(self->m_output_texture);
+            self->m_output_texture = NULL;
         }
         
         if (self->m_pTexCache) {
@@ -508,8 +514,11 @@
 
 //释放资源
 -(void)dealloc {
-    //NSLog(@"%lld, renderer destroy.", _textureID);
+    
     [self destroyPixelBufferPool:m_buffer_pool];
+    
+    self.context = nil;
+    
 }
 
 #pragma mark - FlutterTexture

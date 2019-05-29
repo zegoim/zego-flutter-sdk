@@ -58,7 +58,7 @@
  @param streamID 流 ID
  @param title 直播名称，可选，默认为主播用户名
  @param flag 直播属性，参考 ZegoApiPublishFlag 定义
- @param extraInfo 流附加信息
+ @param extraInfo 流附加信息, 最大为 1024 字节
  @param index 推流 channel Index
  @return true 成功，false 失败
  @discussion 发布直播成功后，等待 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知
@@ -71,7 +71,7 @@
  @param streamID 流 ID
  @param title 直播名称，可选，默认为主播用户名
  @param flag 直播属性，参考 ZegoApiPublishFlag 定义
- @param extraInfo 流附加信息
+ @param extraInfo 流附加信息, 最大为 1024 字节
  @param params 推流参数
  @param index 推流 channel Index
  @return true 成功，false 失败
@@ -82,7 +82,7 @@
 /**
  更新流附加信息
  
- @param extraInfo 流附加信息
+ @param extraInfo 流附加信息, 最大为 1024 字节
  @param index 推流 channel Index
  @return true 成功，false 失败
  @discussion 通常在主播方的 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知中，或其他需更新流附加信息的场合下调用。更新流附加信息成功后，除调用方外，同一房间内的其他人会收到 [ZegoLiveRoomDelegate -onStreamExtraInfoUpdated:roomID] 通知
@@ -364,6 +364,18 @@
  @discussion onlyAudioPublish 开关在 start 开关开启时才生效
  */
 - (void)setMediaSideFlags:(bool)start onlyAudioPublish:(bool)onlyAudioPublish channelIndex:(ZegoAPIPublishChannelIndex)index;
+
+/**
+ 发送媒体次要信息开关
+ 
+ @param start true 开启, false 关闭
+ @param onlyAudioPublish true 纯音频直播，不传输视频数据, false 音视频直播，传输视频数据
+ @param mediaInfoType 请参考 MediaInfoType 定义，建议使用 SeiZegoDefined
+ @param seiSendType 请参考 SeiSendType 定义，此参数只对发送SEI时有效，当mediaInfoType为 SideInfoZegoDefined 时此参数无效，当发送SEI时建议使用 SeiSendInVideoFrame
+ @param index 推流 channel Index
+ @discussion onlyAudioPublish 开关在 start 开关开启时才生效
+ */
+- (void)setMediaSideFlags:(bool)start onlyAudioPublish:(bool)onlyAudioPublish mediaInfoType:(int)mediaInfoType seiSendType:(int)seiSendType channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
  发送媒体次要信息

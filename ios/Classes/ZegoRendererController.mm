@@ -37,10 +37,10 @@
 
 @interface ZegoRendererController()
 
-@property (nonatomic, strong) dispatch_source_t timer;
 @property (nonatomic, assign) BOOL isRendering;
 @property (strong) NSMutableDictionary<NSString *, ZegoViewRenderer *> *renders;
 @property (strong) NSMutableDictionary<NSString * , id>* pools;
+@property(readonly, nonatomic) CADisplayLink* displayLink;
 
 @end
 
@@ -55,9 +55,9 @@
         _renders = [[NSMutableDictionary alloc] init];
         _pools = [[NSMutableDictionary alloc] init];
 
-        _timer = nil;
         _isRendering = NO;
         _isUseFrontCam = YES;
+        
     }
     
     return self;
@@ -106,20 +106,13 @@
     if(self.isRendering)
         return;
     
-    if(self.timer == nil)
-        self.timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(0, 0));
+    _displayLink = [CADisplayLink displayLinkWithTarget:self
+                                               selector:@selector(onDisplayLink:)];
+    [_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    // 30帧刷新
+    _displayLink.frameInterval = 2;
+    _displayLink.paused = NO;
     
-    //如果调用cancel之后导致timer被释放，则在此做一个判断
-    dispatch_time_t start = dispatch_time(DISPATCH_TIME_NOW, 0 * NSEC_PER_SEC);//开始时间
-   
-    int64_t interval = 1000.0 * NSEC_PER_MSEC / 30;
-    dispatch_source_set_timer(self.timer, start, interval, 0);
-    
-    dispatch_source_set_event_handler(self.timer, ^{
-        [self onRendering];
-    });
-    
-    dispatch_resume(self.timer);
     self.isRendering = YES;
 }
 
@@ -127,10 +120,8 @@
     if(!self.isRendering)
         return;
     
-    if(self.timer) {
-        dispatch_cancel(self.timer);
-        self.timer = nil;
-    }
+    self.displayLink.paused = YES;
+    [_displayLink invalidate];
     
     self.isRendering = NO;
 }
@@ -266,14 +257,13 @@
     return NO;
 }
 
-- (void)onRendering {
-    //注意一下定时器会不会切线程
-    if(self.renders == nil)
+- (void)onDisplayLink:(CADisplayLink*)link {
+    
+    if([self.renders count] == 0)
         return;
     
-    NSMutableDictionary *tempDict = [[NSMutableDictionary alloc] initWithDictionary:self.renders];
-    for(NSString *key in tempDict) {
-        ZegoViewRenderer *renderer = [tempDict objectForKey:key];
+    for(NSString *key in self.renders) {
+        ZegoViewRenderer *renderer = [self.renders objectForKey:key];
         if(renderer == nil)
             continue;
         
@@ -282,9 +272,6 @@
         
         [renderer notifyDrawNewFrame];
     }
-    
-    [tempDict removeAllObjects];
-    tempDict = nil;
 }
 
 @end

@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:example/config/zego_config.dart';
-import 'package:zegoliveroom_plugin/zego_api_defines.dart';
-import 'package:zegoliveroom_plugin/zego_liveroom.dart';
-import 'package:zegoliveroom_plugin/zego_liveroom_player.dart';
+import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
 
 class PlayStreamPage extends StatefulWidget {
 

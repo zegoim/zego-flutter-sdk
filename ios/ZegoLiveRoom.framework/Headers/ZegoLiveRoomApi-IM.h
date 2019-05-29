@@ -32,7 +32,7 @@ typedef void(^ZegoBigRoomMessageCompletion)(int errorCode, NSString *roomId, NSS
 /**
  房间发送广播消息
  
- @param content 消息内容
+ @param content 消息内容, 不超过 512 字节
  @param type 消息类型，可以自定义
  @param category 消息分类，可以自定义
  @param priority 消息优先级, deprecated, 由 SDK 内部确定优先级
@@ -46,7 +46,7 @@ typedef void(^ZegoBigRoomMessageCompletion)(int errorCode, NSString *roomId, NSS
 /**
  房间发送广播消息
  
- @param content 消息内容
+ @param content 消息内容, 不超过 512 字节
  @param type 消息类型，可以自定义
  @param category 消息分类，可以自定义
  @param completionBlock 消息发送结果，回调 server 下发的 messageId
@@ -88,7 +88,7 @@ typedef void(^ZegoBigRoomMessageCompletion)(int errorCode, NSString *roomId, NSS
 /**
  房间发送不可靠信道的消息
  
- @param content 消息内容
+ @param content 消息内容, 不超过 512 字节
  @param type 消息类型，可以自定义
  @param category 消息分类，可以自定义
  @param completionBlock 消息发送结果，回调 server 下发的 messageId

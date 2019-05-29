@@ -1,7 +1,7 @@
 name: zegoliveroom_plugin
 description: A flutter plugin that can provide real-time communication and live video broadcast.
-version: 1.0.0
-author: lizhanpeng <lizhanpeng@zego.im>
+version: 1.0.2
+author: Zego.im
 homepage: https://www.zego.im
 
 environment:

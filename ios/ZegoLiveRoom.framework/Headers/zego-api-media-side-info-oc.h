@@ -30,6 +30,19 @@
 - (void)setMediaSideFlags:(bool)start onlyAudioPublish:(bool)onlyAudioPublish channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
+ 发送媒体次要信息开关
+ 
+ @param start true 开启, false 关闭
+ @param onlyAudioPublish true 纯音频直播，不传输视频数据, false 音视频直播，传输视频数据
+ @param mediaInfoType 请参考 MediaInfoType 定义，建议使用 SeiZegoDefined
+ @param seiSendType 请参考 SeiSendType 定义，此参数只对发送SEI时有效，当mediaInfoType为 SideInfoZegoDefined 时此参数无效，当发送SEI时建议使用 SeiSendInVideoFrame
+ @param index 推流 channel Index
+ @discussion 必须在InitSDK之后、推流之前，设置
+ @discussion onlyAudioPublish 开关在 start 开关开启时才生效
+ */
+- (void)setMediaSideFlags:(bool)start onlyAudioPublish:(bool)onlyAudioPublish mediaInfoType:(int)mediaInfoType seiSendType:(int)seiSendType channelIndex:(ZegoAPIPublishChannelIndex)index;
+
+/**
  发送媒体次要信息
  
  @param data 媒体次要信息数据

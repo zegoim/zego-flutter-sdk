@@ -120,6 +120,24 @@ typedef enum {
     VideoStreamLayer_ExtendLayer = 1
 } VideoStreamLayer;
 
+/** MediaInfo类型 */
+typedef enum {
+    /**< side info  */
+    SideInfoZegoDefined = 0,
+    /**< sei (nalu type = 6,payload type = 243), sei recommend useing this  */
+    SeiZegoDefined = 1,
+    /**< sei (nalu type = 6,payload type = 5) */
+    SeiUserUnregisted = 2
+}MediaInfoType;
+
+/** SEI发送类型 */
+typedef enum {
+    /**< sei send single frame  */
+    SeiSendSingleFrame = 0,
+    /**< sei send in any video frame(I, B, P)  */
+    SeiSendInVideoFrame = 1
+} SeiSendType;
+
 /** 远程视图序号 */
 typedef enum {
     /** 第一个远程视图 */
