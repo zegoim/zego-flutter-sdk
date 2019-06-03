@@ -100,3 +100,6 @@ class _MyAppState extends State<MyApp> {
 
 打开 iOS 工程文件 `Runner. xcworkspace ` -> `Build Settings`，将 `Compile Sources As` 改为 `Objective-C++`，重新编译
 
+#### 2. iOS 编译报错：`ld: symbol(s) not found for architecture x86_64`：
+
+不支持使用模拟器编译，请使用真机调试以获得最佳效果。
