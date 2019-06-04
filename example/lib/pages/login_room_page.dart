@@ -5,6 +5,8 @@ import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
 import 'package:zego_permission/zego_permission.dart';
 import 'package:example/pages/publish_stream_page.dart';
 import 'package:example/pages/play_stream_page.dart';
+import 'package:example/pages/publish_stream_platformview_page.dart';
+import 'package:example/pages/play_stream_platformview_page.dart';
 import 'package:example/ui/zego_ui_tool.dart';
 
 class Authorization {
@@ -94,11 +96,19 @@ class _LoginRoomPageState extends State<LoginRoomPage> {
 
           if(widget.isPublish) {
 
-            return PublishStreamPage(screenWidthPx, screenHeightPx);
-
+            if(ZegoConfig.getInstance().enablePlatformView) {
+              return PublishStreamPlatformViewPage(screenWidthPx, screenHeightPx);
+            } else {
+              return PublishStreamPage(screenWidthPx, screenHeightPx);
+            }
           } else {
 
-            return PlayStreamPage(screenWidthPx, screenHeightPx);
+            if(ZegoConfig.getInstance().enablePlatformView) {
+              return PlayStreamPlatformViewPage(screenWidthPx, screenHeightPx);
+            } else {
+              return PlayStreamPage(screenWidthPx, screenHeightPx);
+            }
+
           }
         }));
       } else {

@@ -62,6 +62,8 @@ class _InitPageState extends State<InitPage> {
       return;
     }
 
+    ZegoLiveRoomPlugin.enablePlatformView(ZegoConfig.getInstance().enablePlatformView);
+
     ZegoLiveRoomPlugin.initSDK(appID, strAppSign).then((errorCode) {
 
       if(errorCode == 0) {
@@ -230,6 +232,21 @@ class _InitPageState extends State<InitPage> {
                         },
                       ),
                       Text('正式环境'),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: ZegoConfig.getInstance().enablePlatformView,
+                        onChanged: (value) {
+                          setState(() {
+
+                            ZegoConfig.getInstance().enablePlatformView = value;
+                            ZegoConfig.getInstance().saveConfig();
+                          });
+                        },
+                      ),
+                      Text('是否使用 Platform View 渲染视图'),
                     ],
                   ),
                   Container(

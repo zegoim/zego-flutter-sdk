@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'zego_api_defines.dart';
 import 'zego_liveroom_event_channel.dart';
+import 'zego_liveroom.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class ZegoLiveRoomPublisherPlugin {
   /* Method Channel */
@@ -13,7 +16,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param width，渲染宽度，单位 px
   ///@param height，渲染高度，单位 px
   ///@return textureID, flutter 渲染的纹理ID，非负数。当返回负数代表创建渲染器失败
-  ///@discussion 当接口返回 TextureID 后，可通过 Texture 控件展示
+  ///@discussion 当接口返回 TextureID 后，可通过 [Texture] 控件展示
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<int> createPreviewRenderer(int width, int height) async {
     final int textureID = await _channel.invokeMethod('createPreviewRenderer', {
       'width': width,
@@ -28,6 +32,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param mode 模式，参考 [ZegoViewMode] 定义。默认 [ZegoViewMode.ZegoVideoViewModeScaleAspectFit]
   ///@return true 成功，false 失败
   ///@discussion 推流开始前调用本 API 进行参数配置
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<bool> setPreviewViewMode(int mode) async {
     final bool success = await _channel.invokeMethod('setPreviewViewMode', {
       'mode': mode
@@ -42,6 +47,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param height，渲染高度，单位 px
   ///@return true 成功，false 失败
   ///@discussion 当需要更新 Texture 渲染控件的大小时，调用本API同步更新渲染器的渲染大小，否则可能会导致图像变形等问题
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<void> updatePreviewRenderSize(int width, int height) async {
     return await _channel.invokeMethod('updatePreviewRenderSize', {
       'width': width,
@@ -53,8 +59,78 @@ class ZegoLiveRoomPublisherPlugin {
   ///
   ///@return true 成功，false 失败
   ///@discussion 释放渲染器资源
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<bool> destroyPreviewRenderer() async {
     final bool success = await _channel.invokeMethod('destroyPreviewRenderer');
+    return success;
+  }
+
+  ///创建预览 Platform View ，iOS 平台为 UIView，Android 平台 为 SurfaceView
+  ///
+  ///@param View创建后的回调，viewID 为 Platform View 的唯一标识，请开发者自行管理
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
+  static Widget createPreviewPlatformView(Function(int viewID) onViewCreated) {
+    if(TargetPlatform.iOS == defaultTargetPlatform) {
+      
+      return UiKitView(
+        key: new ObjectKey('preview'),
+        viewType: 'plugins.zego.im/zego_view',
+        onPlatformViewCreated: (int viewID) {
+          if(onViewCreated != null)
+            onViewCreated(viewID);
+        }
+      );
+    } else if(TargetPlatform.android == defaultTargetPlatform) {
+
+      return AndroidView(
+        key: new ObjectKey('preview'),
+        viewType: 'plugins.zego.im/zego_view',
+        onPlatformViewCreated: (int viewID) {
+          if(onViewCreated != null)
+            onViewCreated(viewID);
+        },
+      );
+    }
+
+    return null;
+  }
+
+  ///设置预览 Platform View 视频视图
+  ///
+  ///
+  ///
+  static Future<bool> setPreviewView(int viewID) async {
+    final bool success = await _channel.invokeMethod('setPreviewView', {
+      'viewID': viewID
+    });
+
+    return success;
+  }
+
+
+  ///设置预览 Platform View 视频视图的模式
+  ///
+  ///@param mode 模式，参考 [ZegoViewMode] 定义。默认 [ZegoViewMode.ZegoVideoViewModeScaleAspectFit]
+  ///@return true 成功，false 失败
+  ///@discussion 推流开始前调用本 API 进行参数配置
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
+  static Future<bool> setPlatformViewPreviewViewMode(int mode) async {
+    final bool success = await _channel.invokeMethod('setPlatformViewPreviewViewMode', {
+      'mode': mode
+    });
+
+    return success;
+  }
+
+  ///销毁预览 Platform View
+  ///
+  ///@param viewID，Platform View 的唯一标识
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
+  static Future<bool> removePreviewPlatformView(int viewID) async {
+    final bool success = await _channel.invokeMethod('removePreviewPlatformView', {
+      'viewID': viewID
+    });
+
     return success;
   }
 

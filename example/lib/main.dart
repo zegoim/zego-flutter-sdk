@@ -74,47 +74,4 @@ class HomePage extends StatelessWidget {
   }
 }
 
-/*class _HomePageState extends State<HomePage> {
 
-  @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-      appBar: AppBar(
-
-        title: Text(widget.title),
-      ),
-      body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('基础功能'),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 10.0),
-                ),
-                CupertinoButton(
-                    color: Color(0xff0e88eb),
-                    child: Text('推流'),
-                    onPressed: () {
-
-                    }
-                ),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 10.0),
-                ),
-                CupertinoButton(
-                    color: Color(0xff0e88eb),
-                    child: Text('拉流'),
-                    onPressed: () {
-
-                    }
-                ),
-              ],
-            ),
-          )
-      )
-    );
-  }
-}
-*/

@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'zego_api_defines.dart';
 import 'zego_liveroom_event_channel.dart';
+import 'zego_liveroom.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class ZegoLiveRoomPlayerPlugin {
   /* Method Channel */
@@ -14,7 +17,8 @@ class ZegoLiveRoomPlayerPlugin {
   ///@param width，渲染宽度，单位 px
   ///@param height，渲染高度，单位 px
   ///@return textureID, flutter 渲染的纹理ID，非负数。当返回负数代表创建渲染器失败
-  ///@discussion 当接口返回 TextureID 后，可通过 Texture 控件展示
+  ///@discussion 当接口返回 TextureID 后，可通过 [Texture] 控件展示
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<int> createPlayViewRenderer(String streamID, int width, int height) async {
     final int textureID = await _channel.invokeMethod('createPlayViewRenderer', {
       'streamID': streamID,
@@ -32,6 +36,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///@return true 成功，false 失败
   ///@note 必须在拉流后调用才有效
   ///@discussion 一般在流播放、流新增、全屏切换等其他流尺寸可能变化的场合时调用
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<bool> setViewMode(String streamID, int mode) async {
     final bool success = await _channel.invokeMethod('setViewMode', {
       'streamID': streamID,
@@ -47,6 +52,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///@param height，渲染高度，单位 px
   ///@return true 成功，false 失败
   ///@discussion 当需要更新 Texture 渲染控件的大小时，调用本API同步更新渲染器的渲染大小，否则可能会导致图像变形等问题
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<void> updatePlayViewRenderSize(String streamID, int width, int height) async {
     return await _channel.invokeMethod('updatePlayViewRenderSize', {
       'streamID': streamID,
@@ -59,6 +65,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///
   ///@return true 成功，false 失败
   ///@discussion 释放渲染器资源
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<bool> destroyPlayViewRenderer(String streamID) async {
     final bool success = await _channel.invokeMethod('destroyPlayViewRenderer', {
       'streamID': streamID
@@ -67,16 +74,82 @@ class ZegoLiveRoomPlayerPlugin {
     return success;
   }
 
+  ///创建拉流 Platform View ，iOS 平台为 UIView，Android 平台 为 SurfaceView
+  ///
+  ///@param View创建后的回调，viewID 为 Platform View 的唯一标识，请开发者自行管理
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
+  static Widget createPlayPlatformView(String streamID, Function(int viewID) onViewCreated) {
+    if(TargetPlatform.iOS == defaultTargetPlatform) {
+
+      return UiKitView(
+          key: new ObjectKey(streamID),
+          viewType: 'plugins.zego.im/zego_view',
+          onPlatformViewCreated: (int viewID) {
+            if(onViewCreated != null)
+              onViewCreated(viewID);
+          }
+      );
+    } else if(TargetPlatform.android == defaultTargetPlatform) {
+
+      return AndroidView(
+        key: new ObjectKey(streamID),
+        viewType: 'plugins.zego.im/zego_view',
+        onPlatformViewCreated: (int viewID) {
+          if(onViewCreated != null)
+            onViewCreated(viewID);
+        },
+      );
+    }
+
+    return null;
+  }
+
+  static Future<void> updatePlayView(int viewID, String streamID) async {
+    return await _channel.invokeMethod('updatePlayView', {
+      'viewID': viewID,
+      'streamID': streamID
+    });
+  }
+
+  ///设置拉流 Platform View 视频视图的模式
+  ///
+  ///@param streamID，流 ID
+  ///@param mode 模式，参考 [ZegoViewMode] 定义。默认 [ZegoViewMode.ZegoVideoViewModeScaleAspectFit]
+  ///@return true 成功，false 失败
+  ///@discussion [startPlayingStream] 之后调用本 API 进行参数配置
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
+  static Future<bool> setPlatformViewPlayViewMode(String streamID, int mode) async {
+    final bool success = await _channel.invokeMethod('setPlatformViewPlayViewMode', {
+      'streamID': streamID,
+      'mode': mode
+    });
+
+    return success;
+  }
+
+  ///销毁拉流 Platform View
+  ///
+  ///@param viewID，Platform View 的唯一标识
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
+  static Future<bool> removePlayPlatformView(int viewID) async {
+    final bool success = await _channel.invokeMethod('removePlayPlatformView', {
+      'viewID': viewID
+    });
+
+    return success;
+  }
+
   ///播放直播流
   ///
   ///@param streamID 流 ID，该参数仅能传入流 ID，不可在流 ID 后添加播放参数
-  ///@param view 用来渲染播放视频的视图
+  ///@param viewID Platform View 的唯一标识，仅在使用 Platform View 渲染时才需要传入该参数
   ///@param info 多媒体流附加信息，参考 [ZegoStreamExtraPlayInfo] 定义
   ///@return 成功，false 失败
   ///@discussion 播放直播流调用此 API。播放成功后，等待 onPlayStateUpdate 回调
-  static Future<bool> startPlayingStream(String streamID, {ZegoStreamExtraPlayInfo info}) async {
+  static Future<bool> startPlayingStream(String streamID, {int viewID, ZegoStreamExtraPlayInfo info}) async {
     final bool success = await _channel.invokeMethod('startPlayingStream', {
       'streamID': streamID,
+      'viewID': viewID,
       'info': info?.toMap(),
     });
 

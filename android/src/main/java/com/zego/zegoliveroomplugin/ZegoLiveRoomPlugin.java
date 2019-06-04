@@ -14,6 +14,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.plugin.common.StandardMessageCodec;
 import io.flutter.view.TextureRegistry;
 
 import java.nio.ByteBuffer;
@@ -67,15 +68,21 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
   private final Context mContext;
   private EventSink mEventSink;
 
-  private ZegoLiveRoom mZegoLiveRoom = null;
-  private ZegoMediaSideInfo mZegoMediaSideInfo = null;
+  private ZegoLiveRoom mZegoLiveRoom;
+  private ZegoMediaSideInfo mZegoMediaSideInfo;
   private HashMap<String, ZegoViewRenderer> mRenders;
-
+  //private ZegoPlatformViewFactory mPlatformViewFactory;
+  private boolean mIsEnablePlatformView;
 
   private ZegoLiveRoomPlugin(Registrar registrar) {
     this.registrar = registrar;
     this.textures = registrar.textures();
     this.mContext = registrar.context();    //获取应用程序的Context
+
+    this.mZegoLiveRoom = null;
+    this.mZegoMediaSideInfo = null;
+    //this.mPlatformViewFactory = null;
+    this.mIsEnablePlatformView = false;
 
     this.mRenders = new HashMap<>();
 
@@ -89,6 +96,8 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     final EventChannel eventChannel = new EventChannel(registrar.messenger(), "plugins.zego.im/zegoliveroom_callback");
     eventChannel.setStreamHandler(instance);
+
+    registrar.platformViewRegistry().registerViewFactory("plugins.zego.im/zego_view", ZegoPlatformViewFactory.shareInstance());
   }
 
   @Override
@@ -138,6 +147,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         //反初始化SDK里面会做回调的销毁处理
         result.success(mZegoLiveRoom.unInitSDK());
       }
+
+    } else if(call.method.equals("enablePlatformView")) {
+
+      boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+      mIsEnablePlatformView = enable;
 
     } else if (call.method.equals("setUser")) {
 
@@ -518,6 +532,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         return;
       }
 
+      if(mIsEnablePlatformView) {
+        throwNoTextureError(result, call.method);
+        return;
+      }
+
       int width = numberToIntValue((Number) call.argument("width"));
       int height = numberToIntValue((Number) call.argument("height"));
 
@@ -540,6 +559,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         return;
       }
 
+      if(mIsEnablePlatformView) {
+        throwNoTextureError(result, call.method);
+        return;
+      }
+
       if(!mRenders.containsKey(mPublishMainChl)) {
         throwNoRendererError(result, call.method);
         return;
@@ -553,6 +577,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       if(mZegoLiveRoom == null) {
         throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      if(mIsEnablePlatformView) {
+        throwNoTextureError(result, call.method);
         return;
       }
 
@@ -580,6 +609,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         return;
       }
 
+      if(mIsEnablePlatformView) {
+        throwNoTextureError(result, call.method);
+        return;
+      }
+
       if(!mRenders.containsKey(mPublishMainChl)) {
         result.success(false);
         return;
@@ -598,6 +632,58 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       }
 
       mRenders.remove(mPublishMainChl);
+
+    } else if(call.method.equals("setPreviewView")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      if(!mIsEnablePlatformView) {
+        throwNoPlatformViewError(result, call.method);
+        return;
+      }
+
+      int viewID = numberToIntValue((Number) call.argument("viewID"));
+      ZegoPlatformView view = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
+
+      boolean success = mZegoLiveRoom.setPreviewView(view.getSurfaceView());
+      result.success(success);
+
+    } else if(call.method.equals("setPlatformViewPreviewViewMode")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      if(!mIsEnablePlatformView) {
+        throwNoPlatformViewError(result, call.method);
+        return;
+      }
+
+      int mode = numberToIntValue((Number) call.argument("mode"));
+      boolean success = mZegoLiveRoom.setPreviewViewMode(mode);
+
+      result.success(success);
+
+    } else if(call.method.equals("removePreviewPlatformView")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      if(!mIsEnablePlatformView) {
+        throwNoPlatformViewError(result, call.method);
+        return;
+      }
+
+      int viewID = numberToIntValue((Number) call.argument("viewID"));
+      boolean success = ZegoPlatformViewFactory.shareInstance().removeView(viewID);
+
+      result.success(success);
 
     } else if(call.method.equals("setAppOrientation")) {
 
@@ -752,6 +838,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         return;
       }
 
+      if(mIsEnablePlatformView) {
+        throwNoTextureError(result, call.method);
+        return;
+      }
+
       String streamID = call.argument("streamID");
       int mode = numberToIntValue((Number) call.argument("mode"));
 
@@ -769,9 +860,19 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       Map<String, Object> info = call.argument("info");
 
       Surface surface = null;
-      if(mRenders.containsKey(streamID)) {
-        ZegoViewRenderer renderer = mRenders.get(streamID);
-        surface = renderer.getSurface();
+      ZegoPlatformView view = null;
+
+      if(mIsEnablePlatformView) {
+
+        int viewID = numberToIntValue((Number) call.argument("viewID"));
+        view = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
+
+      } else {
+
+        if(mRenders.containsKey(streamID)) {
+          ZegoViewRenderer renderer = mRenders.get(streamID);
+          surface = renderer.getSurface();
+        }
       }
 
       boolean success;
@@ -787,10 +888,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         extraPlayInfo.rtmpUrls = (String[])rtmpUrls.toArray();
         extraPlayInfo.flvUrls = (String[])flvUrls.toArray();
 
-        success = mZegoLiveRoom.startPlayingStream(streamID, surface, extraPlayInfo);
+        success = mZegoLiveRoom.startPlayingStream(streamID, mIsEnablePlatformView ? view.getSurfaceView() : surface, extraPlayInfo);
       } else {
 
-        success = mZegoLiveRoom.startPlayingStream(streamID, surface);
+        success = mZegoLiveRoom.startPlayingStream(streamID, mIsEnablePlatformView ? view.getSurfaceView() : surface);
       }
 
       result.success(success);
@@ -863,6 +964,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         return;
       }
 
+      if(mIsEnablePlatformView) {
+        throwNoTextureError(result, call.method);
+        return;
+      }
+
       String streamID = call.argument("streamID");
       int width = numberToIntValue((Number) call.argument("width"));
       int height = numberToIntValue((Number) call.argument("height"));
@@ -881,6 +987,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       if(mZegoLiveRoom == null) {
         throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      if(mIsEnablePlatformView) {
+        throwNoTextureError(result, call.method);
         return;
       }
 
@@ -916,6 +1027,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         return;
       }
 
+      if(mIsEnablePlatformView) {
+        throwNoTextureError(result, call.method);
+        return;
+      }
+
       String streamID = call.argument("streamID");
 
       if(!mRenders.containsKey(streamID)) {
@@ -938,6 +1054,60 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       }
 
       mRenders.remove(streamID);
+
+    } else if(call.method.equals("updatePlayView")) {
+
+        if(mZegoLiveRoom == null) {
+            throwSdkNotInitError(result, call.method);
+            return;
+        }
+
+        if(!mIsEnablePlatformView) {
+            throwNoPlatformViewError(result, call.method);
+            return;
+        }
+
+        int viewID = numberToIntValue((Number) call.argument("viewID"));
+        String streamID = call.argument("streamID");
+
+        ZegoPlatformView view = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
+        mZegoLiveRoom.updatePlayView(streamID, view.getSurfaceView());
+
+
+    } else if(call.method.equals("setPlatformViewPlayViewMode")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      if(!mIsEnablePlatformView) {
+        throwNoPlatformViewError(result, call.method);
+        return;
+      }
+
+      String streamID = call.argument("streamID");
+      int mode = numberToIntValue((Number) call.argument("mode"));
+
+      boolean success = mZegoLiveRoom.setViewMode(mode, streamID);
+      result.success(success);
+
+
+    } else if(call.method.equals("removePlayPlatformView")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      if(!mIsEnablePlatformView) {
+        throwNoPlatformViewError(result, call.method);
+        return;
+      }
+
+      int viewID = numberToIntValue((Number) call.argument("viewID"));
+      boolean success = ZegoPlatformViewFactory.shareInstance().removeView(viewID);
+      result.success(success);
 
     } else if(call.method.equals("requestJoinLive")) {
 
@@ -1074,6 +1244,14 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
   public void throwNoRendererError(Result result, String methodName) {
     result.error(String.format("%s_ERROR", methodName).toUpperCase(), String.format("[ERROR]: %s %s", methodName, "error because zego preview or play renderer is null."), null);
+  }
+
+  public void throwNoTextureError(Result result, String methodName) {
+    result.error(String.format("%s_ERROR", methodName).toUpperCase(), String.format("[ERROR]: %s %s", methodName, "error because \'enablePlatformView\' is true. make sure you turn off this api before calling \'initSDK\' when you use texture to render."), null);
+  }
+
+  public void throwNoPlatformViewError(Result result, String methodName) {
+    result.error(String.format("%s_ERROR", methodName).toUpperCase(), String.format("[ERROR]: %s %s", methodName, "error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render."), null);
   }
 
   //Handle Flutter CallMethods

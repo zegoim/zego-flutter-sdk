@@ -1,6 +1,6 @@
 # zegoliveroom_plugin [![pub package](https://img.shields.io/pub/v/zegoliveroom_plugin.svg)](https://pub.dartlang.org/packages/zegoliveroom_plugin)
 
-即构科技（Zego）音视频Flutter SDK，提供视频直播以及实施音视频服务。
+即构科技（Zego）音视频Flutter SDK，提供视频直播以及实时音视频服务。
 
 了解更多解决方案：[https://www.zego.im](https://www.zego.im)
 
@@ -22,7 +22,19 @@
 
 ## 四、导入 zegoliveroom_plugin
 
-打开待导入工程中的`pubspec.yaml`，添加`zegoliveroom_plugin`依赖（以git依赖形式举例，也可用pub依赖形式）：
+打开待导入工程中的`pubspec.yaml`，添加`zegoliveroom_plugin`依赖：
+
+* 以pub形式依赖：
+
+```
+dependencies:
+  flutter:
+	sdk: flutter
+
+  zegoliveroom_plugin: ^1.0.3
+```
+
+* 以git形式依赖：
 
 ```
 dependencies:
@@ -103,3 +115,7 @@ class _MyAppState extends State<MyApp> {
 #### 2. iOS 编译报错：`ld: symbol(s) not found for architecture x86_64`：
 
 不支持使用模拟器编译，请使用真机调试以获得最佳效果。
+
+#### 3. iOS 使用 Platform View 时报错：`[VERBOSE-2:platform_view_layer.cc(28)] Trying to embed a platform view but the PaintContext does not support embedding`
+
+打开需要使用 Platform View 的 iOS 工程，在`Info.plist`中添加字段`io.flutter.embedded_views_preview`，其值为`YES`。

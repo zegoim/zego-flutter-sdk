@@ -22,6 +22,9 @@ class ZegoConfig {
   // 是否使用测试环境
   bool isUseTestEnv;
 
+  // 是否使用 Platform View
+  bool enablePlatformView;
+
   String roomID;
   String streamID;
 
@@ -36,6 +39,7 @@ class ZegoConfig {
       this.isUseTestEnv = config.getBool('isUseTestEnv') ?? true;
       this.roomID = config.getString('roomID') ?? '';
       this.streamID = config.getString('streamID') ?? '';
+      this.enablePlatformView = config.getBool('enablePlatformView') ?? false;
     });
   }
 
@@ -50,6 +54,7 @@ class ZegoConfig {
     config.setBool('isUseTestEnv', this.isUseTestEnv);
     config.setString('roomID', this.roomID);
     config.setString('streamID', this.streamID);
+    config.setBool('enablePlatformView', this.enablePlatformView);
   }
 
 }

@@ -1,4 +1,8 @@
 
+## 1.0.3
+
+Add Platform View API
+
 ## 1.0.2
 
 1. update native sdk

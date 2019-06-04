@@ -1,12 +1,6 @@
 #import "ZegoLiveRoomPlugin.h"
 #import "ZegoRendererController.h"
-
-static ZegoLiveRoomApi *g_ZegoApi = nil;
-
-//static char* errorMessageWithNotInitSDK = "error because zegoliveroom api is not inited.";
-//static char* errorMessageWithNotInitRenderModule = "error because zegorender api is not inited.";
-//static char* errorMessageWithNotRenderer = "error because zego live renderer is null.";
-//static char* errorMessageWithMediaSideInfo = "media side info flag is false, you should call \"setMediaSideFlags\" first.";
+#import "ZegoPlatformViewFactory.h"
 
 typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     TYPE_ROOM_EVENT = 0,
@@ -17,9 +11,11 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
 @interface ZegoLiveRoomPlugin() <ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, FlutterStreamHandler>
 
-@property (nonatomic, strong) ZegoMediaSideInfo * media_side_info_api;
+@property (nonatomic, strong) ZegoLiveRoomApi *zegoApi;
+@property (nonatomic, strong) ZegoMediaSideInfo * mediaSideInfoApi;
 @property (nonatomic, strong) NSObject<FlutterPluginRegistrar> *registrar;
 @property (nonatomic, strong) ZegoRendererController *renderController;
+@property (nonatomic, assign) BOOL isEnablePlatformView;
 
 @end
 
@@ -31,6 +27,10 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 - (instancetype)initWithRegistrar:(NSObject<FlutterPluginRegistrar> *)registrar {
     if (self = [super init]) {
         
+        _zegoApi = nil;
+        _mediaSideInfoApi = nil;
+        _renderController = nil;
+        _isEnablePlatformView = NO;
         _registrar = registrar;
     }
     
@@ -53,6 +53,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     
     
     [eventChannel setStreamHandler:instance];
+    [registrar registerViewFactory:[ZegoPlatformViewFactory shareInstance] withId:@"plugins.zego.im/zego_view"];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -89,10 +90,6 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"initSDK" isEqualToString:call.method]) {
         
-        //NSNumber *obj_appID = args[@"appID"];
-        //NSString *strAppSign = args[@"appSign"];
-        //unsigned int appID = [obj_appID unsignedIntValue];
-        
         unsigned int appID = [self numberToUintValue:args[@"appID"]];
         NSString *strAppSign = args[@"appSign"];
         
@@ -100,27 +97,37 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"uninitSDK" isEqualToString:call.method]){
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             
             result(@NO);
         }
         else {
-            [ZegoExternalVideoRender enableExternalVideoRender:NO type:VideoExternalRenderTypeDecodeRgbSeries];
             
-            [self.media_side_info_api setMediaSideDelegate:nil];
-            self.media_side_info_api = nil;
+            if(!self.isEnablePlatformView) {
+                
+                [ZegoExternalVideoRender enableExternalVideoRender:NO type:VideoExternalRenderTypeDecodeRgbSeries];
+                self.renderController = nil;
+            }
             
-            self.renderController = nil;
-
-            [g_ZegoApi setRoomDelegate:nil];
-            [g_ZegoApi setRenderDelegate:nil];
-            [g_ZegoApi setPublisherDelegate:nil];
-            [g_ZegoApi setPlayerDelegate:nil];
-            [g_ZegoApi setLiveEventDelegate:nil];
-            [g_ZegoApi setIMDelegate:nil];
-            g_ZegoApi = nil;
+            [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:nil];
+            
+            [self.mediaSideInfoApi setMediaSideDelegate:nil];
+            self.mediaSideInfoApi = nil;
+            
+            [self.zegoApi setRoomDelegate:nil];
+            [self.zegoApi setRenderDelegate:nil];
+            [self.zegoApi setPublisherDelegate:nil];
+            [self.zegoApi setPlayerDelegate:nil];
+            [self.zegoApi setLiveEventDelegate:nil];
+            [self.zegoApi setIMDelegate:nil];
+            self.zegoApi = nil;
             result(@YES);
         }
+        
+    } else if([@"enablePlatformView" isEqualToString:call.method]) {
+    
+        BOOL enable = [self numberToBoolValue:args[@"enable"]];
+        _isEnablePlatformView = enable;
         
     } else if([@"setUser" isEqualToString:call.method]) {
         
@@ -137,7 +144,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"loginRoom" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -146,7 +153,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         NSString *roomName = args[@"roomName"];
         int role = [self numberToIntValue:args[@"role"]];
       
-        BOOL success = [g_ZegoApi loginRoom:roomID roomName:roomName role:role withCompletionBlock:^(int errorCode, NSArray<ZegoStream *> *streamList) {
+        BOOL success = [self.zegoApi loginRoom:roomID roomName:roomName role:role withCompletionBlock:^(int errorCode, NSArray<ZegoStream *> *streamList) {
             
               
             NSMutableArray *streamArray = [NSMutableArray array];
@@ -164,49 +171,49 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"logoutRoom" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
-        BOOL success = [g_ZegoApi logoutRoom];
+        BOOL success = [self.zegoApi logoutRoom];
         result(@(success));
         
     } else if([@"pauseModule" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         NSNumber *type = args[@"type"];
-        [g_ZegoApi pauseModule:[type intValue]];
+        [self.zegoApi pauseModule:[type intValue]];
         
     } else if([@"resumeModule" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         NSNumber *type = args[@"type"];
-        [g_ZegoApi resumeModule:(int)[type intValue]];
+        [self.zegoApi resumeModule:(int)[type intValue]];
         
 
     } else if([@"enableMicDevice" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        BOOL success = [g_ZegoApi enableMicDevice: enable];
+        BOOL success = [self.zegoApi enableMicDevice: enable];
         result(@(success));
         
     } else if([@"sendCustomCommand" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -222,7 +229,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
             [zegoUserList addObject:user];
         }
         
-        [g_ZegoApi sendCustomCommand:zegoUserList content:content completion:^(int errorCode, NSString *roomID) {
+        [self.zegoApi sendCustomCommand:zegoUserList content:content completion:^(int errorCode, NSString *roomID) {
                 
             result(@{@"errorCode": @(errorCode),
                          @"roomID": roomID
@@ -231,26 +238,26 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"setRoomConfig" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool audienceCreate = [self numberToBoolValue:args[@"audienceCreateRoom"]];
         bool userStateUpdate = [self numberToBoolValue:args[@"userStateUpdate"]];
-        [g_ZegoApi setRoomConfig:audienceCreate userStateUpdate:userStateUpdate];
+        [self.zegoApi setRoomConfig:audienceCreate userStateUpdate:userStateUpdate];
        
     }
     /* LiveRoom-Publisher */
     else if([@"setLatencyMode" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         int mode = [self numberToIntValue:args[@"mode"]];
-        [g_ZegoApi setLatencyMode:(ZegoAPILatencyMode)mode];
+        [self.zegoApi setLatencyMode:(ZegoAPILatencyMode)mode];
         
     } else if([@"setAudioDeviceMode" isEqualToString:call.method]) {
         
@@ -259,27 +266,27 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
     } else if([@"startPreview" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
-        BOOL success = [g_ZegoApi startPreview];
+        BOOL success = [self.zegoApi startPreview];
         result(@(success));
        
     } else if([@"stopPreview" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
-        BOOL success = [g_ZegoApi stopPreview];
+        BOOL success = [self.zegoApi stopPreview];
         result(@(success));
 
     } else if([@"startPublishing" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -291,81 +298,82 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         BOOL success;
         if(![extraInfo isKindOfClass:[NSNull class]]) {
-            success = [g_ZegoApi startPublishing:streamID title:title flag:flag extraInfo:extraInfo];
+            success = [self.zegoApi startPublishing:streamID title:title flag:flag extraInfo:extraInfo];
         }
         else {
-            success = [g_ZegoApi startPublishing:streamID title:title flag:flag];
+            success = [self.zegoApi startPublishing:streamID title:title flag:flag];
         }
         
         result(@(success));
 
     } else if([@"stopPublishing" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
-        BOOL success = [g_ZegoApi stopPublishing];
+        BOOL success = [self.zegoApi stopPublishing];
         result(@(success));
 
     } else if([@"setVideoCodecId" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         int codecID = [self numberToIntValue:args[@"codecID"]];
-        BOOL success = [g_ZegoApi setVideoCodecId:(ZegoVideoCodecAvc)codecID ofChannel:ZEGOAPI_CHN_MAIN];
+        BOOL success = [self.zegoApi setVideoCodecId:(ZegoVideoCodecAvc)codecID ofChannel:ZEGOAPI_CHN_MAIN];
         result(@(success));
 
     } else if([@"updateStreamExtraInfo" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         NSString *extraInfo = args[@"extraInfo"];
-        BOOL success = [g_ZegoApi updateStreamExtraInfo:extraInfo];
+        BOOL success = [self.zegoApi updateStreamExtraInfo:extraInfo];
         result(@(success));
 
     } else if([@"enableMic" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
         
-        BOOL success = [g_ZegoApi enableMic: enable];
+        BOOL success = [self.zegoApi enableMic: enable];
         result(@(success));
 
     } else if([@"enableCamera" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
         
-        BOOL success = [g_ZegoApi enableCamera:enable];
+        BOOL success = [self.zegoApi enableCamera:enable];
         result(@(success));
 
     }
     else if([@"setFrontCam" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        BOOL success = [g_ZegoApi setFrontCam:enable];
-        if(success) {
+        BOOL success = [self.zegoApi setFrontCam:enable];
+        
+        if(success && !self.isEnablePlatformView) {
                 
             [self.renderController setIsUseFrontCam:enable];
         }
@@ -373,7 +381,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
     } else if([@"setAVConfig" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -392,7 +400,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         avConfig.bitrate = bitrate;
         avConfig.fps = fps;
 
-        BOOL success = [g_ZegoApi setAVConfig:avConfig];
+        BOOL success = [self.zegoApi setAVConfig:avConfig];
         result(@(success));
 
     } else if([@"requireHardwareEncoder" isEqualToString:call.method]) {
@@ -403,85 +411,90 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"enableBeautifying" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         int feature = [self numberToIntValue:args[@"feature"]];
-        BOOL success = [g_ZegoApi enableBeautifying:feature];
+        BOOL success = [self.zegoApi enableBeautifying:feature];
         result(@(success));
 
     } else if([@"setPolishStep" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         float step = [self numberToFolatValue:args[@"step"]];
-        BOOL success = [g_ZegoApi setPolishStep:step];
+        BOOL success = [self.zegoApi setPolishStep:step];
         result(@(success));
 
     } else if([@"setPolishFactor" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         float factor = [self numberToFolatValue:args[@"factor"]];
-        BOOL success = [g_ZegoApi setPolishFactor:factor];
+        BOOL success = [self.zegoApi setPolishFactor:factor];
         result(@(success));
 
     } else if([@"setWhitenFactor" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         float factor = [self numberToFolatValue:args[@"factor"]];
-        BOOL success = [g_ZegoApi setWhitenFactor:factor];
+        BOOL success = [self.zegoApi setWhitenFactor:factor];
         result(@(success));
 
     } else if([@"setFilter" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         int filter = [self numberToIntValue:args[@"filter"]];
-        bool success = [g_ZegoApi setFilter:(ZegoFilter)filter];
+        bool success = [self.zegoApi setFilter:(ZegoFilter)filter];
         result(@(success));
 
     } else if([@"enableTrafficControl" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool bEnable = [self numberToBoolValue:args[@"enable"]];
         NSUInteger properties = [self numberToULongValue:args[@"properties"]];
-        [g_ZegoApi enableTrafficControl:bEnable properties:properties];
+        [self.zegoApi enableTrafficControl:bEnable properties:properties];
 
     } else if([@"setMinVideoBitrateForTrafficControl" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         int bitrate = [self numberToIntValue:args[@"bitrate"]];
         int mode = [self numberToIntValue:args[@"mode"]];
-        [g_ZegoApi setMinVideoBitrateForTrafficControl:bitrate mode:(ZegoAPITrafficControlMinVideoBitrateMode)mode];
+        [self.zegoApi setMinVideoBitrateForTrafficControl:bitrate mode:(ZegoAPITrafficControlMinVideoBitrateMode)mode];
 
     } else if([@"createPreviewRenderer" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
         
@@ -503,8 +516,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"setPreviewViewMode" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
         
@@ -521,7 +539,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"updatePreviewRenderSize" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -539,8 +557,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
     } else if([@"destroyPreviewRenderer" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
         
@@ -561,9 +584,64 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
             result(@(NO));
         }
 
+    } else if([@"setPreviewView" isEqualToString:call.method]) {
+      
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(!self.isEnablePlatformView) {
+            [self throwNoPlatformViewError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int viewID = [self numberToIntValue:args[@"viewID"]];
+        ZegoPlatformView * view = [[ZegoPlatformViewFactory shareInstance] getPlatformView:@(viewID)];
+        if(view) {
+            
+            [self.zegoApi setPreviewView:[view getUIView]];
+            result(@(YES));
+        } else {
+            result(@(NO));
+        }
+        
+    } else if([@"setPlatformViewPreviewViewMode" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(!self.isEnablePlatformView) {
+            [self throwNoPlatformViewError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int mode = [self numberToIntValue:args[@"mode"]];
+        
+        bool success = [self.zegoApi setPreviewViewMode:(ZegoVideoViewMode)mode];
+        result(@(success));
+        
+    } else if([@"removePreviewPlatformView" isEqualToString:call.method]){
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(!self.isEnablePlatformView) {
+            [self throwNoPlatformViewError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int viewID = [self numberToIntValue:args[@"viewID"]];
+        BOOL success = [[ZegoPlatformViewFactory shareInstance]  removeView:@(viewID)];
+        result(@(success));
+        
     } else if([@"setAppOrientation" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -588,12 +666,12 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
                 obj_orientation = UIInterfaceOrientationUnknown;
                 break;
         }
-        BOOL success = [g_ZegoApi setAppOrientation:obj_orientation];
+        BOOL success = [self.zegoApi setAppOrientation:obj_orientation];
         result(@(success));
  
     } else if([@"respondJoinLiveReq" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -601,18 +679,18 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         int seq = [self numberToIntValue:args[@"seq"]];
         int rspResult = [self numberToIntValue:args[@"rspResult"]];
         
-        BOOL success = [g_ZegoApi respondJoinLiveReq:seq result:rspResult];
+        BOOL success = [self.zegoApi respondJoinLiveReq:seq result:rspResult];
         result(@(success));
 
     } else if([@"inviteJoinLive" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         NSString *userID = args[@"userID"];
-        [g_ZegoApi inviteJoinLive:userID responseBlock:^(int ret, NSString *fromUserID, NSString *fromUserName) {
+        [self.zegoApi inviteJoinLive:userID responseBlock:^(int ret, NSString *fromUserID, NSString *fromUserName) {
                 
             result(@{@"result":@(ret),
                          @"fromUserID": fromUserID,
@@ -622,13 +700,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
     } else if([@"endJoinLive" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         NSString *userID = args[@"userID"];
-        [g_ZegoApi endJoinLive:userID completionBlock:^(int errorCode, NSString *roomID) {
+        [self.zegoApi endJoinLive:userID completionBlock:^(int errorCode, NSString *roomID) {
                
             result(@{@"errorCode":@(errorCode),
                          @"roomID":roomID
@@ -637,83 +715,83 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
     } else if([@"setAudioBitrate" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         int bitrate = [self numberToIntValue:args[@"bitrate"]];
-        BOOL success = [g_ZegoApi setAudioBitrate:bitrate];
+        BOOL success = [self.zegoApi setAudioBitrate:bitrate];
         result(@(success));
         
     } else if([@"enableAEC" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        bool success = [g_ZegoApi enableAEC:enable];
+        bool success = [self.zegoApi enableAEC:enable];
         result(@(success));
         
     } else if([@"setAECMode" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         int mode = [self numberToIntValue:args[@"mode"]];
-        [g_ZegoApi setAECMode:(ZegoAPIAECMode)mode];
+        [self.zegoApi setAECMode:(ZegoAPIAECMode)mode];
         
     } else if([@"enableAGC" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        bool success = [g_ZegoApi enableAGC:enable];
+        bool success = [self.zegoApi enableAGC:enable];
         result(@(success));
         
     } else if([@"enableVAD" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        [g_ZegoApi enableVAD:enable];
+        [self.zegoApi enableVAD:enable];
 
     } else if([@"enableANS" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        bool success = [g_ZegoApi enableNoiseSuppress:enable];
+        bool success = [self.zegoApi enableNoiseSuppress:enable];
         result(@(success));
     }
     else if([@"enableDTX" isEqualToString:call.method])
     {
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        [g_ZegoApi enableDTX:enable];
+        [self.zegoApi enableDTX:enable];
 
     }
     /* LiveRoom-Player */
     else if([@"startPlayingStream" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -721,6 +799,12 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         NSString *streamID = args[@"streamID"];
         NSDictionary *info = args[@"info"];
         BOOL success;
+        
+        ZegoPlatformView *view = nil;
+        if(self.isEnablePlatformView) {
+            int viewID = [self numberToIntValue:args[@"viewID"]];
+            view = [[ZegoPlatformViewFactory shareInstance]  getPlatformView:@(viewID)];
+        }
         
         if(![info isKindOfClass:[NSNull class]]) {
             NSString *params = info[@"params"];
@@ -732,28 +816,28 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
             extraPlayInfo.rtmpUrls = rtmpUrls;
             extraPlayInfo.flvUrls = flvUrls;
             
-            success = [g_ZegoApi startPlayingStream:streamID inView:nil extraInfo:extraPlayInfo];
+            success = [self.zegoApi startPlayingStream:streamID inView:view ? [view getUIView] : nil extraInfo:extraPlayInfo];
         } else {
             
-            success = [g_ZegoApi startPlayingStream:streamID inView:nil];
+            success = [self.zegoApi startPlayingStream:streamID inView:view ? [view getUIView] : nil];
         }
         
         result(@(success));
  
     } else if([@"stopPlayingStream" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         NSString *streamID = args[@"streamID"];
-        BOOL success = [g_ZegoApi stopPlayingStream:streamID];
+        BOOL success = [self.zegoApi stopPlayingStream:streamID];
         result(@(success));
   
     } else if([@"activateAudioPlayStream" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -761,12 +845,12 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         NSString *streamID = args[@"streamID"];
         bool active = [self numberToBoolValue:args[@"active"]];
         
-        int errorCode = [g_ZegoApi activateAudioPlayStream:streamID active:active];
+        int errorCode = [self.zegoApi activateAudioPlayStream:streamID active:active];
         result(@(errorCode));
  
     } else if([@"activateVideoPlayStream" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -780,10 +864,10 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         if(![objVideoStreamLayer isKindOfClass:[NSNull class]]) {
             
             int videoStreamLayer =[self numberToIntValue:objVideoStreamLayer];
-            errorCode = [g_ZegoApi activateVideoPlayStream:streamID active:active videoLayer:(VideoStreamLayer)videoStreamLayer];
+            errorCode = [self.zegoApi activateVideoPlayStream:streamID active:active videoLayer:(VideoStreamLayer)videoStreamLayer];
         } else {
             
-            errorCode = [g_ZegoApi activateVideoPlayStream:streamID active:active];
+            errorCode = [self.zegoApi activateVideoPlayStream:streamID active:active];
         }
         
         result(@(errorCode));
@@ -796,8 +880,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"createPlayViewRenderer" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
         
@@ -820,8 +909,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
     } else if([@"setViewMode" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
         
@@ -839,8 +933,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
     }else if([@"updatePlayViewRenderSize" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
         
@@ -858,8 +957,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"destroyPlayViewRenderer" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
         
@@ -880,14 +984,66 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
             result(@(NO));
         }
   
-    } else if([@"requestJoinLive" isEqualToString:call.method]) {
-        
-        if(g_ZegoApi == nil) {
+    } else if([@"updatePlayView" isEqualToString:call.method]) {
+      
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
-        [g_ZegoApi requestJoinLive:^(int ret, NSString *fromUserID, NSString *fromUserName) {
+        if(!self.isEnablePlatformView) {
+            [self throwNoPlatformViewError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int viewID = [self numberToIntValue:args[@"viewID"]];
+        NSString *streamID = args[@"streamID"];
+        
+        ZegoPlatformView *view = [[ZegoPlatformViewFactory shareInstance] getPlatformView:@(viewID)];
+        [self.zegoApi updatePlayView:[view getUIView] ofStream:streamID];
+        
+    } else if([@"setPlatformViewPlayViewMode" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(!self.isEnablePlatformView) {
+            [self throwNoPlatformViewError:result ofMethodName:call.method];
+            return;
+        }
+        
+        NSString *streamID = args[@"streamID"];
+        int mode = [self numberToIntValue:args[@"mode"]];
+        
+        bool success = [self.zegoApi setViewMode:(ZegoVideoViewMode)mode ofStream:streamID];
+        result(@(success));
+        
+    } else if([@"removePlayPlatformView" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        if(!self.isEnablePlatformView) {
+            [self throwNoPlatformViewError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int viewID = [self numberToIntValue:args[@"viewID"]];
+        BOOL success = [[ZegoPlatformViewFactory shareInstance]  removeView:@(viewID)];
+        result(@(success));
+        
+    } else if([@"requestJoinLive" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [self.zegoApi requestJoinLive:^(int ret, NSString *fromUserID, NSString *fromUserName) {
                 
             result(@{@"result":@(ret),
                      @"fromUserID": fromUserID,
@@ -897,7 +1053,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
     } else if([@"respondInviteJoinLiveReq" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -905,36 +1061,36 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         int seq = [self numberToIntValue:args[@"seq"]];
         int rspResult = [self numberToIntValue:args[@"rspResult"]];
         
-        BOOL success = [g_ZegoApi respondInviteJoinLiveReq:seq result:rspResult];
+        BOOL success = [self.zegoApi respondInviteJoinLiveReq:seq result:rspResult];
         result(@(success));
 
     } else if([@"enableSpeaker" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        bool success = [g_ZegoApi enableSpeaker:enable];
+        bool success = [self.zegoApi enableSpeaker:enable];
         result(@(success));
         
     } else if([@"setBuiltInSpeakerOn" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool on = [self numberToBoolValue:args[@"bOn"]];
-        bool success = [g_ZegoApi setBuiltInSpeakerOn:on];
+        bool success = [self.zegoApi setBuiltInSpeakerOn:on];
         result(@(success));
         
     }
     /* Media Side Info */
     else if([@"setMediaSideFlags" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil || self.media_side_info_api == nil) {
+        if(self.zegoApi == nil || self.mediaSideInfoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -942,11 +1098,11 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         bool start = [self numberToBoolValue:args[@"start"]];
         bool onlyAudioPublish = [self numberToBoolValue:args[@"onlyAudioPublish"]];
         
-        [self.media_side_info_api setMediaSideFlags:start onlyAudioPublish:onlyAudioPublish channelIndex: ZEGOAPI_CHN_MAIN];
+        [self.mediaSideInfoApi setMediaSideFlags:start onlyAudioPublish:onlyAudioPublish channelIndex: ZEGOAPI_CHN_MAIN];
         
     } else if([@"sendMediaSideInfo" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil || self.media_side_info_api == nil) {
+        if(self.zegoApi == nil || self.mediaSideInfoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
@@ -954,19 +1110,19 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         NSString *strData = args[@"data"];
         
         NSData *data = [strData dataUsingEncoding:NSUTF8StringEncoding];
-        [self.media_side_info_api sendMediaSideInfo:data packet:false channelIndex:ZEGOAPI_CHN_MAIN];
+        [self.mediaSideInfoApi sendMediaSideInfo:data packet:false channelIndex:ZEGOAPI_CHN_MAIN];
 
     }
     /* LiveRoom-AudioIO*/
     else if([@"enableAECWhenHeadsetDetected" isEqualToString:call.method]) {
         
-        if(g_ZegoApi == nil) {
+        if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
-        [g_ZegoApi enableAECWhenHeadsetDetected:enable];
+        [self.zegoApi enableAECWhenHeadsetDetected:enable];
  
     } else {
         
@@ -976,8 +1132,12 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
 - (void)dealloc {
     
-    if(g_ZegoApi)
-        g_ZegoApi = nil;
+    [ZegoPlatformViewFactory release];
+    
+    if(self.zegoApi)
+        self.zegoApi = nil;
+    if(self.mediaSideInfoApi)
+        self.mediaSideInfoApi = nil;
 }
 
 - (bool)numberToBoolValue:(NSNumber *)number {
@@ -1047,6 +1207,14 @@ Byte toByte(NSString* c) {
     result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:[NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zego preview or play renderer is null."] details:nil]);
 }
 
+- (void)throwNoTextureError:(FlutterResult)result ofMethodName:(NSString *)methodName {
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:[NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is true. make sure you turn off this api before calling \'initSDK\' when you use texture to render."] details:nil]);
+}
+
+- (void)throwNoPlatformViewError:(FlutterResult)result ofMethodName:(NSString *)methodName {
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:[NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render."] details:nil]);
+}
+
 
 #pragma mark - Handle Flutter CallMethods
 - (void)initSDKWithAppID:(unsigned int)appID appSign: (NSString *)appsign result:(FlutterResult)result {
@@ -1055,27 +1223,29 @@ Byte toByte(NSString* c) {
     if(appSign == nil)
         return;
     
-    //默认开启外部渲染绘图
-    [ZegoExternalVideoRender enableExternalVideoRender:YES type:VideoExternalRenderTypeDecodeRgbSeries];
+    //默认使用外部渲染
+    if(!self.isEnablePlatformView) {
     
-    self.renderController = [[ZegoRendererController alloc] init];
+        [ZegoExternalVideoRender enableExternalVideoRender:YES type:VideoExternalRenderTypeDecodeRgbSeries];
+        self.renderController = [[ZegoRendererController alloc] init];
+    }
     
-    g_ZegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
+    self.zegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
         
         if(errorCode == 0)
         {
             //设置代理
-            [g_ZegoApi setRoomDelegate:self];
-            [g_ZegoApi setPublisherDelegate:self];
-            [g_ZegoApi setPlayerDelegate:self];
-            [g_ZegoApi setLiveEventDelegate:self];
-            [g_ZegoApi setIMDelegate:self];
+            [self.zegoApi setRoomDelegate:self];
+            [self.zegoApi setPublisherDelegate:self];
+            [self.zegoApi setPlayerDelegate:self];
+            [self.zegoApi setLiveEventDelegate:self];
+            [self.zegoApi setIMDelegate:self];
             
             [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
             
             //初始化媒体次要信息模块
-            self.media_side_info_api = [[ZegoMediaSideInfo alloc] init];
-            [self.media_side_info_api setMediaSideDelegate:self];
+            self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
+            [self.mediaSideInfoApi setMediaSideDelegate:self];
         }
         
         result(@(errorCode));
@@ -1309,11 +1479,15 @@ Byte toByte(NSString* c) {
 }
 
 - (void)onCaptureVideoFirstFrame {
-    BOOL isUseFrontCam = [self.renderController isUseFrontCam];
-    ZegoViewRenderer *preview = [self.renderController getRenderer:kZegoVideoDataMainPublishingStream];
-    if(preview) {
+    
+    if(!self.isEnablePlatformView) {
         
-        [preview setUseMirrorEffect:isUseFrontCam];
+        BOOL isUseFrontCam = [self.renderController isUseFrontCam];
+        ZegoViewRenderer *preview = [self.renderController getRenderer:kZegoVideoDataMainPublishingStream];
+        if(preview) {
+        
+            [preview setUseMirrorEffect:isUseFrontCam];
+        }
     }
     
     FlutterEventSink sink = _eventSink;

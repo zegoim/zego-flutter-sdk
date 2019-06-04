@@ -50,6 +50,18 @@ class ZegoLiveRoomPlugin {
     return success;
   }
 
+  /// 设置是否使用 Platform View 渲染
+  ///
+  ///@param enable 是否使用，true 使用，false 不使用。默认为 false
+  ///@discussion 必须在 [initSDK] 之前调用才会生效
+  ///@discussion 参数为 true 时，使用 Platform View 渲染，参数为 false 时，使用 Texture 渲染
+  ///@discussion 由于 flutter 团队 对 platform view 仍处于开发阶段，请开发者酌情使用
+  static Future<void> enablePlatformView(bool enable) async {
+    return await _channel.invokeMethod('enablePlatformView', {
+      'enable': enable
+    });
+  }
+
   ///设置用户 ID 及用户名
   ///
   ///@param userID 用户 ID，不可为空
