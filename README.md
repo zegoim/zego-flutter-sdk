@@ -1,4 +1,4 @@
-# zegoliveroom_plugin
+# zegoliveroom_plugin [![pub package](https://img.shields.io/pub/v/zegoliveroom_plugin.svg)](https://pub.dartlang.org/packages/zegoliveroom_plugin)
 
 即构科技（Zego）音视频Flutter SDK，提供视频直播以及实施音视频服务。
 
