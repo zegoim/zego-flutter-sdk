@@ -1,4 +1,10 @@
 
+## 1.0.4
+
+1. add sound-level module
+2. add error-code module
+3. update native sdk
+
 ## 1.0.3
 
 Add Platform View API

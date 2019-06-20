@@ -12,6 +12,8 @@
 
 @interface ZegoLiveRoomApi (DuoPublisher)
 
+typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *streamID);
+
 /**
  设置本地预览视图
  
@@ -106,6 +108,28 @@
  @discussion 开发者如果使用自定义转推功能，推流开始前，必须调用此接口设置转推 RTMP 地址（SDK 推流方式必须为 UDP，转推地址必须为 RTMP），否则可能导致转推失败。
  */
 - (void)setPublishConfig:(NSDictionary *)config channelIndex:(ZegoAPIPublishChannelIndex)index;
+
+/**
+ 添加转推地址
+ 
+ @param strTarget 转推地址（支持rtmp/avertp）
+ @param pszStreamID 推流ID
+ @param completionBlock 添加转推地址回调
+ @return true 成功，false 失败
+ @attention 在InitSDK之后调用
+  */
+- (bool)addPublishTarget:(NSString *)target streamID:(NSString *)streamID completion:(ZegoUpdatePublishTargetCompletionBlock)completionBlock;
+
+/**
+ 删除转推地址
+ 
+ @param strTarget 转推地址（支持rtmp/avertp）
+ @param pszStreamID 推流ID
+ @param completionBlock 删除转推地址回调
+ @return true 成功，false 失败
+ @attention 在InitSDK之后调用
+ */
+- (bool)deletePublishTarget:(NSString *)target streamID:(NSString *)streamID completion:(ZegoUpdatePublishTargetCompletionBlock)completionBlock;
 
 /**
  设置视频配置

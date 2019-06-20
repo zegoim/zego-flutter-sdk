@@ -7,6 +7,7 @@ class ZegoEventType {
   static const int TYPE_PUBLISH_EVENT = 1;
   static const int TYPE_PLAY_EVENT = 2;
   static const int TYPE_MEDIA_SIDE_INFO_EVENT = 3;
+  static const int TYPE_SOUND_LEVEL_EVENT = 4;
 }
 
 class ZegoLiveRoomEventChannel {
@@ -46,6 +47,14 @@ class ZegoLiveRoomEventChannel {
     return _receivedEvents
         .map<Map>((dynamic event) => event)
         .where((Map event) => event['type'] == ZegoEventType.TYPE_MEDIA_SIDE_INFO_EVENT)
+        .map<dynamic>((Map event) => event['method']);
+  }
+
+  /// 用于接收native层事件流，开发者无需关注
+  static Stream<dynamic> listenSoundLevelEvent() {
+    return _receivedEvents
+        .map<Map>((dynamic event) => event)
+        .where((Map event) => event['type'] == ZegoEventType.TYPE_SOUND_LEVEL_EVENT)
         .map<dynamic>((Map event) => event['method']);
   }
 

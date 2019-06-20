@@ -17,19 +17,6 @@
 #define ZEGO_EXTERN     extern
 #endif
 
-
-/** 接口调用返回错误码 */
-typedef enum ZegoAPIErrorCode
-{
-    kZegoAPIErrorCodeOK = 0,    /**< 没有错误 */
-    kZegoAPIErrorCodeInvalidParameter = 1,  /** 调用输入参数错误 */
-    
-    // * 外部音频设备
-    kZegoAPIErrorCodeExternalAudioDeviceWasNotEnabled = 5101, /** 没有启用外部音频设备 */
-    kZegoAPIErrorCodeExternalAudioDeviceEngineError = 5102, /** 处理音频数据异常 */
-} ZegoAPIErrorCode;
-
-
 /** 流ID，值为 NSString */
 ZEGO_EXTERN NSString *const kZegoStreamIDKey;
 /** 混流ID，值为 NSString */
@@ -515,6 +502,8 @@ typedef enum : NSUInteger
 @property (strong) NSArray<NSString*>* rtmpUrls;
 /** flv 地址 */
 @property (strong) NSArray<NSString*>* flvUrls;
+/** 连麦时是否切换服务器 */
+@property (assign) BOOL shouldSwitchServer;
 
 @end
 

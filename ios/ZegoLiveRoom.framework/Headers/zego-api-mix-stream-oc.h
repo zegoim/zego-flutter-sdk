@@ -25,18 +25,10 @@ ZEGO_EXTERN NSString *const kZegoMixStreamReqSeqKey;
  混流配置更新结果回调
  
  @param errorCode 错误码，0 表示没有错误
- @param mixStreamID 混流ID
+ @param mixStreamID 混流任务ID
  @param info 混流播放信息
  @discussion 调用 [ZegoStreamMixer -mixStream:seq:] 更新混流配置后，通过此 API 通知调用方
- @note 常见错误码及其含义如下：
- errorCode = 150，混流的输入流不存在。
- errorCode = 151，混流失败。
- errorCode = 152，停止混流失败。
- errorCode = 153，输入参数错误。
- errorCode = 154，输出参数错误。
- errorCode = 155，输入分辨率格式错误。
- errorCode = 156，输出分辨率格式错误。
- errorCode = 157，混流没开。
+ @note 常见错误码及其含义请参考ZegoError中kMixStream开头的错误码定义
  */
 - (void)onMixStreamConfigUpdate:(int)errorCode mixStream:(NSString *)mixStreamID streamInfo:(NSDictionary *)info;
 
@@ -49,18 +41,10 @@ ZEGO_EXTERN NSString *const kZegoMixStreamReqSeqKey;
  混流配置更新结果回调
  
  @param errorCode 错误码，0 表示没有错误
- @param mixStreamID 混流ID
+ @param mixStreamID 混流任务ID
  @param info 混流播放信息
  @discussion 调用 [ZegoStreamMixer -mixStreamEx:mixStreamID:] 更新混流配置后，通过此 API 通知调用方
- @note 常见错误码及其含义如下：
- errorCode = 150，混流的输入流不存在。
- errorCode = 151，混流失败。
- errorCode = 152，停止混流失败。
- errorCode = 153，输入参数错误。
- errorCode = 154，输出参数错误。
- errorCode = 155，输入分辨率格式错误。
- errorCode = 156，输出分辨率格式错误。
- errorCode = 157，混流没开。
+ @note 常见错误码及其含义请参考ZegoError中kMixStream开头的错误码定义
  */
 - (void)onMixStreamExConfigUpdate:(int)errorCode mixStream:(NSString *)mixStreamID streamInfo:(ZegoMixStreamResultEx *)info;
 
@@ -109,7 +93,7 @@ ZEGO_EXTERN NSString *const kZegoMixStreamReqSeqKey;
  混流接口，支持多路混流
  
  @param config 混流配置
- @param mixStreamID 混流ID
+ @param mixStreamID 混流任务ID
  @return >0 表示调用成功，且返回值是调用序号seq，<=0 表示调用失败
  @discussion 每次需要更新混流配置时，都可以调用此接口；通过传入不同的 seq 区分回调
  */

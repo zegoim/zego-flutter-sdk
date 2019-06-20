@@ -81,8 +81,6 @@ typedef enum {
 @property (assign) int fps;
 /**  视频码率 */
 @property (assign) int bitrate;
-/**  音频码率 */
-@property (assign) int audioBitrate;
 
 @end
 

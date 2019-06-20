@@ -11,8 +11,9 @@
 
 @protocol ZegoReliableMessageDelegate;
 
-typedef void(^ZegoSendReliableMessageCompletionBlock)(int errorCode, NSString *roomId, NSString *msgType, uint32_t msgSeq);
+typedef void(^ZegoSendReliableMessageCompletionBlock)(int errorCode, NSString *roomId, NSString *msgType, NSUInteger msgSeq);
 
+typedef void(^ZegoGetReliableMessageCompletionBlock)(int errorCode, NSString *roomId, NSArray<ZegoReliableMessage*> *messageList);
 
 @interface ZegoLiveRoomApi (ReliableMessage)
 
@@ -20,20 +21,35 @@ typedef void(^ZegoSendReliableMessageCompletionBlock)(int errorCode, NSString *r
 - (bool)setReliableMessageDelegate:(id<ZegoReliableMessageDelegate>)delegate;
 
 /**
- 业务广播
+ 发送可靠业务消息
  
- @param msg 业务广播数据，不能超过 2048 字节, 允许为空字符串
- @param type 业务广播类型，不能超过 128 字节, 不允许为空字符串
- @param completionBlock 业务广播结果，回调 server 下发的转发结果
+ @param content 可靠业务消息数据，不能超过 2048 字节, 允许为空字符串
+ @param type 可靠业务消息类型，不能超过 128 字节, 不允许为空字符串，一个房间内只允许不超过10个不同的消息类型
+ @param seq 当前最新的业务消息seq
+ @param completionBlock 发送可靠业务消息结果
  @return true 成功，false 失败
- @discussion
  */
-- (bool)sendReliableMessage:(NSString *)msg type:(NSString *)type completion:(ZegoSendReliableMessageCompletionBlock)completionBlock;
+- (bool)sendReliableMessage:(NSString *)content type:(NSString *)type latestSeq: (unsigned int)seq completion:(ZegoSendReliableMessageCompletionBlock)completionBlock;
+
+
+/**
+ 获取可靠业务消息
+
+ @param messageTypes 可靠业务消息类型列表
+ @param completionBlock 获取可靠业务消息结果
+ @return true 成功，false 失败
+ @discussion messageTypes的个数不能超过10个
+ */
+- (bool)getReliableMessages:(NSArray<NSString*> *)messageTypes completion:(ZegoGetReliableMessageCompletionBlock)completionBlock;
 
 @end
 
 @protocol ZegoReliableMessageDelegate <NSObject>
 
-- (void)onRecvReliableMessage:(ZegoReliableMessage *)msg;
+@optional
+
+- (void)onRecvReliableMessage:(ZegoReliableMessage *)message room:(NSString *)roomId;
+
+- (void)onUpdateReliableMessageInfo:(NSArray<ZegoReliableMessageInfo *> *)messageInfoList room:(NSString *)roomId;
 
 @end

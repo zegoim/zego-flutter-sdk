@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'zego_api_defines.dart';
 import 'zego_liveroom_event_channel.dart';
+import 'zego_liveroom_publisher.dart';
 
 class ZegoLiveRoomPlugin {
   /* Method Channel */
@@ -306,7 +307,7 @@ class ZegoLiveRoomPlugin {
   ///
   ///@param streamList 附加信息更新的流列表
   ///@param roomID 房间 ID
-  ///@discussion 主播推流成功后调用 ZegoLiveRoomPublisherPlugin.updateStreamExtraInfo 更新附加信息，在此回调中通知房间内其他成员。调用 ZegoLiveRoomPublisherPlugin.updateStreamExtraInfo 更新信息的调用方，不会收到此回调
+  ///@discussion 主播推流成功后调用 [ZegoLiveRoomPublisherPlugin.updateStreamExtraInfo] 更新附加信息，在此回调中通知房间内其他成员。调用 updateStreamExtraInfo 更新信息的调用方，不会收到此回调
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onStreamExtraInfoUpdated 对象参数之后才能收到该回调
   static void Function(List<ZegoStreamInfo> streamList, String roomID) _onStreamExtraInfoUpdated;
 
@@ -334,7 +335,7 @@ class ZegoLiveRoomPlugin {
 
   ///用户被踢出房间
   ///
-  ///@param reason 被踢出原因，16777219 表示该账户多点登录被踢出，16777220 表示该账户是被手动踢出，16777221 表示房间会话错误被踢出。
+  ///@param reason 被踢出原因
   ///@param roomID 房间 ID
   ///@discussion 可在该回调中处理用户被踢出房间后的下一步处理（例如报错、重新登录提示等）
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onKickOut 对象参数之后才能收到该回调

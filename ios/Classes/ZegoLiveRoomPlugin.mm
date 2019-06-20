@@ -6,16 +6,20 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     TYPE_ROOM_EVENT = 0,
     TYPE_PUBLISH_EVENT,
     TYPE_PLAY_EVENT,
-    TYPE_MEDIA_SIDE_INFO_EVENT
+    TYPE_MEDIA_SIDE_INFO_EVENT,
+    TYPE_SOUND_LEVEL_EVENT
 };
 
-@interface ZegoLiveRoomPlugin() <ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, FlutterStreamHandler>
+@interface ZegoLiveRoomPlugin()
+<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, FlutterStreamHandler>
 
 @property (nonatomic, strong) ZegoLiveRoomApi *zegoApi;
 @property (nonatomic, strong) ZegoMediaSideInfo * mediaSideInfoApi;
-@property (nonatomic, strong) NSObject<FlutterPluginRegistrar> *registrar;
 @property (nonatomic, strong) ZegoRendererController *renderController;
 @property (nonatomic, assign) BOOL isEnablePlatformView;
+
+@property (nonatomic, strong) NSObject<FlutterPluginRegistrar> *registrar;
+
 
 @end
 
@@ -31,6 +35,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         _mediaSideInfoApi = nil;
         _renderController = nil;
         _isEnablePlatformView = NO;
+        
         _registrar = registrar;
     }
     
@@ -1124,11 +1129,165 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         bool enable = [self numberToBoolValue:args[@"enable"]];
         [self.zegoApi enableAECWhenHeadsetDetected:enable];
  
-    } else {
+    }
+    /* SoundLevel */
+    else if([@"registerSoundLevelCallback" isEqualToString:call.method]) {
         
+        [[ZegoSoundLevel sharedInstance] setSoundLevelDelegate:self];
+        result(@(YES));
+    } else if([@"unregisterSoundLevelCallback" isEqualToString:call.method]) {
+        
+        [[ZegoSoundLevel sharedInstance] setSoundLevelDelegate:nil];
+        result(@(YES));
+    } else if([@"setSoundLevelMonitorCycle" isEqualToString:call.method]) {
+        
+        unsigned int ms = [self numberToUintValue:args[@"ms"]];
+        bool success = [[ZegoSoundLevel sharedInstance] setSoundLevelMonitorCycle:ms];
+        result(@(success));
+        
+    } else if([@"startSoundLevelMonitor" isEqualToString:call.method]) {
+        
+        bool success = [[ZegoSoundLevel sharedInstance] startSoundLevelMonitor];
+        result(@(success));
+        
+    } else if([@"stopSoundLevelMonitor" isEqualToString:call.method]) {
+        
+        bool success = [[ZegoSoundLevel sharedInstance] stopSoundLevelMonitor];
+        result(@(success));
+    }
+    /* Error Code */
+    else if([@"isInitSDKError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isInitSDKError:error];
+        result(@(ret));
+        
+    } else if([@"isNotLoginError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isNotLoginError:error];
+        result(@(ret));
+        
+    } else if([@"isMediaServerNetWorkError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isMediaServerNetWorkError:error];
+        result(@(ret));
+        
+    } else if([@"isLogicServerNetWorkError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isLogicServerNetWrokError:error];
+        result(@(ret));
+        
+    } else if([@"isMixStreamNotExistError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isMixStreamNotExistError:error];
+        result(@(ret));
+        
+    } else if([@"isPlayStreamNotExistError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isPlayStreamNotExistError:error];
+        result(@(ret));
+        
+    } else if([@"isPublishBadNameError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isPublishBadNameError:error];
+        result(@(ret));
+        
+    } else if([@"isPublishForbidError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isPublishForbidError:error];
+        result(@(ret));
+        
+    } else if([@"isPublishStopError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isPublishStopError:error];
+        result(@(ret));
+        
+    } else if([@"isPublishDeniedError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isPublishDeniedError:error];
+        result(@(ret));
+        
+    } else if([@"isPlayForbidError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isPlayForbidError:error];
+        result(@(ret));
+        
+    } else if([@"isPlayDeniedError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isPlayDeniedError:error];
+        result(@(ret));
+        
+    } else if([@"isDNSResolveError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isDNSResolveError:error];
+        result(@(ret));
+        
+    } else if([@"isNetworkUnreachError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isNetworkUnreachError:error];
+        result(@(ret));
+        
+    } else if([@"isHttpProtocolError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isHttpProtocolError:error];
+        result(@(ret));
+        
+    } else if([@"isReqFrequencyLimitError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isReqFrequencyLimitError:error];
+        result(@(ret));
+        
+    } else if([@"isLiveRoomError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isLiveRoomError:error];
+        result(@(ret));
+        
+    } else if([@"isMultiLoginError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isMultiLoginError:error];
+        result(@(ret));
+        
+    } else if([@"isManualKickoutError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isManualKickoutError:error];
+        result(@(ret));
+        
+    } else if([@"isRoomSessionError" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        bool ret = [ZegoError isRoomSessionError:error];
+        result(@(ret));
+        
+    } else if([@"getErrorMsg" isEqualToString:call.method]) {
+        
+        int error = [self numberToIntValue:args[@"error"]];
+        NSString *msg = [ZegoError getErrorMsg:error];
+        result(msg);
+        
+    } else {
         result(FlutterMethodNotImplemented);
     }
+
 }
+
 
 - (void)dealloc {
     
@@ -1655,6 +1814,37 @@ Byte toByte(NSString* c) {
     }
 }
 
+#pragma mark - ZegoSoundLevelDelegate
+
+- (void)onSoundLevelUpdate:(NSArray<ZegoSoundLevelInfo *> *)soundLevels {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        
+        NSMutableArray *soundLevelList = [NSMutableArray array];
+        for(ZegoSoundLevelInfo *info in soundLevels) {
+            [soundLevelList addObject:@{@"streamID": info.streamID,
+                                        @"soundLevel": @(info.soundLevel)
+                                        }];
+        }
+        
+        sink(@{@"type": @(TYPE_SOUND_LEVEL_EVENT),
+               @"method" : @{@"name" : @"onSoundLevelUpdate",
+                             @"soundLevels" : soundLevelList}
+               });
+    }
+}
+
+- (void)onCaptureSoundLevelUpdate:(ZegoSoundLevelInfo *)captureSoundLevel {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_SOUND_LEVEL_EVENT),
+               @"method" : @{@"name" : @"onCaptureSoundLevelUpdate",
+                             @"streamID": captureSoundLevel.streamID,
+                             @"soundLevel" : @(captureSoundLevel.soundLevel)}
+               });
+    }
+}
+
 #pragma mark - ZegoLiveApiRenderDelegate
 
 - (CVPixelBufferRef)onCreateInputBufferWithWidth:(int)width height:(int)height cvPixelFormatType:(OSType)cvPixelFormatType streamID:(NSString *)streamID
@@ -1699,3 +1889,4 @@ Byte toByte(NSString* c) {
 }
 
 @end
+

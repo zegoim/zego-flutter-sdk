@@ -111,7 +111,7 @@ typedef enum
 /** 消息类型 */
 @property (nonatomic, assign) ZegoMessageType type;
 /** 发送时间 */
-@property (nonatomic, assign) unsigned int sendTime;
+@property (nonatomic, assign) unsigned long long sendTime;
 
 @end
 

@@ -2,8 +2,6 @@ package com.zego.zegoliveroomplugin;
 
 import android.app.Application;
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.Surface;
 
 
@@ -22,8 +20,12 @@ import java.util.*;
 import java.lang.*;
 
 import com.zego.zegoavkit2.ZegoStreamExtraPlayInfo;
+import com.zego.zegoavkit2.error.ZegoError;
 import com.zego.zegoavkit2.mediaside.IZegoMediaSideCallback;
 import com.zego.zegoavkit2.mediaside.ZegoMediaSideInfo;
+import com.zego.zegoavkit2.soundlevel.IZegoSoundLevelCallback;
+import com.zego.zegoavkit2.soundlevel.ZegoSoundLevelInfo;
+import com.zego.zegoavkit2.soundlevel.ZegoSoundLevelMonitor;
 import com.zego.zegoliveroom.ZegoLiveRoom;
 import com.zego.zegoliveroom.callback.IZegoAVEngineCallback;
 import com.zego.zegoliveroom.callback.IZegoCustomCommandCallback;
@@ -53,7 +55,8 @@ enum EVENT_TYPE {
   TYPE_ROOM_EVENT,
   TYPE_PUBLISH_EVENT,
   TYPE_PLAY_EVENT,
-  TYPE_MEDIA_SIDE_INFO_EVENT
+  TYPE_MEDIA_SIDE_INFO_EVENT,
+  TYPE_SOUND_LEVEL_EVENT
 }
 
 /** ZegoLiveRoomPlugin */
@@ -71,7 +74,6 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
   private ZegoLiveRoom mZegoLiveRoom;
   private ZegoMediaSideInfo mZegoMediaSideInfo;
   private HashMap<String, ZegoViewRenderer> mRenders;
-  //private ZegoPlatformViewFactory mPlatformViewFactory;
   private boolean mIsEnablePlatformView;
 
   private ZegoLiveRoomPlugin(Registrar registrar) {
@@ -81,7 +83,6 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     this.mZegoLiveRoom = null;
     this.mZegoMediaSideInfo = null;
-    //this.mPlatformViewFactory = null;
     this.mIsEnablePlatformView = false;
 
     this.mRenders = new HashMap<>();
@@ -1197,6 +1198,77 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       mZegoMediaSideInfo.sendMediaSideInfo(inData, inData.capacity(), false, ZegoConstants.PublishChannelIndex.MAIN);
 
     }
+    /* Sound Level */
+    else if(call.method.equals("registerSoundLevelCallback")) {
+
+      ZegoSoundLevelMonitor.getInstance().setCallback(new IZegoSoundLevelCallback() {
+        @Override
+        public void onSoundLevelUpdate(ZegoSoundLevelInfo[] zegoSoundLevelInfos) {
+          if(mEventSink != null) {
+
+            ArrayList<HashMap<String, Object>> soundLevelList = new ArrayList<>();
+            for(ZegoSoundLevelInfo info : zegoSoundLevelInfos) {
+              HashMap<String, Object> objInfo = new HashMap<>();
+              objInfo.put("streamID", info.streamID);
+              objInfo.put("soundLevel", info.soundLevel);
+
+              soundLevelList.add(objInfo);
+            }
+
+            HashMap<String, Object> returnMap = new HashMap<>();
+            returnMap.put("type", EVENT_TYPE.TYPE_SOUND_LEVEL_EVENT.ordinal());
+
+            HashMap<String, Object> method = new HashMap<>();
+            method.put("name", "onSoundLevelUpdate");
+            method.put("soundLevels", soundLevelList);
+
+            returnMap.put("method", method);
+            mEventSink.success(returnMap);
+          }
+        }
+
+        @Override
+        public void onCaptureSoundLevelUpdate(ZegoSoundLevelInfo zegoSoundLevelInfo) {
+          if(mEventSink != null) {
+
+            HashMap<String, Object> returnMap = new HashMap<>();
+            returnMap.put("type", EVENT_TYPE.TYPE_SOUND_LEVEL_EVENT.ordinal());
+
+            HashMap<String, Object> method = new HashMap<>();
+            method.put("name", "onCaptureSoundLevelUpdate");
+            method.put("streamID", zegoSoundLevelInfo.streamID);
+            method.put("soundLevel", zegoSoundLevelInfo.soundLevel);
+
+            returnMap.put("method", method);
+            mEventSink.success(returnMap);
+          }
+        }
+      });
+
+      result.success(true);
+
+    } else if(call.method.equals("unregisterSoundLevelCallback")) {
+
+      ZegoSoundLevelMonitor.getInstance().setCallback(null);
+      result.success(true);
+
+    } else if(call.method.equals("setSoundLevelMonitorCycle")) {
+
+      int ms = numberToIntValue((Number) call.argument("ms"));
+      boolean success = ZegoSoundLevelMonitor.getInstance().setCycle(ms);
+      result.success(success);
+
+    } else if(call.method.equals("startSoundLevelMonitor")) {
+
+      boolean success = ZegoSoundLevelMonitor.getInstance().start();
+      result.success(success);
+
+    } else if(call.method.equals("stopSoundLevelMonitor")) {
+
+      boolean success = ZegoSoundLevelMonitor.getInstance().stop();
+      result.success(success);
+
+    }
     /* LiveRoom-AudioIO*/
     else if(call.method.equals("enableAECWhenHeadsetDetected")) {
 
@@ -1208,7 +1280,136 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       mZegoLiveRoom.enableAECWhenHeadsetDetected(enable);
 
-    } else{
+    }
+    /* Error Code */
+    else if(call.method.equals("isInitSDKError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isInitSDKError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isNotLoginError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isNotLoginError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isMediaServerNetWorkError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isMediaServerNetWorkError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isLogicServerNetWorkError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isLogicServerNetWrokError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isMixStreamNotExistError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isMixStreamNotExistError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isPlayStreamNotExistError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isPlayStreamNotExistError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isPublishBadNameError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isPublishBadNameError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isPublishForbidError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isPublishForbidError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isPublishStopError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isPublishStopError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isPublishDeniedError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isPublishDeniedError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isPlayForbidError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isPlayForbidError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isPlayDeniedError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isPlayDeniedError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isDNSResolveError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isDNSResolveError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isNetworkUnreachError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isNetworkUnreachError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isHttpProtocolError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isHttpProtocolError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isReqFrequencyLimitError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isReqFrequencyLimitError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isLiveRoomError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isLiveRoomError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isMultiLoginError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isMultiLoginError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isManualKickoutError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isManualKickoutError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("isRoomSessionError")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        boolean ret = ZegoError.isRoomSessionError(error);
+        result.success(ret);
+
+    } else if(call.method.equals("getErrorMsg")) {
+
+        int error = numberToIntValue((Number) call.argument("error"));
+        String msg = ZegoError.getErrorMsg(error);
+        result.success(msg);
+
+    }
+    else{
 
       result.notImplemented();
     }
@@ -1263,19 +1464,17 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     //调用其他API前必须调用该函数
     mZegoLiveRoom.setSDKContext(new ZegoLiveRoom.SDKContext() {
-      @NonNull
+
       @Override
       public Application getAppContext() {
         return (Application)mContext;
       }
 
-      @Nullable
       @Override
       public String getLogPath() {
         return null;
       }
 
-      @Nullable
       @Override
       public String getSoFullPath() {
         return null;

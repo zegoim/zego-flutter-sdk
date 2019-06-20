@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'zego_api_defines.dart';
 import 'zego_liveroom_event_channel.dart';
 import 'zego_liveroom.dart';
+import 'zego_api_error_code.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
@@ -322,16 +323,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///@param streamID 流 ID
   ///@discussion 观众调用 [startPlayingStream] 拉流成功后，通过该 API 通知
   ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onPlayStateUpdate 对象参数之后才能收到该回调
-  ///@note 拉流状态码及其含义如下:
-  ///stateCode = 0，直播开始。
-  ///stateCode = 3，直播遇到严重问题（如出现，请联系 ZEGO 技术支持）。
-  ///stateCode = 4，创建直播流失败。
-  ///stateCode = 5，获取流信息失败。
-  ///stateCode = 6，无流信息。
-  ///stateCode = 7，媒体服务器连接失败（请确认推流端是否正常推流、正式环境和测试环境是否设置同一个、网络是否正常）。
-  ///stateCode = 8，DNS 解析失败。
-  ///stateCode = 9，未登录就直接拉流。
-  ///stateCode = 10，逻辑服务器网络错误(网络断开时间过长时容易出现此错误)。
+  ///@note 拉流状态码，详见[ZegoErrorCode]
   static void Function(int stateCode, String streamID) _onPlayStateUpdate;
 
   ///观看质量更新

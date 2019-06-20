@@ -39,7 +39,7 @@ typedef void(^ZegoBigRoomMessageCompletion)(int errorCode, NSString *roomId, NSS
  @param completionBlock 消息发送结果，回调 server 下发的 messageId
  @return true 成功，false 失败
  @discussion 实现点赞主播、评论、送礼物等 IM 功能时，需要调用本 API
- @deprecated 请使用 sendRoomMessage:type:category:completion:
+ @warning Deprecated 请使用 [ZegoLiveRoomApi sendRoomMessage:type:category:completion:]
  */
 - (bool)sendRoomMessage:(NSString *)content type:(ZegoMessageType)type category:(ZegoMessageCategory)category priority:(ZegoMessagePriority)priority completion:(ZegoRoomMessageCompletion)completionBlock;
 

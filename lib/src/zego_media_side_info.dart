@@ -2,8 +2,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'zego_liveroom_event_channel.dart';
 
-const String CALLBACK_ID = 'zegoliveroom_callback';
-
 class ZegoMediaSideInfo {
   /* Method Channel */
   static const MethodChannel _channel =

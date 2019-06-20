@@ -131,6 +131,7 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
  @param audienceCreateRoom 观众是否可以创建房间。true 可以，false 不可以。默认 true
  @param userStateUpdate 用户状态（用户进入、退出房间）是否广播。true 广播，false 不广播。默认 false
  @discussion 在 userStateUpdate 为 true 的情况下，用户进入、退出房间会触发 [ZegoLiveRoomApi (IM) -onUserUpdate:updateType:] 回调
+ @discussion 在登录房间前调用有效，退出房间后失效
  */
 - (void)setRoomConfig:(bool)audienceCreateRoom userStateUpdate:(bool)userStateUpdate;
 
@@ -139,8 +140,17 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
  
  @param thirdPartyToken 第三方传入的token
  @discussion 使用此方法验证登录时用户的合法性，登录房间前调用，token的生成规则请联系即构。若不需要验证用户合法性，不需要调用此函数。
+@discussion 在登录房间前调用有效，退出房间后失效
  */
 - (void)setCustomToken:(NSString *)thirdPartyToken;
+
+/**
+ 设置房间最大在线人数
+ 
+ @param userCount 最大人数
+ @discussion 在登录房间前调用有效，退出房间后失效
+ */
+- (void)setRoomMaxUserCount:(unsigned int)userCount;
 
 /**
  登录房间
@@ -423,6 +433,7 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
  @discussion "enforce_audio_loopback_in_sync", bool value, default: false. enforce audio loopback in synchronous method
  @discussion "audio_session_mix_with_others", bool value, default: true. set AVAudioSessionCategoryOptionMixWithOthers
  @discussion "support_general_mode_below_ios9", bool value, default: false. support general mode below ios 9.0
+ @discussion "play_nodata_abort", bool value, default: false，设置拉流时没拉到数据是否终止拉流，设置为false表示不终止，设置为true表示终止，拉流之前调用有效
  */
 + (void)setConfig:(NSString *)config;
 
@@ -436,7 +447,7 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
 /**
  用户被踢出房间
  
- @param reason 被踢出原因，16777219 表示该账户多点登录被踢出，16777220 表示该账户是被手动踢出，16777221 表示房间会话错误被踢出。
+ @param reason 被踢出原因
  @param roomID 房间 ID
  @discussion 可在该回调中处理用户被踢出房间后的下一步处理（例如报错、重新登录提示等）
  */

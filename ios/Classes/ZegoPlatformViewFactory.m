@@ -54,12 +54,9 @@ static ZegoPlatformViewFactory *g_factory = nil;
 - (BOOL)addView:(ZegoPlatformView *)view viewID:(NSNumber *)viewID {
     if(!viewID || !view)
         return NO;
-    
-    if(view) {
-        [self.views setObject:view forKey:viewID];
-    } else {
-        [self.views removeObjectForKey:viewID];
-    }
+
+    [self.views setObject:view forKey:viewID];
+
     return YES;
 }
 

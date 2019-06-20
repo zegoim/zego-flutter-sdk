@@ -224,7 +224,7 @@
 /**
  设置外部渲染
  
- @warning Deprecated，请使用 ZegoExternalVideoRender
+ @warning Deprecated，请使用 zego-api-external-video-render-oc.h 中的 [ZegoExternalVideoRender enableExternalVideoRender:type:]
  
  @param bEnable 是否外部渲染，true 是，false 不是。默认 false
  @discussion 必须在初始化 SDK 前调用。启用外部渲染后，需要设置外部渲染回调代理对象。SDK 提供给用户外部渲染的源数据格式为 BGRA32
@@ -234,7 +234,7 @@
 /**
  设置外部渲染回调对象
  
- @warning Deprecated，请使用 ZegoExternalVideoRender
+ @warning Deprecated，请使用 zego-api-external-video-render-oc.h 中的 [ZegoExternalVideoRender setExternalVideoRenderDelegate:]
  
  @param renderDelegate 遵循 ZegoLiveApiRenderDelegate 协议的代理对象
  @discussion 使用外部渲染功能，需要设置代理对象。未设置代理对象，或对象设置错误，可能导致无法正常收到相关回调
@@ -247,6 +247,7 @@
  @param enable 开启音频录制。true 开启，false 关闭。默认 false
  @return true 成功，false 失败
  @discussion 初始化 SDK 后调用。开启音频录制后，调用方需要设置音频录制回调代理对象，并通过 [ZegoLiveRoomApi (Player) -onAudioRecord:sampleRate:numOfChannels:bitDepth:type:] 获取 SDK 录制的数据。使用此接口开启音频录制，相当于调用 enableSelectedAudioRecord:(ZegoAPIAudioRecordConfig)config，且 config 中的参数默认值为：ZEGO_AUDIO_RECORD_MIX、44100、单声道。
+ @discussion 在启动推流或者启动本地录制（MediaRecorder）的时候，才能开启音频录制
  */
 - (bool)enableAudioRecord:(BOOL)enable;
 
@@ -254,6 +255,8 @@
  音频录制开关
  
  @warning Deprecated，请使用 enableSelectedAudioRecord:
+ @discussion 在启动推流或者启动本地录制（MediaRecorder）的时候，才能开启音频录制
+ 
  */
 - (bool)enableSelectedAudioRecord:(unsigned int)mask sampleRate:(int)sampleRate;
 
@@ -263,6 +266,7 @@
  @param config 配置信息, 参考 ZegoAPIAudioRecordConfig
  @return true 成功，false 失败
  @discussion 初始化 SDK 后调用。开启音频录制后，调用方需要设置音频录制回调代理对象，并通过 [ZegoLiveRoomApi (Player) -onAudioRecord:sampleRate:numOfChannels:bitDepth:type:] 获取 SDK 录制的数据
+ @discussion 在启动推流或者启动本地录制（MediaRecorder）的时候，才能开启音频录制
  */
 - (bool)enableSelectedAudioRecord:(ZegoAPIAudioRecordConfig)config;
 
@@ -308,16 +312,7 @@
  @param stateCode 播放状态码，0 表示拉流成功
  @param streamID 流 ID
  @discussion 观众调用 [ZegoLiveRoomApi (Player) -startPlayingStream:inView:] 或 [ZegoLiveRoomApi (Player) -startPlayingStream:inView:params:] 拉流成功后，通过该 API 通知
- @note 拉流状态码及其含义如下:
- stateCode = 0，直播开始。
- stateCode = 3，直播遇到严重问题（如出现，请联系 ZEGO 技术支持）。
- stateCode = 4，创建直播流失败。
- stateCode = 5，获取流信息失败。
- stateCode = 6，无流信息。
- stateCode = 7，媒体服务器连接失败（请确认推流端是否正常推流、正式环境和测试环境是否设置同一个、网络是否正常）。
- stateCode = 8，DNS 解析失败。
- stateCode = 9，未登录就直接拉流。
- stateCode = 10，逻辑服务器网络错误(网络断开时间过长时容易出现此错误)。
+ @note 拉流状态码，详见 enum ZegoErrorCode
  */
 - (void)onPlayStateUpdate:(int)stateCode streamID:(NSString *)streamID;
 
@@ -375,7 +370,11 @@
 
 @end
 
-
+/**
+ * 视频外部渲染代理
+ * 
+ * @warning Deprecated，请使用 zego-api-external-video-render-oc.h 中的 ZegoExternalVideoRenderDelegate
+ */
 @protocol ZegoLiveApiRenderDelegate <NSObject>
 
 /**

@@ -100,7 +100,8 @@
 @property (nonatomic, strong) ZegoMixStreamWatermark *watermark;
 /**< 混流输入为一条流时，混流输出的属性与单流一致(分辨率，编码格式等), 若需要开启此功能，请于即构技术支持联系 */
 @property (nonatomic, assign) BOOL singleStreamPassThrough;
-
+/**< 高级配置选项，格式 "config1=xxx;config2=xxx"， 请与即构技术支持联系了解可支持字段 */
+@property (nonatomic, copy) NSString *advancedConfig;
 @end
 
 @interface ZegoMixStreamOutputResult : NSObject

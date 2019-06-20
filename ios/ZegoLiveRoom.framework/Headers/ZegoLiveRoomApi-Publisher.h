@@ -473,6 +473,7 @@
  
  @param factory 工厂对象，遵循 ZegoVideoCaptureFactory 协议的对象
  @discussion 必须在 InitSDK 前调用，并且不能置空
+ @warning Deprecated，请使用 zego-api-external-video-capture-oc.h 中的 [ZegoExternalVideoCapture setVideoCaptureFactory:channelIndex:]
  */
 + (void)setVideoCaptureFactory:(id<ZegoVideoCaptureFactory>)factory;
 
@@ -481,6 +482,7 @@
  
  @param factory 工厂对象，遵循 ZegoVideoFilterFactory 协议的对象
  @discussion 必须在 Init 前调用，并且不能置空
+ @warning Deprecated，请使用 zego-api-external-video-filter-oc.h 中的 [ZegoExternalVideoFilter setVideoFilterFactory:channelIndex:]
  */
 + (void)setVideoFilterFactory:(id<ZegoVideoFilterFactory>)factory;
 
@@ -600,17 +602,7 @@
  @param streamID 流 ID
  @param info 推流信息
  @discussion 主播调用 [ZegoLiveRoomApi (Publisher) -startPublishing:title:flag:] 推流成功后，通过该 API 通知主播方
- @note 推流状态码及其含义如下：
- stateCode = 0，直播开始。
- stateCode = 3，直播遇到严重问题（如出现，请联系 ZEGO 技术支持）。
- stateCode = 4，创建直播流失败。
- stateCode = 5，获取流信息失败。
- stateCode = 6，无流信息。
- stateCode = 7，媒体服务器连接失败（请确认推流端是否正常推流、正式环境和测试环境是否设置同一个、网络是否正常）。
- stateCode = 8，DNS 解析失败。
- stateCode = 9，未登录就直接拉流。
- stateCode = 10，逻辑服务器网络错误(网络断开时间过长时容易出现此错误)。
- stateCode = 105，发布流名被占用。
+ @note 推流状态码，详见 enum ZegoErrorCode
  */
 - (void)onPublishStateUpdate:(int)stateCode streamID:(NSString *)streamID streamInfo:(NSDictionary *)info;
 
@@ -666,15 +658,7 @@
  @param mixStreamID 混流ID
  @param info 混流播放信息
  @discussion 调用 [ZegoLiveRoomApi (Publisher) -setMixStreamConfig:] 设置混流配置，及 [ZegoLiveRoomApi (Publisher) -updateMixInputStreams:] 更新混流配置后，通过此 API 通知调用方
- @note 常见错误码及其含义如下：
- errorCode = 150，混流的输入流不存在。
- errorCode = 151，混流失败。
- errorCode = 152，停止混流失败。
- errorCode = 153，输入参数错误。
- errorCode = 154，输出参数错误。
- errorCode = 155，输入分辨率格式错误。
- errorCode = 156，输出分辨率格式错误。
- errorCode = 157，混流没开。
+ @note 常见错误码及其含义请参考ZegoError中kMixStream开头的错误码定义
  */
 - (void)onMixStreamConfigUpdate:(int)errorCode mixStream:(NSString *)mixStreamID streamInfo:(NSDictionary *)info;
 
