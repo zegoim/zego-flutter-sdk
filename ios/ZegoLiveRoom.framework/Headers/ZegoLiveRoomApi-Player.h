@@ -349,6 +349,43 @@
 - (void)onVideoSizeChangedTo:(CGSize)size ofStream:(NSString *)streamID;
 
 /**
+ 远端摄像头状态通知
+ 
+ @param streamID 流的唯一标识
+ @param status 参考 zego-api-defines-oc.h 中 ZegoAPIDeviceStatus 的定义
+ */
+- (void)onRemoteCameraStatusUpdate:(int)status ofStream:(NSString *)streamID;
+
+/**
+ 远端麦克风状态通知
+ 
+ @param streamID 流的唯一标识
+ @param status 参考 zego-api-defines-oc.h 中 ZegoAPIDeviceStatus 的定义
+ */
+- (void)onRemoteMicStatusUpdate:(int)status ofStream:(NSString *)streamID;
+
+/**
+ 接收到远端音频的首帧通知
+ 
+ @param streamID 流的唯一标识
+ */
+- (void)onRecvRemoteAudioFirstFrame:(NSString *)streamID;
+
+/**
+ 接收到远端视频的首帧通知
+ 
+ @param streamID 流的唯一标识
+ */
+- (void)onRecvRemoteVideoFirstFrame:(NSString *)streamID;
+
+/**
+ 远端视频渲染首帧通知
+ 
+ @param streamID 流的唯一标识
+ */
+- (void)onRenderRemoteVideoFirstFrame:(NSString *)streamID;
+
+/**
  观看质量更新
  
  @param quality 0 ~ 3 分别对应优、良、中、差

@@ -136,6 +136,8 @@ typedef enum
 
 @end
 
+#ifndef ZegoUser_h
+#define ZegoUser_h
 
 /** 用户 */
 @interface ZegoUser : NSObject
@@ -146,6 +148,8 @@ typedef enum
 @property (nonatomic, copy) NSString *userName;
 
 @end
+
+#endif
 
 /** 会话信息 */
 @interface ZegoConversationInfo : NSObject

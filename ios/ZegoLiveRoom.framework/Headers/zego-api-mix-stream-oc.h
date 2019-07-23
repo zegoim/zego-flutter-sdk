@@ -48,6 +48,16 @@ ZEGO_EXTERN NSString *const kZegoMixStreamReqSeqKey;
  */
 - (void)onMixStreamExConfigUpdate:(int)errorCode mixStream:(NSString *)mixStreamID streamInfo:(ZegoMixStreamResultEx *)info;
 
+
+/**
+ 混流转推CDN状态回调
+
+ @param statesInfo 转推CDN状态信息
+ @param streamID 混流任务ID
+ @discussion 混流直推即构服务器时，ZegoAPIStreamRelayCDNInfo 中的 rtmpUrl 字段以 avertp:// 开头
+ */
+- (void)onMixStreamRelayCDNStateUpdate:(NSArray<ZegoAPIStreamRelayCDNInfo *> *)statesInfo mixStreamID:(NSString*)streamID;
+
 @end
 
 @protocol ZegoLiveSoundLevelInMixedStreamDelegate <NSObject>

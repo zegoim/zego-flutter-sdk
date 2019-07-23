@@ -1,4 +1,11 @@
 
+## 1.0.5
+1. add peer to peer delay/package lost rate.
+2. add remote user's device state notification(on/off)
+3. add remote user's first frame notification
+4. update native sdk
+5. promote stability
+
 ## 1.0.4
 
 1. add sound-level module

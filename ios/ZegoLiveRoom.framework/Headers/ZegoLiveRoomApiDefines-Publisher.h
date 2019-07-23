@@ -13,6 +13,9 @@ ZEGO_EXTERN NSString *const kZegoVideoDataMainPublishingStream;
 /** 外部渲染推流第二路流 */
 ZEGO_EXTERN NSString *const kZegoVideoDataAuxPublishingStream;
 
+#ifndef ZegoAVConfig_h
+#define ZegoAVConfig_h
+
 /** 预设直播配置 */
 typedef enum {
     /** 超低质量 */
@@ -83,6 +86,8 @@ typedef enum {
 @property (assign) int bitrate;
 
 @end
+
+#endif
 
 /** 视频采集缩放时机 */
 typedef enum : NSUInteger {

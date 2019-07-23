@@ -105,6 +105,12 @@ class ZegoLiveRoomPlayerPlugin {
     return null;
   }
 
+  ///更新播放视图
+  ///
+  ///@param viewID，调用 [createPlayPlatformView] 之后返回的 Platform View 的唯一标识
+  ///@param streamID，流 ID
+  ///@discussion 调用 [startPlayingStream] 播放流成功以后，如果要切换流播放 View 或者停止显示流画面，调用该 API 变更
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Future<void> updatePlayView(int viewID, String streamID) async {
     return await _channel.invokeMethod('updatePlayView', {
       'viewID': viewID,
@@ -130,7 +136,7 @@ class ZegoLiveRoomPlayerPlugin {
 
   ///销毁拉流 Platform View
   ///
-  ///@param viewID，Platform View 的唯一标识
+  ///@param viewID，调用 [createPlayPlatformView] 之后返回的 Platform View 的唯一标识
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Future<bool> removePlayPlatformView(int viewID) async {
     final bool success = await _channel.invokeMethod('removePlayPlatformView', {
@@ -143,7 +149,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///播放直播流
   ///
   ///@param streamID 流 ID，该参数仅能传入流 ID，不可在流 ID 后添加播放参数
-  ///@param viewID Platform View 的唯一标识，仅在使用 Platform View 渲染时才需要传入该参数
+  ///@param viewID，调用 [createPlayPlatformView] 之后返回的 Platform View 的唯一标识，仅在使用 Platform View 渲染时才需要传入该参数
   ///@param info 多媒体流附加信息，参考 [ZegoStreamExtraPlayInfo] 定义
   ///@return 成功，false 失败
   ///@discussion 播放直播流调用此 API。播放成功后，等待 onPlayStateUpdate 回调
@@ -278,13 +284,23 @@ class ZegoLiveRoomPlayerPlugin {
   ///@param onVideoSizeChangedTo 设置接收 视频宽高变化通知 回调，参考 [_onVideoSizeChangedTo] 定义
   ///@param onInviteJoinLiveRequest 设置接收 主播端的邀请连麦请求 回调，参考 [_onInviteJoinLiveRequest] 定义
   ///@param onRecvEndJoinLiveCommad 设置接收 结束连麦信令 回调，参考 [_onRecvEndJoinLiveCommand] 定义
+  ///@param onRemoteCameraStatusUpdate 设置接收 远端摄像头状态 回调，参考 [_onRemoteCameraStatusUpdate] 定义
+  ///@param onRemoteMicStatusUpdate 设置接收 远端麦克风状态 回调，参考 [_onRemoteMicStatusUpdate] 定义
+  ///@param onRecvRemoteAudioFirstFrame 设置接收 远端音频的首帧 回调，参考 [_onRecvRemoteAudioFirstFrame] 定义
+  ///@param onRecvRemoteVideoFirstFrame 设置接收 远端视频的首帧 回调，参考 [_onRecvRemoteVideoFirstFrame] 定义
+  ///@param onRenderRemoteVideoFirstFrame 设置接收 远端视频渲染首帧 回调，参考 [_onRenderRemoteVideoFirstFrame] 定义
   ///@discussion 开发者只有调用本 API 设置回调对象才能收到相关回调
   static void registerPlayerCallback({
     Function(int stateCode, String streamID) onPlayStateUpdate,
     Function(String streamID, ZegoPlayStreamQuality quality) onPlayQualityUpdate,
     Function(String streamID, int width, int height) onVideoSizeChangedTo,
     Function(int seq, String fromUserID, String fromUserName, String roomID) onInviteJoinLiveRequest,
-    Function(String fromUserID, String fromUserName, String roomID) onRecvEndJoinLiveCommand
+    Function(String fromUserID, String fromUserName, String roomID) onRecvEndJoinLiveCommand,
+    Function(int status, String streamID) onRemoteCameraStatusUpdate,
+    Function(int status, String streamID) onRemoteMicStatusUpdate,
+    Function(String streamID) onRecvRemoteAudioFirstFrame,
+    Function(String streamID) onRecvRemoteVideoFirstFrame,
+    Function(String streamID) onRenderRemoteVideoFirstFrame
   }) {
 
     _onPlayStateUpdate = onPlayStateUpdate;
@@ -292,6 +308,11 @@ class ZegoLiveRoomPlayerPlugin {
     _onVideoSizeChangedTo = onVideoSizeChangedTo;
     _onInviteJoinLiveRequest = onInviteJoinLiveRequest;
     _onRecvEndJoinLiveCommand = onRecvEndJoinLiveCommand;
+    _onRemoteCameraStatusUpdate = onRemoteCameraStatusUpdate;
+    _onRemoteMicStatusUpdate = onRemoteMicStatusUpdate;
+    _onRecvRemoteAudioFirstFrame = onRecvRemoteAudioFirstFrame;
+    _onRecvRemoteVideoFirstFrame = onRecvRemoteVideoFirstFrame;
+    _onRenderRemoteVideoFirstFrame = onRenderRemoteVideoFirstFrame;
 
     if(_streamSubscription == null) {
       _streamSubscription = ZegoLiveRoomEventChannel.listenPlayEvent().listen(_eventListener);
@@ -309,6 +330,11 @@ class ZegoLiveRoomPlayerPlugin {
     _onVideoSizeChangedTo = null;
     _onInviteJoinLiveRequest = null;
     _onRecvEndJoinLiveCommand = null;
+    _onRemoteCameraStatusUpdate = null;
+    _onRemoteMicStatusUpdate = null;
+    _onRecvRemoteAudioFirstFrame = null;
+    _onRecvRemoteVideoFirstFrame = null;
+    _onRenderRemoteVideoFirstFrame = null;
 
     _streamSubscription?.cancel();
     _streamSubscription = null;
@@ -363,6 +389,42 @@ class ZegoLiveRoomPlayerPlugin {
   ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRecvEndJoinLiveCommand 对象参数之后才能收到该回调
   static void Function(String fromUserID, String fromUserName, String roomID) _onRecvEndJoinLiveCommand;
 
+  ///远端摄像头状态通知
+  ///
+  ///@param streamID 流的唯一标识
+  ///@param status 参考 [ZegoDeviceStatus]
+  ///@discussion 当房间内其他正在推流的用户关闭或开启摄像头时，当前用户可以收到此通知。
+  ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRemoteCameraStatusUpdate 对象参数之后才能收到该回调
+  static void Function(int status, String streamID) _onRemoteCameraStatusUpdate;
+
+  ///远端麦克风状态通知
+  ///
+  ///@param streamID 流的唯一标识
+  ///@param status 参考
+  ///@discussion 当房间内其他正在推流的用户关闭或开启麦克风时，当前用户可以收到此通知。
+  ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRemoteMicStatusUpdate 对象参数之后才能收到该回调
+  static void Function(int status, String streamID) _onRemoteMicStatusUpdate;
+
+  ///接收到远端音频的首帧通知
+  ///
+  ///@param streamID 流的唯一标识
+  ///@discussion 当前用户调用 [startPlayingStream] 接收到其他用户的音频数据首帧时，会收到此通知。
+  ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRecvRemoteAudioFirstFrame 对象参数之后才能收到该回调
+  static void Function(String streamID) _onRecvRemoteAudioFirstFrame;
+
+  ///接收到远端视频的首帧通知
+  ///
+  ///@param streamID 流的唯一标识
+  ///@discussion 当前用户调用 [startPlayingStream] 接收到其他用户的视频数据首帧时，会收到此通知。
+  ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRecvRemoteVideoFirstFrame 对象参数之后才能收到该回调
+  static void Function(String streamID) _onRecvRemoteVideoFirstFrame;
+
+  ///远端视频渲染首帧通知
+  ///
+  ///@param streamID 流的唯一标识
+  ///@discussion 当前房间内其他用户渲染视频首帧时，当前用户可以收到此通知。
+  ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRenderRemoteVideoFirstFrame 对象参数之后才能收到该回调
+  static void Function(String streamID) _onRenderRemoteVideoFirstFrame;
 
 
 
@@ -403,7 +465,11 @@ class ZegoLiveRoomPlayerPlugin {
           double videoBreakRate = args['videoBreakRate'];
 
           int rtt = args['rtt'];
+          int peerToPeerDelay = args['p2pRtt'];
+
           int pktLostRate = args['pktLostRate'];
+          int peerToPeerPktLostRate = args['p2pPktLostRate'];
+
           int delay = args['delay'];
 
           bool isHardwareVdec = args['isHardwareVdec'];
@@ -427,7 +493,9 @@ class ZegoLiveRoomPlayerPlugin {
               audioBreakRate,
               videoBreakRate,
               rtt,
+              peerToPeerDelay,
               pktLostRate * 1.0 / 255.0,
+              peerToPeerPktLostRate * 1.0 / 255.0,
               quality,
               delay,
               isHardwareVdec,
@@ -470,6 +538,48 @@ class ZegoLiveRoomPlayerPlugin {
           String roomID = args['roomID'];
 
           _onRecvEndJoinLiveCommand(fromUserID, fromUserName, roomID);
+        }
+        break;
+      case 'onRemoteCameraStatusUpdate':
+        if(_onRemoteCameraStatusUpdate != null) {
+
+          int status = args['status'];
+          String streamID = args['streamID'];
+
+          _onRemoteCameraStatusUpdate(status, streamID);
+        }
+        break;
+      case 'onRemoteMicStatusUpdate':
+        if(_onRemoteMicStatusUpdate != null) {
+
+          int status = args['status'];
+          String streamID = args['streamID'];
+
+          _onRemoteMicStatusUpdate(status, streamID);
+        }
+        break;
+      case 'onRecvRemoteAudioFirstFrame':
+        if(_onRecvRemoteAudioFirstFrame != null) {
+
+          String streamID = args['streamID'];
+
+          _onRecvRemoteAudioFirstFrame(streamID);
+        }
+        break;
+      case 'onRecvRemoteVideoFirstFrame':
+        if(_onRecvRemoteVideoFirstFrame != null) {
+
+          String streamID = args['streamID'];
+
+          _onRecvRemoteVideoFirstFrame(streamID);
+        }
+        break;
+      case 'onRenderRemoteVideoFirstFrame':
+        if(_onRenderRemoteVideoFirstFrame != null) {
+
+          String streamID = args['streamID'];
+
+          _onRenderRemoteVideoFirstFrame(streamID);
         }
         break;
       default:

@@ -78,10 +78,12 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
         [ZegoLiveRoomApi setVerbose: enable];
+        result(nil);
     
     } else if([@"uploadLog" isEqualToString:call.method]) {
         
         [ZegoLiveRoomApi uploadLog];
+        result(nil);
     
     } else if([@"getLogDir" isEqualToString:call.method]) {
         
@@ -133,6 +135,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     
         BOOL enable = [self numberToBoolValue:args[@"enable"]];
         _isEnablePlatformView = enable;
+        result(nil);
         
     } else if([@"setUser" isEqualToString:call.method]) {
         
@@ -146,6 +149,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
         [ZegoLiveRoomApi setUseTestEnv:enable];
+        result(nil);
         
     } else if([@"loginRoom" isEqualToString:call.method]) {
         
@@ -193,6 +197,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         NSNumber *type = args[@"type"];
         [self.zegoApi pauseModule:[type intValue]];
+        result(nil);
         
     } else if([@"resumeModule" isEqualToString:call.method]) {
         
@@ -203,7 +208,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         NSNumber *type = args[@"type"];
         [self.zegoApi resumeModule:(int)[type intValue]];
-        
+        result(nil);
 
     } else if([@"enableMicDevice" isEqualToString:call.method]) {
         
@@ -251,6 +256,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         bool audienceCreate = [self numberToBoolValue:args[@"audienceCreateRoom"]];
         bool userStateUpdate = [self numberToBoolValue:args[@"userStateUpdate"]];
         [self.zegoApi setRoomConfig:audienceCreate userStateUpdate:userStateUpdate];
+        result(nil);
        
     }
     /* LiveRoom-Publisher */
@@ -263,11 +269,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         int mode = [self numberToIntValue:args[@"mode"]];
         [self.zegoApi setLatencyMode:(ZegoAPILatencyMode)mode];
+        result(nil);
         
     } else if([@"setAudioDeviceMode" isEqualToString:call.method]) {
         
         int mode = [self numberToIntValue:args[@"mode"]];
         [ZegoLiveRoomApi setAudioDeviceMode:(ZegoAPIAudioDeviceMode)mode];
+        result(nil);
 
     } else if([@"startPreview" isEqualToString:call.method]) {
         
@@ -479,6 +487,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         bool bEnable = [self numberToBoolValue:args[@"enable"]];
         NSUInteger properties = [self numberToULongValue:args[@"properties"]];
         [self.zegoApi enableTrafficControl:bEnable properties:properties];
+        result(nil);
 
     } else if([@"setMinVideoBitrateForTrafficControl" isEqualToString:call.method]) {
         
@@ -490,6 +499,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         int bitrate = [self numberToIntValue:args[@"bitrate"]];
         int mode = [self numberToIntValue:args[@"mode"]];
         [self.zegoApi setMinVideoBitrateForTrafficControl:bitrate mode:(ZegoAPITrafficControlMinVideoBitrateMode)mode];
+        result(nil);
 
     } else if([@"createPreviewRenderer" isEqualToString:call.method]) {
         
@@ -559,6 +569,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         int height = [self numberToIntValue:args[@"height"]];
         
         [renderer updateRenderSize:CGSizeMake(width, height)];
+        result(nil);
 
     } else if([@"destroyPreviewRenderer" isEqualToString:call.method]) {
         
@@ -749,6 +760,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         int mode = [self numberToIntValue:args[@"mode"]];
         [self.zegoApi setAECMode:(ZegoAPIAECMode)mode];
+        result(nil);
         
     } else if([@"enableAGC" isEqualToString:call.method]) {
         
@@ -770,6 +782,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
         [self.zegoApi enableVAD:enable];
+        result(nil);
 
     } else if([@"enableANS" isEqualToString:call.method]) {
         
@@ -791,6 +804,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
         [self.zegoApi enableDTX:enable];
+        result(nil);
 
     }
     /* LiveRoom-Player */
@@ -959,6 +973,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         }
                 
         [renderer updateRenderSize:CGSizeMake(width, height)];
+        result(nil);
         
     } else if([@"destroyPlayViewRenderer" isEqualToString:call.method]) {
         
@@ -1006,6 +1021,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         ZegoPlatformView *view = [[ZegoPlatformViewFactory shareInstance] getPlatformView:@(viewID)];
         [self.zegoApi updatePlayView:[view getUIView] ofStream:streamID];
+        result(nil);
         
     } else if([@"setPlatformViewPlayViewMode" isEqualToString:call.method]) {
         
@@ -1104,6 +1120,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         bool onlyAudioPublish = [self numberToBoolValue:args[@"onlyAudioPublish"]];
         
         [self.mediaSideInfoApi setMediaSideFlags:start onlyAudioPublish:onlyAudioPublish channelIndex: ZEGOAPI_CHN_MAIN];
+        result(nil);
         
     } else if([@"sendMediaSideInfo" isEqualToString:call.method]) {
         
@@ -1116,6 +1133,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         NSData *data = [strData dataUsingEncoding:NSUTF8StringEncoding];
         [self.mediaSideInfoApi sendMediaSideInfo:data packet:false channelIndex:ZEGOAPI_CHN_MAIN];
+        result(nil);
 
     }
     /* LiveRoom-AudioIO*/
@@ -1128,7 +1146,8 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         
         bool enable = [self numberToBoolValue:args[@"enable"]];
         [self.zegoApi enableAECWhenHeadsetDetected:enable];
- 
+        result(nil);
+        
     }
     /* SoundLevel */
     else if([@"registerSoundLevelCallback" isEqualToString:call.method]) {
@@ -1334,6 +1353,7 @@ NSData* convertStringToSign(NSString* strSign) {
     strSign = [strSign stringByReplacingOccurrencesOfString:@"0x" withString:@""];
     NSArray* szStr = [strSign componentsSeparatedByString:@","];
     int nLen = (int)[szStr count];
+    nLen = nLen > 32 ? 32 : nLen;
     Byte szSign[32];
     for(int i = 0; i < nLen; i++)
     {
@@ -1637,6 +1657,16 @@ Byte toByte(NSString* c) {
     }
 }
 
+- (void)onCaptureAudioFirstFrame {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onCaptureAudioFirstFrame"}
+               });
+    }
+}
+
 - (void)onCaptureVideoFirstFrame {
     
     if(!self.isEnablePlatformView) {
@@ -1726,7 +1756,9 @@ Byte toByte(NSString* c) {
                             @"audioBreakRate" : @(quality.audioBreakRate),
                             @"videoBreakRate":@(quality.videoBreakRate),
                             @"rtt" : @(quality.rtt),
+                            @"p2pRtt": @(quality.peerToPeerDelay),
                             @"pktLostRate" : @(quality.pktLostRate),
+                            @"p2pPktLostRate": @(quality.peerToPeerPktLostRate),
                             @"quality" : @(quality.quality),
                             @"delay" : @(quality.delay),
                             
@@ -1783,6 +1815,84 @@ Byte toByte(NSString* c) {
                             @"fromUserID": fromUserId,
                             @"fromUserName": fromUserName,
                             @"roomID": roomID
+                            }
+               });
+    }
+}
+
+/**
+ 远端摄像头状态通知
+ */
+- (void)onRemoteCameraStatusUpdate:(int)status ofStream:(NSString *)streamID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRemoteCameraStatusUpdate",
+                            @"status": @(status),
+                            @"streamID": streamID
+                            }
+               });
+    }
+}
+
+/**
+ 远端麦克风状态通知
+ */
+- (void)onRemoteMicStatusUpdate:(int)status ofStream:(NSString *)streamID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRemoteMicStatusUpdate",
+                            @"status": @(status),
+                            @"streamID": streamID
+                            }
+               });
+    }
+}
+
+/**
+ 接收到远端音频的首帧通知
+ */
+
+- (void)onRecvRemoteAudioFirstFrame:(NSString *)streamID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRecvRemoteAudioFirstFrame",
+                            @"streamID": streamID,
+                            }
+               });
+    }
+}
+
+/**
+ 接收到远端视频的首帧通知
+ */
+- (void)onRecvRemoteVideoFirstFrame:(NSString *)streamID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRecvRemoteVideoFirstFrame",
+                            @"streamID": streamID,
+                            }
+               });
+    }
+}
+
+/**
+ 远端视频渲染首帧通知
+ */
+- (void)onRenderRemoteVideoFirstFrame:(NSString *)streamID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRenderRemoteVideoFirstFrame",
+                            @"streamID": streamID,
                             }
                });
     }

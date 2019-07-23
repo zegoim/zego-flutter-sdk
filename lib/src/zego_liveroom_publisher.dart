@@ -98,8 +98,8 @@ class ZegoLiveRoomPublisherPlugin {
 
   ///设置预览 Platform View 视频视图
   ///
-  ///
-  ///
+  ///@param viewID，调用 [createPreviewPlatformView] 之后返回的 Platform View 的唯一标识
+  ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Future<bool> setPreviewView(int viewID) async {
     final bool success = await _channel.invokeMethod('setPreviewView', {
       'viewID': viewID
@@ -125,7 +125,7 @@ class ZegoLiveRoomPublisherPlugin {
 
   ///销毁预览 Platform View
   ///
-  ///@param viewID，Platform View 的唯一标识
+  ///@param viewID，调用 [createPreviewPlatformView] 之后返回的 Platform View 的唯一标识
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Future<bool> removePreviewPlatformView(int viewID) async {
     final bool success = await _channel.invokeMethod('removePreviewPlatformView', {
@@ -203,7 +203,6 @@ class ZegoLiveRoomPublisherPlugin {
     return await _channel.invokeMethod('setLatencyMode', {
       'mode': mode
     });
-
   }
 
   ///开启麦克风
@@ -403,7 +402,6 @@ class ZegoLiveRoomPublisherPlugin {
       'enable' : bEnable,
       'properties': properties
     });
-
   }
 
   ///设置TrafficControl视频码率最小值
@@ -441,7 +439,6 @@ class ZegoLiveRoomPublisherPlugin {
     return await _channel.invokeMethod('setAudioDeviceMode', {
       'mode': mode
     });
-
   }
 
   ///设置音频码率
@@ -547,6 +544,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param onPublishStateUpdate 设置接收 推流状态更新 回调，参考 [_onPublishStateUpdate] 定义
   ///@param onPublishQualityUpdate 设置接收 发布质量更新 回调，参考 [_onPublishQualityUpdate] 定义
   ///@param onCaptureVideoSizeChangedTo 设置接收 采集视频的宽度和高度变化 回调，参考 [_onCaptureVideoSizeChangedTo] 定义
+  ///@param onCaptureAudioFirstFrame 设置接收 采集音频的首帧 回调，参考 [_onCaptureAudioFirstFrame] 定义
   ///@param onCaptureVideoFirstFrame 设置接收 采集视频的首帧 回调，参考 [_onCaptureVideoFirstFrame] 定义
   ///@param onJoinLiveRequest 设置接收 收到连麦请求 回调，参考[_onJoinLiveRequest] 定义
   ///@discussion 开发者只有调用本 API 设置回调对象才能收到相关回调
@@ -554,6 +552,7 @@ class ZegoLiveRoomPublisherPlugin {
     Function(int stateCode, String streamID, Map<String, dynamic> info) onPublishStateUpdate,
     Function(String streamID, ZegoPublishStreamQuality quality) onPublishQualityUpdate,
     Function(int width, int height) onCaptureVideoSizeChangedTo,
+    Function() onCaptureAudioFirstFrame,
     Function() onCaptureVideoFirstFrame,
     Function(int seq, String fromUserID, String fromUserName, String roomID) onJoinLiveRequest,
   }) {
@@ -561,6 +560,7 @@ class ZegoLiveRoomPublisherPlugin {
     _onPublishStateUpdate = onPublishStateUpdate;
     _onPublishQualityUpdate = onPublishQualityUpdate;
     _onCaptureVideoSizeChangedTo = onCaptureVideoSizeChangedTo;
+    _onCaptureAudioFirstFrame = onCaptureAudioFirstFrame;
     _onCaptureVideoFirstFrame = onCaptureVideoFirstFrame;
     _onJoinLiveRequest = onJoinLiveRequest;
 
@@ -578,6 +578,7 @@ class ZegoLiveRoomPublisherPlugin {
     _onPublishStateUpdate = null;
     _onPublishQualityUpdate = null;
     _onCaptureVideoSizeChangedTo = null;
+    _onCaptureAudioFirstFrame = null;
     _onCaptureVideoFirstFrame = null;
     _onJoinLiveRequest = null;
 
@@ -613,6 +614,12 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 发布直播成功后，当视频尺寸变化时，发布者会收到此回调通知
   ///@discussion 开发者必须调用 [registerPublisherCallback] 且设置 onCaptureVideoSizeChangedTo 对象参数之后才能收到该回调
   static void Function(int width, int height) _onCaptureVideoSizeChangedTo;
+
+  ///采集音频的首帧通知
+  ///
+  ///@discussion 采集到音频的首帧之后，开发者将收到此回调通知
+  ///@discussion 开发者必须调用 [registerPublisherCallback] 且设置 onCaptureAudioFirstFrame 对象参数之后才能收到该回调
+  static void Function() _onCaptureAudioFirstFrame;
 
   ///采集视频的首帧通知
   ///
@@ -709,12 +716,16 @@ class ZegoLiveRoomPublisherPlugin {
 
         }
         break;
+      case 'onCaptureAudioFirstFrame':
+        if(_onCaptureAudioFirstFrame != null) {
+
+          _onCaptureAudioFirstFrame();
+        }
+        break;
       case 'onCaptureVideoFirstFrame':
         if(_onCaptureVideoFirstFrame != null) {
 
-
           _onCaptureVideoFirstFrame();
-
         }
         break;
       case 'onJoinLiveRequest':

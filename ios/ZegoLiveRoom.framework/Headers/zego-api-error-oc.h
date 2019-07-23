@@ -29,17 +29,12 @@ typedef enum : NSUInteger {
 
  kNetworkNotConnectError        = 11000101,
  kNetworkDnsResolveError        = 11000404,
- kNetworkDetectTcpError         = 11001001,
- kNetworkDetectTcpConcectError  = 11001002,
 
  kEngineCreateError             = 12101001,
  kEngineStatusError             = 12101002,
  kEngineStartError              = 12101003,
  kDeniedMaxRetryError           = 12101004,
  kDeniedDisableSwitchLineError  = 12101005,
-    
- kExternalAudioDeviceWasNotEnabledError  = 12101101,
- kExternalAudioDeviceEngineError         = 12101102,
 
  kEngineNoPlayDataError         = 12102001,
  kEngineNoPublishDataError      = 12102002,
@@ -101,6 +96,7 @@ typedef enum : NSUInteger {
  kLiveRoomCouldntConnectError   = 51200007,
  kLiveRoomTimeoutError          = 51200028,
  kLiveRoomSslCaCertError        = 51200060,
+ kLiveRoomInvalidRspError       = 51400003,
  kLiveRoomInputParamsError      = 52000002,
  kLiveRoomRoomAuthError         = 52000101,
  kLiveRoomRoomNotExistError     = 52000104,

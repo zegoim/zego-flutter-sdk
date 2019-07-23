@@ -61,10 +61,26 @@
 /**
  混音开关
  
- @param enable true 启用混音输入，false 关闭混音输入。默认 false
- @return true 成功，false 失败
+ @param enable YES 启用混音输入，NO 关闭混音输入。默认 NO
+ @return YES 成功，NO 失败
  @discussion 主播端开启混音后，SDK 在 [ZegoAudioAuxDelgate -onAuxCallback:dataLen:sampleRate:channelCount:] 中获取混音输入数据
  */
-- (bool)enableAux:(BOOL)enable;
+- (BOOL)enableAux:(BOOL)enable;
+
+/**
+ 设置混音音量
+ 
+ @param volume 0~100，默认为 50
+ */
+- (void)setAuxVolume:(int)volume;
+
+/**
+ 混音静音开关
+ 
+ @param mute YES: aux 输入播放静音，NO: 不静音。默认 NO
+ @return YES 成功，NO 失败
+ @discussion 该接口调用时机无要求，开发者按需调用即可
+ */
+- (BOOL)muteAux:(BOOL)mute;
 
 @end

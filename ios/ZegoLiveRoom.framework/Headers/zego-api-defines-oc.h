@@ -41,6 +41,9 @@ ZEGO_EXTERN NSString *const kMixStreamAudioOutputFormat;
 /** 自定义转推 RTMP 地址 */
 ZEGO_EXTERN NSString *const kPublishCustomTarget;
 
+/** 单主播模式下，自定义推流 RTMP 地址 */
+ZEGO_EXTERN NSString *const kPublishCDNTarget;
+
 /** AudioSession相关配置信息的key, 值为 NSString */
 ZEGO_EXTERN NSString *const kZegoConfigKeepAudioSesionActive;
 
@@ -353,6 +356,10 @@ typedef struct
     int rtt;
     /** 丢包率(0~255) */
     int pktLostRate;
+    /** 端到端延迟 */
+    int peerToPeerDelay;
+    /** 端到端丢包率(0~255) */
+    int peerToPeerPktLostRate;
     /** 直播质量(0~3) */
     int quality;
     /** 语音延时(ms) */
@@ -474,6 +481,15 @@ typedef enum : NSUInteger
     ZEGOAPI_DEVICE_DELETE = 1,
 } ZegoAPIDeviceState;
 
+/** 设备状态 */
+typedef enum : NSUInteger
+{
+    /**< 设备已打开 */
+    ZEGOAPI_DEVICE_OPEN = 0,
+    /**< 设备已关闭 */
+    ZEGOAPI_DEVICE_CLOSE = 1,
+} ZegoAPIDeviceStatus;
+
 /** 音量类型 */
 typedef enum : NSUInteger
 {
@@ -566,6 +582,9 @@ typedef enum : NSUInteger
 
 @end
 
+/**
+ ACE 模式
+ */
 typedef enum : NSUInteger
 {
     ZEGOAPI_AEC_MODE_ARRGRESSIVE,

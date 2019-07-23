@@ -511,6 +511,18 @@ class ZegoAECMode {
 
 }
 
+class ZegoDeviceStatus {
+
+  /// 设备已打开
+  static const int ZEGOAPI_DEVICE_OPEN = 0;
+
+  /// 设备已关闭
+  static const int ZEGOAPI_DEVICE_CLOSE = 1;
+
+}
+
+
+
 class ZegoPublishStreamQuality {
 
   /// 视频帧率(采集)
@@ -610,8 +622,14 @@ class ZegoPlayStreamQuality {
   /// 延时(ms)
   final int rtt;
 
+  /// 端到端延时(ms)
+  final int peerToPeerDelay;
+
   /// 丢包率(0~1)
   final double pktLostRate;
+
+  /// 端到端丢包率(0~1)
+  final double peerToPeerPktLostRate;
 
   /// 质量(0~3)，该质量为综合各种数据之后推算出来的质量参考值，其中 0 为最优，质量以此递减（优、良、中、差）
   final int quality;
@@ -642,7 +660,9 @@ class ZegoPlayStreamQuality {
       this.audioBreakRate,
       this.videoBreakRate,
       this.rtt,
+      this.peerToPeerDelay,
       this.pktLostRate,
+      this.peerToPeerPktLostRate,
       this.quality,
       this.delay,
       this.isHardwareVdec,
@@ -701,3 +721,4 @@ class ZegoEndJoinLiveResult {
 
   const ZegoEndJoinLiveResult(this.errorCode, this.roomID);
 }
+

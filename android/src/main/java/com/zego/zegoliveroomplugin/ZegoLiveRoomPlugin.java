@@ -33,6 +33,7 @@ import com.zego.zegoliveroom.callback.IZegoEndJoinLiveCallback;
 import com.zego.zegoliveroom.callback.IZegoInitSDKCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoLiveEventCallback;
 import com.zego.zegoliveroom.callback.IZegoLivePlayerCallback;
+import com.zego.zegoliveroom.callback.IZegoLivePlayerCallback2;
 import com.zego.zegoliveroom.callback.IZegoLivePublisherCallback;
 import com.zego.zegoliveroom.callback.IZegoLoginCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoResponseCallback;
@@ -117,10 +118,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       ZegoLiveRoom.setVerbose(enable);
+      result.success(null);
 
     } else if (call.method.equals("uploadLog")) {
 
       ZegoLiveRoom.uploadLog();
+      result.success(null);
 
     } else if (call.method.equals("getLogDir")) {
 
@@ -153,6 +156,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       mIsEnablePlatformView = enable;
+      result.success(null);
 
     } else if (call.method.equals("setUser")) {
 
@@ -166,6 +170,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       ZegoLiveRoom.setTestEnv(enable);
+      result.success(null);
 
     } else if (call.method.equals("loginRoom")) {
 
@@ -225,6 +230,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       int type = numberToIntValue((Number) call.argument("type"));
       mZegoLiveRoom.pauseModule(type);
+      result.success(null);
 
     } else if (call.method.equals("resumeModule")) {
 
@@ -235,6 +241,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       int type = numberToIntValue((Number) call.argument("type"));
       mZegoLiveRoom.resumeModule(type);
+      result.success(null);
 
     } else if(call.method.equals("enableMicDevice")) {
 
@@ -289,7 +296,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean userStateUpdate = numberToBoolValue((Boolean) call.argument("userStateUpdate"));
 
       mZegoLiveRoom.setRoomConfig(audienceCreate, userStateUpdate);
-
+      result.success(null);
     }
     /* LiveRoom-Publisher */
     else if (call.method.equals("setLatencyMode")) {
@@ -301,11 +308,13 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       int mode = numberToIntValue((Number) call.argument("mode"));
       mZegoLiveRoom.setLatencyMode(mode);
+      result.success(null);
 
     } else if(call.method.equals("setAudioDeviceMode")) {
 
       int mode = numberToIntValue((Number) call.argument("mode"));
       ZegoLiveRoom.setAudioDeviceMode(mode);
+      result.success(null);
 
     } else if (call.method.equals("startPreview")) {
 
@@ -513,6 +522,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       int properties = numberToIntValue((Number) call.argument("properties"));
 
       mZegoLiveRoom.enableTrafficControl(properties, enable);
+      result.success(null);
 
     } else if(call.method.equals("setMinVideoBitrateForTrafficControl")) {
 
@@ -525,6 +535,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       int mode = numberToIntValue((Number) call.argument("mode"));
 
       mZegoLiveRoom.setMinVideoBitrateForTrafficControl(bitrate, mode);
+      result.success(null);
 
     } else if (call.method.equals("createPreviewRenderer")) {
 
@@ -785,6 +796,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       int mode = numberToIntValue((Number) call.argument("mode"));
       mZegoLiveRoom.setAECMode(mode);
+      result.success(null);
 
     } else if(call.method.equals("enableAGC")) {
 
@@ -807,6 +819,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       mZegoLiveRoom.enableVAD(enable);
+      result.success(null);
 
     } else if(call.method.equals("enableANS")) {
 
@@ -829,7 +842,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       mZegoLiveRoom.enableDTX(enable);
-
+      result.success(null);
     }
     /* LiveRoom-Player */
     else if(call.method.equals("setViewMode")) {
@@ -858,7 +871,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       }
 
       String streamID = call.argument("streamID");
-      Map<String, Object> info = call.argument("info");
+      HashMap<String, Object> info = call.argument("info");
 
       Surface surface = null;
       ZegoPlatformView view = null;
@@ -878,10 +891,14 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       boolean success;
 
+
       if(info != null) {
 
         String params = (String)info.get("params");
+
+        @SuppressWarnings("unchecked")
         ArrayList<String> rtmpUrls = (ArrayList<String>)info.get("rtmpUrls");
+        @SuppressWarnings("unchecked")
         ArrayList<String> flvUrls = (ArrayList<String>)info.get("flvUrls");
 
         ZegoStreamExtraPlayInfo extraPlayInfo = new ZegoStreamExtraPlayInfo();
@@ -1073,7 +1090,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         ZegoPlatformView view = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
         mZegoLiveRoom.updatePlayView(streamID, view.getSurfaceView());
-
+        result.success(null);
 
     } else if(call.method.equals("setPlatformViewPlayViewMode")) {
 
@@ -1179,6 +1196,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean onlyAudioPublish = numberToBoolValue((Boolean) call.argument("onlyAudioPublish"));
 
       mZegoMediaSideInfo.setMediaSideFlags(start, onlyAudioPublish, ZegoConstants.PublishChannelIndex.MAIN);
+      result.success(null);
 
     } else if (call.method.equals("sendMediaSideInfo")) {
 
@@ -1196,6 +1214,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         inData.put(i, tmpData.get(i));
 
       mZegoMediaSideInfo.sendMediaSideInfo(inData, inData.capacity(), false, ZegoConstants.PublishChannelIndex.MAIN);
+      result.success(null);
 
     }
     /* Sound Level */
@@ -1279,6 +1298,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       mZegoLiveRoom.enableAECWhenHeadsetDetected(enable);
+      result.success(null);
 
     }
     /* Error Code */
@@ -1463,7 +1483,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       mZegoLiveRoom = new ZegoLiveRoom();
 
     //调用其他API前必须调用该函数
-    mZegoLiveRoom.setSDKContext(new ZegoLiveRoom.SDKContext() {
+    ZegoLiveRoom.setSDKContext(new ZegoLiveRoom.SDKContext() {
 
       @Override
       public Application getAppContext() {
@@ -1761,6 +1781,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               }
             }
 
+            @Deprecated
             @Override
             public AuxData onAuxCallback(int i) {
               return null;
@@ -1783,6 +1804,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 }
             }
 
+            @Deprecated
             @Override
             public void onMixStreamConfigUpdate(int i, String s, HashMap<String, Object> hashMap) {
 
@@ -1802,9 +1824,23 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               }
 
             }
+
+            @Override
+            public void onCaptureAudioFirstFrame() {
+              if(mEventSink != null) {
+                HashMap<String, Object> returnMap = new HashMap<>();
+                returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+
+                HashMap<String, Object> method = new HashMap<>();
+                method.put("name", "onCaptureAudioFirstFrame");
+
+                returnMap.put("method", method);
+                mEventSink.success(returnMap);
+              }
+            }
           });
 
-          mZegoLiveRoom.setZegoLivePlayerCallback(new IZegoLivePlayerCallback() {
+          mZegoLiveRoom.setZegoLivePlayerCallback(new IZegoLivePlayerCallback2() {
             @Override
             public void onPlayStateUpdate(int stateCode, String streamID) {
 
@@ -1850,7 +1886,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 method.put("audioBreakRate", zegoStreamQuality.audioBreakRate);
                 method.put("videoBreakRate", zegoStreamQuality.videoBreakRate);
                 method.put("rtt", zegoStreamQuality.rtt);
+                method.put("p2pRtt", zegoStreamQuality.peerToPeerDelay);
                 method.put("pktLostRate", zegoStreamQuality.pktLostRate);
+                method.put("p2pPktLostRate", zegoStreamQuality.peerToPeerPktLostRate);
                 method.put("quality", zegoStreamQuality.quality);
                 method.put("delay", zegoStreamQuality.delay);
 
@@ -1918,6 +1956,88 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 mEventSink.success(returnMap);
               }
 
+            }
+
+            @Override
+            public void onRemoteCameraStatusUpdate(String streamID, int status) {
+
+              if(mEventSink != null) {
+                HashMap<String, Object> returnMap = new HashMap<>();
+                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                HashMap<String, Object> method = new HashMap<>();
+                method.put("name", "onRemoteCameraStatusUpdate");
+                method.put("streamID", streamID);
+                method.put("status", status);
+
+                returnMap.put("method", method);
+                mEventSink.success(returnMap);
+              }
+            }
+
+            @Override
+            public void onRemoteMicStatusUpdate(String streamID, int status) {
+
+              if(mEventSink != null) {
+                HashMap<String, Object> returnMap = new HashMap<>();
+                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                HashMap<String, Object> method = new HashMap<>();
+                method.put("name", "onRemoteMicStatusUpdate");
+                method.put("streamID", streamID);
+                method.put("status", status);
+
+                returnMap.put("method", method);
+                mEventSink.success(returnMap);
+              }
+            }
+
+            @Override
+            public void onRecvRemoteAudioFirstFrame(String streamID) {
+
+              if(mEventSink != null) {
+                HashMap<String, Object> returnMap = new HashMap<>();
+                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                HashMap<String, Object> method = new HashMap<>();
+                method.put("name", "onRecvRemoteAudioFirstFrame");
+                method.put("streamID", streamID);
+
+                returnMap.put("method", method);
+                mEventSink.success(returnMap);
+              }
+            }
+
+            @Override
+            public void onRecvRemoteVideoFirstFrame(String streamID) {
+
+              if(mEventSink != null) {
+                HashMap<String, Object> returnMap = new HashMap<>();
+                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                HashMap<String, Object> method = new HashMap<>();
+                method.put("name", "onRecvRemoteVideoFirstFrame");
+                method.put("streamID", streamID);
+
+                returnMap.put("method", method);
+                mEventSink.success(returnMap);
+              }
+            }
+
+            @Override
+            public void onRenderRemoteVideoFirstFrame(String streamID) {
+
+              if(mEventSink != null) {
+                HashMap<String, Object> returnMap = new HashMap<>();
+                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                HashMap<String, Object> method = new HashMap<>();
+                method.put("name", "onRenderRemoteVideoFirstFrame");
+                method.put("streamID", streamID);
+
+                returnMap.put("method", method);
+                mEventSink.success(returnMap);
+              }
             }
           });
 

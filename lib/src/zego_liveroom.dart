@@ -105,7 +105,6 @@ class ZegoLiveRoomPlugin {
   ///@discussion 在初始化 SDK 成功后调用
   static Future<void> uploadLog() async {
     return await _channel.invokeMethod('uploadLog');
-
   }
 
   ///获取 SDK 日志本地存放路径
@@ -128,7 +127,6 @@ class ZegoLiveRoomPlugin {
       'audienceCreateRoom':audienceCreateRoom,
       'userStateUpdate': userStateUpdate
     });
-
   }
 
   ///登录房间
@@ -198,7 +196,6 @@ class ZegoLiveRoomPlugin {
     return await _channel.invokeMethod('pauseModule', {
       'type' : type
     });
-
   }
 
   ///恢复模块
@@ -209,7 +206,6 @@ class ZegoLiveRoomPlugin {
     return await _channel.invokeMethod('resumeModule', {
       'type' : type
     });
-
   }
 
   ///设置是否允许SDK使用麦克风设备

@@ -510,6 +510,9 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
 
 @end
 
+#ifndef Zego_Live_Event
+#define Zego_Live_Event
+
 /** 直播事件状态 */
 typedef enum : NSUInteger {
     /** 播放直播开始重试 */
@@ -527,10 +530,24 @@ typedef enum : NSUInteger {
     /** 推流临时中断 */
     Publish_TempDisconnected = 6,
     
-    /** 拉流视频卡顿 */
+    /** 视频卡顿开始 */
     Play_VideoBreak = 7,
+    /** 视频卡顿结束 */
+    Play_VideoBreakEnd = 8,
+    
+    /** 音频卡顿开始 */
+    Play_AudioBreak = 9,
+    /** 音频卡顿结束 */
+    Play_AudioBreakEnd = 10,
+    
+    /** 注册推流信息失败 */
+    PublishInfo_RegisterFailed = 11,
+    /** 注册推流信息成功 */
+    PublishInfo_RegisterSuccess = 12,
+    
 } ZegoLiveEvent;
 
+#endif /* Zego_Live_Event */
 
 @protocol ZegoLiveEventDelegate <NSObject>
 
