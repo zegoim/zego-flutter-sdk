@@ -34,6 +34,7 @@ class ZegoLiveRoomPlugin {
   ///@return 错误码，0 代表初始化成功
   ///@discussion 初始化 SDK 时调用。初始化 SDK 失败可能导致 SDK 功能异常
   static Future<int> initSDK(int appID, String appSign) async {
+    _addRoomNoticeLog('[Flutter-dart] initSDK, appid: $appID, appSign: $appSign');
     final int errorCode = await _channel.invokeMethod('initSDK', {
       'appID': appID,
       'appSign': appSign
@@ -47,6 +48,7 @@ class ZegoLiveRoomPlugin {
   ///@return true 成功，false 失败
   ///@discussion 释放 SDK 资源
   static Future<bool> uninitSDK() async {
+    _addRoomNoticeLog('[Flutter-dart] uninitSDK');
     final bool success = await _channel.invokeMethod('uninitSDK');
     return success;
   }
@@ -58,6 +60,7 @@ class ZegoLiveRoomPlugin {
   ///@discussion 参数为 true 时，使用 Platform View 渲染，参数为 false 时，使用 Texture 渲染
   ///@discussion 由于 flutter 团队 对 platform view 仍处于开发阶段，请开发者酌情使用
   static Future<void> enablePlatformView(bool enable) async {
+    _addRoomNoticeLog('[Flutter-dart] enablePlatformView, enable: $enable');
     return await _channel.invokeMethod('enablePlatformView', {
       'enable': enable
     });
@@ -137,6 +140,7 @@ class ZegoLiveRoomPlugin {
   ///@return 房间流信息，其中 errorCode 为 0 代表登录房间成功，参考 [ZegoLoginRoomResult] 定义
   ///@discussion 登录房间成功，才能开始直播
   static Future<ZegoLoginRoomResult> loginRoom(String roomID, String roomName, int role) async {
+    _addRoomNoticeLog('[Flutter-dart] loginRoom, roomID: $roomID, roomName: $roomName, role: $role');
     final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('loginRoom', {
       'roomID': roomID,
       'roomName': roomName,
@@ -161,6 +165,7 @@ class ZegoLiveRoomPlugin {
   ///@return true 成功，false 失败
   ///@discussion 连麦情况下，要 stop 所有的 stream 后，才能执行 logoutRoom。
   static Future<bool> logoutRoom() async {
+    _addRoomNoticeLog('[Flutter-dart] logoutRoom');
     final bool success = await _channel.invokeMethod('logoutRoom');
     return success;
   }
@@ -249,6 +254,8 @@ class ZegoLiveRoomPlugin {
     Function() onAVEngineStop
 }) {
 
+    _addRoomNoticeLog('[Flutter-Dart] registerRoomCallback, enter');
+
     _onStreamUpdated = onStreamUpdated;
     _onStreamExtraInfoUpdated = onStreamExtraInfoUpdated;
     _onTempBroken = onTempBroken;
@@ -261,9 +268,11 @@ class ZegoLiveRoomPlugin {
     _onAVEngineStart = onAVEngineStart;
     _onAVEngineStop = onAVEngineStop;
 
-    if(_streamSubscription == null) {
-      _streamSubscription = ZegoLiveRoomEventChannel.listenRoomEvent().listen(_eventListener);
-    }
+    _addRoomNoticeLog('[Flutter-Dart] registerRoomCallback, init room stream subscription');
+    _streamSubscription = ZegoLiveRoomEventChannel.listenRoomEvent().listen(_eventListener, onError: (error) {
+      PlatformException exception = error;
+      _addRoomNoticeLog('[Flutter-Dart] room stream subscription listen error: ${exception.message??'no error message'}');
+    });
 
   }
 
@@ -271,6 +280,8 @@ class ZegoLiveRoomPlugin {
   ///
   ///@discussion 当开发者不再需要接收回调时，必须显式调用本 API 销毁回调对象
   static void unregisterRoomCallback() {
+
+    _addRoomNoticeLog('[Flutter-Dart] unregisterRoomCallback');
 
     _onStreamUpdated = null;
     _onStreamExtraInfoUpdated = null;
@@ -284,8 +295,13 @@ class ZegoLiveRoomPlugin {
     _onAVEngineStart = null;
     _onAVEngineStop = null;
 
-    _streamSubscription?.cancel();
-    _streamSubscription = null;
+    _streamSubscription.cancel().then((_) {
+      _streamSubscription = null;
+      _addRoomNoticeLog('[Flutter-Dart] room stream subscription cancel success');
+    }).catchError((error) {
+      PlatformException exception = error;
+      _addRoomNoticeLog('[Flutter-Dart] room stream subscription cancel error: ${exception.message??'no error message'}');
+    });
 
   }
 
@@ -376,14 +392,21 @@ class ZegoLiveRoomPlugin {
   static void Function() _onAVEngineStop;
 
 
+  /// SDK内置日志，开发者无需关注
+  static void _addRoomNoticeLog(String content) {
 
+    _channel.invokeMethod('addNoticeLog', {
+      'content': content
+    });
+  }
 
   /// 用于接收native层事件流，开发者无需关注
   static StreamSubscription<dynamic> _streamSubscription;
   /// 用于处理native层事件流，开发者无需关注
   static void _eventListener(dynamic data) {
-
     final Map<dynamic, dynamic> args = data;
+    _addRoomNoticeLog('[Flutter-Dart] room eventListener, method name: ${args['name']}');
+
     switch (args['name']) {
       case 'onStreamUpdated':
         if(_onStreamUpdated != null) {

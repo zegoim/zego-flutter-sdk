@@ -162,6 +162,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 发布直播成功后，等待 onPublishStateUpdate 通知
   static Future<bool> startPublishing(String streamID, String title, int flag, {String extraInfo}) async {
+    _addRoomNoticeLog('[Flutter-Dart] startPublishing, streamID: $streamID, title: $title, flag: $flag');
     final bool success = await _channel.invokeMethod('startPublishing', {
       'streamID': streamID,
       'title': title,
@@ -177,6 +178,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 停止直播
   static Future<bool> stopPublishing() async {
+    _addRoomNoticeLog('[Flutter-Dart] stopPublishing');
     final bool success = await _channel.invokeMethod('stopPublishing');
 
     return success;
@@ -564,9 +566,11 @@ class ZegoLiveRoomPublisherPlugin {
     _onCaptureVideoFirstFrame = onCaptureVideoFirstFrame;
     _onJoinLiveRequest = onJoinLiveRequest;
 
-    if(_streamSubscription == null) {
-      _streamSubscription = ZegoLiveRoomEventChannel.listenPublishEvent().listen(_eventListener);
-    }
+    _addRoomNoticeLog('[Flutter-Dart] registerPublisherCallback, init publisher stream subscription');
+    _streamSubscription = ZegoLiveRoomEventChannel.listenPublishEvent().listen(_eventListener, onError: (error) {
+      PlatformException exception = error;
+      _addRoomNoticeLog('[Flutter-Dart] publisher stream subscription listen error: ${exception.message??'no error message'}');
+    });
 
   }
 
@@ -575,6 +579,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 当开发者不再需要接收回调时，必须显式调用本 API 销毁回调对象
   static void unregisterPublisherCallback() {
 
+    _addRoomNoticeLog('[Flutter-Dart] unregisterPublisherCallback');
+
     _onPublishStateUpdate = null;
     _onPublishQualityUpdate = null;
     _onCaptureVideoSizeChangedTo = null;
@@ -582,8 +588,13 @@ class ZegoLiveRoomPublisherPlugin {
     _onCaptureVideoFirstFrame = null;
     _onJoinLiveRequest = null;
 
-    _streamSubscription?.cancel();
-    _streamSubscription = null;
+    _streamSubscription.cancel().then((_) {
+      _streamSubscription = null;
+      _addRoomNoticeLog('[Flutter-Dart] publisher stream subscription cancel success');
+    }).catchError((error) {
+      PlatformException exception = error;
+      _addRoomNoticeLog('[Flutter-Dart] publisher stream subscription cancel error: ${exception.message??'no error message'}');
+    });
 
   }
 
@@ -637,7 +648,14 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 开发者必须调用 [registerPublisherCallback] 且设置 onJoinLiveRequest 对象参数之后才能收到该回调
   static void Function(int seq, String fromUserID, String fromUserName, String roomID) _onJoinLiveRequest;
 
+  /// SDK内置日志，开发者无需关注
+  static void _addRoomNoticeLog(String content) {
 
+    _channel.invokeMethod('addNoticeLog', {
+      'content': content
+    });
+
+  }
 
 
   /// 用于接收native层事件流，开发者无需关注
@@ -646,6 +664,7 @@ class ZegoLiveRoomPublisherPlugin {
   static void _eventListener(dynamic data) {
 
     final Map<dynamic, dynamic> args = data;
+    _addRoomNoticeLog('[Flutter-Dart] publisher eventListener, method name: ${args['name']}');
 
     switch (args['name']) {
       case 'onPublishStateUpdate':

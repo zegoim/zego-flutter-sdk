@@ -154,6 +154,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///@return 成功，false 失败
   ///@discussion 播放直播流调用此 API。播放成功后，等待 onPlayStateUpdate 回调
   static Future<bool> startPlayingStream(String streamID, {int viewID, ZegoStreamExtraPlayInfo info}) async {
+    _addRoomNoticeLog('[Flutter-Dart] startPlayingStream, streamID: $streamID');
     final bool success = await _channel.invokeMethod('startPlayingStream', {
       'streamID': streamID,
       'viewID': viewID,
@@ -169,8 +170,10 @@ class ZegoLiveRoomPlayerPlugin {
   ///@return true 成功，false 失败
   ///@discussion 当有主播停止流推后，会通过 onStreamUpdated 通知房间内用户流删除，用户需要调用此 API 停止播放流。
   static Future<bool> stopPlayingStream(String streamID) async {
-    final bool success = await _channel.invokeMethod('stopPlayingStream',
-                          {'streamID': streamID});
+    _addRoomNoticeLog('[Flutter-Dart] stopPlayingStream, streamID: $streamID');
+    final bool success = await _channel.invokeMethod('stopPlayingStream', {
+      'streamID': streamID
+    });
     return success;
   }
 
@@ -314,9 +317,11 @@ class ZegoLiveRoomPlayerPlugin {
     _onRecvRemoteVideoFirstFrame = onRecvRemoteVideoFirstFrame;
     _onRenderRemoteVideoFirstFrame = onRenderRemoteVideoFirstFrame;
 
-    if(_streamSubscription == null) {
-      _streamSubscription = ZegoLiveRoomEventChannel.listenPlayEvent().listen(_eventListener);
-    }
+    _addRoomNoticeLog('[Flutter-Dart] registerPlayerCallback, init player stream subscription');
+    _streamSubscription = ZegoLiveRoomEventChannel.listenPublishEvent().listen(_eventListener, onError: (error) {
+      PlatformException exception = error;
+      _addRoomNoticeLog('[Flutter-Dart] player stream subscription listen error: ${exception.message??'no error message'}');
+    });
 
   }
 
@@ -324,6 +329,8 @@ class ZegoLiveRoomPlayerPlugin {
   ///
   ///@discussion 当开发者不再需要接收回调时，必须显式调用本 API 销毁回调对象
   static void unregisterPlayerCallback() {
+
+    _addRoomNoticeLog('[Flutter-Dart] unregisterPlayerCallback');
 
     _onPlayStateUpdate = null;
     _onPlayQualityUpdate = null;
@@ -336,8 +343,13 @@ class ZegoLiveRoomPlayerPlugin {
     _onRecvRemoteVideoFirstFrame = null;
     _onRenderRemoteVideoFirstFrame = null;
 
-    _streamSubscription?.cancel();
-    _streamSubscription = null;
+    _streamSubscription.cancel().then((_) {
+      _streamSubscription = null;
+      _addRoomNoticeLog('[Flutter-Dart] player stream subscription cancel success');
+    }).catchError((error) {
+      PlatformException exception = error;
+      _addRoomNoticeLog('[Flutter-Dart] player stream subscription cancel error: ${exception.message??'no error message'}');
+    });
 
   }
 
@@ -426,7 +438,14 @@ class ZegoLiveRoomPlayerPlugin {
   ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRenderRemoteVideoFirstFrame 对象参数之后才能收到该回调
   static void Function(String streamID) _onRenderRemoteVideoFirstFrame;
 
+  /// SDK内置日志，开发者无需关注
+  static void _addRoomNoticeLog(String content) {
 
+    _channel.invokeMethod('addNoticeLog', {
+      'content': content
+    });
+
+  }
 
   /// 用于接收native层事件流，开发者无需关注
   static StreamSubscription<dynamic> _streamSubscription;
@@ -434,6 +453,8 @@ class ZegoLiveRoomPlayerPlugin {
   static void _eventListener(dynamic data) {
 
     final Map<dynamic, dynamic> args = data;
+    _addRoomNoticeLog('[Flutter-Dart] player eventListener, method name: ${args['name']}');
+
     switch (args['name']) {
       case 'onPlayStateUpdate':
         if(_onPlayStateUpdate != null) {

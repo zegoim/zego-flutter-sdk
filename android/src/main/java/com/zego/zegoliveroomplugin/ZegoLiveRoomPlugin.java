@@ -87,11 +87,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     this.mIsEnablePlatformView = false;
 
     this.mRenders = new HashMap<>();
-
   }
 
 
   public static void registerWith(Registrar registrar) {
+
+      System.out.println("android plugin register with");
     ZegoLiveRoomPlugin instance = new ZegoLiveRoomPlugin(registrar);
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.zego.im/zegoliveroom_plugin");
     channel.setMethodCallHandler(instance);
@@ -145,9 +146,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       } else {
 
+
         mZegoMediaSideInfo.setZegoMediaSideCallback(null);
         mZegoMediaSideInfo = null;
 
+        ZegoLogJNI.logNotice("[Flutter-Native] unInitSDK");
         //反初始化SDK里面会做回调的销毁处理
         result.success(mZegoLiveRoom.unInitSDK());
       }
@@ -1428,6 +1431,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         String msg = ZegoError.getErrorMsg(error);
         result.success(msg);
 
+    } else if(call.method.equals("addNoticeLog")) {
+
+      String content = call.argument("content");
+      ZegoLogJNI.logNotice(content);
+
+      result.success(null);
     }
     else{
 
@@ -1438,11 +1447,17 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
   @Override
   public void onListen(Object o, EventChannel.EventSink sink) {
+
+    ZegoLogJNI.logNotice("[Flutter-Native] onListen sink: " + sink + " object: " + o);
+    System.out.println("[Flutter-Native] onListen sink: " + sink + " object: " + o);
     mEventSink = sink;
   }
 
   @Override
   public void onCancel(Object o) {
+
+    ZegoLogJNI.logNotice("[Flutter-Native] onCancel sink");
+    System.out.println("[Flutter-Native] onCancel sink");
     mEventSink = null;
   }
 
@@ -1501,653 +1516,664 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       }
     });
 
+    ZegoLogJNI.logNotice("[Flutter-Native] enter init sdk, app id: " + appID);
+
+      mZegoLiveRoom.setZegoRoomCallback(new IZegoRoomCallback() {
+          @Override
+          public void onStreamUpdated(int type, ZegoStreamInfo[] zegoStreamInfos, String roomID) {
+              ZegoLogJNI.logNotice("[Flutter-Native] onStreamUpdate, update type: " + type + " roomID: " + roomID);
+              System.out.println("[Flutter-Native] onStreamUpdate, update type: " + type + " roomID: " + roomID);
+              if(mEventSink != null) {
+
+                  ArrayList<HashMap<String, Object>> streamList = new ArrayList<>();
+                  for (ZegoStreamInfo streamInfo : zegoStreamInfos) {
+                      HashMap<String, Object> map = new HashMap<>();
+                      map.put("userID", streamInfo.userID);
+                      map.put("userName", streamInfo.userName);
+                      map.put("streamID", streamInfo.streamID);
+                      map.put("extraInfo", streamInfo.extraInfo);
+                      streamList.add(map);
+                      ZegoLogJNI.logNotice("[Flutter-Native] onStreamUpdate, user id" + streamInfo.userID + " user name: " + streamInfo.userName + " stream id: " + streamInfo.streamID + " extra info: " + streamInfo.extraInfo);
+                  }
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onStreamUpdated");
+                  method.put("updateType", type);
+                  method.put("roomID", roomID);
+                  method.put("streamList", streamList);
+
+                  returnMap.put("method", method);
+                  ZegoLogJNI.logNotice("[Flutter-Native] onStreamUpdate, return map: " + returnMap);
+                  System.out.println("[Flutter-Native] onStreamUpdate, return map: " + returnMap);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onStreamExtraInfoUpdated(ZegoStreamInfo[] zegoStreamInfos, String roomID) {
+              if(mEventSink != null) {
+
+                  ArrayList<HashMap<String, Object>> streamList = new ArrayList<>();
+                  for (ZegoStreamInfo streamInfo : zegoStreamInfos) {
+                      HashMap<String, Object> map = new HashMap<>();
+                      map.put("userID", streamInfo.userID);
+                      map.put("userName", streamInfo.userName);
+                      map.put("streamID", streamInfo.streamID);
+                      map.put("extraInfo", streamInfo.extraInfo);
+                      streamList.add(map);
+                  }
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onStreamExtraInfoUpdated");
+                  method.put("roomID", roomID);
+                  method.put("streamList", streamList);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onTempBroken(int errorCode, String roomID) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onTempBroken");
+                  method.put("roomID", roomID);
+                  method.put("errorCode", errorCode);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onReconnect(int errorCode, String roomID) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onReconnect");
+                  method.put("roomID", roomID);
+                  method.put("errorCode", errorCode);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onDisconnect(int errorCode, String roomID) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onDisconnect");
+                  method.put("roomID", roomID);
+                  method.put("errorCode", errorCode);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onKickOut(int reason, String roomID) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onKickOut");
+                  method.put("roomID", roomID);
+                  method.put("reason", reason);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onRecvCustomCommand(String userID, String userName, String content, String roomID) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onReceiveCustomCommand");
+                  method.put("userID", userID);
+                  method.put("userName", userName);
+                  method.put("content", content);
+                  method.put("roomID", roomID);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+      });
+
+      mZegoLiveRoom.setZegoIMCallback(new IZegoIMCallback() {
+          @Override
+          public void onUserUpdate(ZegoUserState[] zegoUserStates, int type) {
+              if(mEventSink != null) {
+
+                  ArrayList<HashMap<String, Object>> userList = new ArrayList<>();
+                  for (ZegoUserState userInfo : zegoUserStates) {
+                      HashMap<String, Object> map = new HashMap<>();
+                      map.put("userID", userInfo.userID);
+                      map.put("userName", userInfo.userName);
+                      map.put("updateFlag", userInfo.updateFlag);
+                      map.put("role", userInfo.roomRole);
+                      userList.add(map);
+                  }
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onUserUpdate");
+                  method.put("updateType", type);
+                  method.put("userList", userList);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onRecvRoomMessage(String s, ZegoRoomMessage[] zegoRoomMessages) {
+
+          }
+
+          @Override
+          public void onRecvConversationMessage(String s, String s1, ZegoConversationMessage zegoConversationMessage) {
+
+          }
+
+          @Override
+          public void onUpdateOnlineCount(String s, int i) {
+
+          }
+
+          @Override
+          public void onRecvBigRoomMessage(String s, ZegoBigRoomMessage[] zegoBigRoomMessages) {
+
+          }
+      });
+
+      mZegoLiveRoom.setZegoLivePublisherCallback(new IZegoLivePublisherCallback() {
+          @Override
+          public void onPublishStateUpdate(int stateCode, String streamID, HashMap<String, Object> streamInfo) {
+              ZegoLogJNI.logNotice("[Flutter-Native] onPublishStateUpdate, stateCode: " + stateCode + " streamID: " + streamID);
+              System.out.println("[Flutter-Native] onPublishStateUpdate, stateCode: " + stateCode + " streamID: " + streamID );
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onPublishStateUpdate");
+                  method.put("stateCode", stateCode);
+                  method.put("streamID", streamID);
+
+                  HashMap<String, Object> info = new HashMap<>();
+                  streamInfo.put("streamID", streamInfo.get(ZegoConstants.StreamKey.STREAM_ID));
+                  streamInfo.put("rtmpList", streamInfo.get(ZegoConstants.StreamKey.RTMP_URL_LIST));
+                  streamInfo.put("flvList", streamInfo.get(ZegoConstants.StreamKey.FLV_URL_LIST));
+                  streamInfo.put("hlsList", streamInfo.get(ZegoConstants.StreamKey.HLS_URL_LST));
+                  method.put("streamInfo", info);
+
+                  returnMap.put("method", method);
+                  ZegoLogJNI.logNotice("[Flutter-Native] onPublishStateUpdate, return map: " + returnMap);
+                  System.out.println("[Flutter-Native] onPublishStateUpdate, return map: " + returnMap);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onJoinLiveRequest(int seq, String fromUserID, String fromUserName, String roomID) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onJoinLiveRequest");
+                  method.put("seq", seq);
+                  method.put("fromUserID", fromUserID);
+                  method.put("fromUserName", fromUserName);
+                  method.put("roomID", roomID);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onPublishQualityUpdate(String streamID, ZegoPublishStreamQuality zegoStreamQuality) {
+
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onPublishQualityUpdate");
+                  method.put("streamID", streamID);
+
+                  method.put("acapFps", zegoStreamQuality.acapFps);
+                  method.put("anetFps", zegoStreamQuality.anetFps);
+                  method.put("akbps", zegoStreamQuality.akbps);
+
+                  method.put("vcapFps", zegoStreamQuality.vcapFps);
+                  method.put("vencFps", zegoStreamQuality.vencFps);
+                  method.put("vnetFps", zegoStreamQuality.vnetFps);
+                  method.put("vkbps", zegoStreamQuality.vkbps);
+
+                  method.put("rtt", zegoStreamQuality.rtt);
+                  method.put("pktLostRate", zegoStreamQuality.pktLostRate);
+
+                  method.put("isHardwareVenc", zegoStreamQuality.isHardwareVenc);
+
+                  method.put("width", zegoStreamQuality.width);
+                  method.put("height", zegoStreamQuality.height);
+
+                  method.put("quality", zegoStreamQuality.quality);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Deprecated
+          @Override
+          public AuxData onAuxCallback(int i) {
+              return null;
+          }
+
+          @Override
+          public void onCaptureVideoSizeChangedTo(int width, int height) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onCaptureVideoSizeChangedTo");
+                  method.put("width", width);
+                  method.put("height", height);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Deprecated
+          @Override
+          public void onMixStreamConfigUpdate(int i, String s, HashMap<String, Object> hashMap) {
+
+          }
+
+          @Override
+          public void onCaptureVideoFirstFrame() {
+              if(mEventSink != null) {
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onCaptureVideoFirstFrame");
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+
+          }
+
+          @Override
+          public void onCaptureAudioFirstFrame() {
+              if(mEventSink != null) {
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onCaptureAudioFirstFrame");
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+      });
+
+      mZegoLiveRoom.setZegoLivePlayerCallback(new IZegoLivePlayerCallback2() {
+          @Override
+          public void onPlayStateUpdate(int stateCode, String streamID) {
+              ZegoLogJNI.logNotice("[Flutter-Native] onPlayStateUpdate, stateCode: " + stateCode + " streamID: " + streamID);
+              System.out.println("[Flutter-Native] onPlayStateUpdate, stateCode: " + stateCode + " streamID: " + streamID);
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onPlayStateUpdate");
+                  method.put("stateCode", stateCode);
+                  method.put("streamID", streamID);
+
+                  returnMap.put("method", method);
+                  ZegoLogJNI.logNotice("[Flutter-Native] onPlayStateUpdate, return map: " + returnMap);
+                  System.out.println("[Flutter-Native] onPlayStateUpdate, return map: " + returnMap);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onPlayQualityUpdate(String streamID, ZegoPlayStreamQuality zegoStreamQuality) {
+
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onPlayQualityUpdate");
+                  method.put("streamID", streamID);
+
+                  method.put("vnetFps", zegoStreamQuality.vnetFps);
+                  method.put("vdjFps", zegoStreamQuality.vdjFps);
+                  method.put("vdecFps", zegoStreamQuality.vdecFps);
+                  method.put("vrndFps", zegoStreamQuality.vrndFps);
+                  method.put("vkbps", zegoStreamQuality.vkbps);
+
+                  method.put("anetFps", zegoStreamQuality.anetFps);
+                  method.put("adjFps", zegoStreamQuality.adjFps);
+                  method.put("adecFps", zegoStreamQuality.adecFps);
+                  method.put("arndFps", zegoStreamQuality.arndFps);
+                  method.put("akbps", zegoStreamQuality.akbps);
+
+                  method.put("audioBreakRate", zegoStreamQuality.audioBreakRate);
+                  method.put("videoBreakRate", zegoStreamQuality.videoBreakRate);
+                  method.put("rtt", zegoStreamQuality.rtt);
+                  method.put("p2pRtt", zegoStreamQuality.peerToPeerDelay);
+                  method.put("pktLostRate", zegoStreamQuality.pktLostRate);
+                  method.put("p2pPktLostRate", zegoStreamQuality.peerToPeerPktLostRate);
+                  method.put("quality", zegoStreamQuality.quality);
+                  method.put("delay", zegoStreamQuality.delay);
+
+                  method.put("isHardwareVdec", zegoStreamQuality.isHardwareVdec);
+
+                  method.put("width", zegoStreamQuality.width);
+                  method.put("height", zegoStreamQuality.height);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onInviteJoinLiveRequest(int seq, String fromUserID, String fromUserName, String roomID) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onInviteJoinLiveRequest");
+                  method.put("seq", seq);
+                  method.put("fromUserID", fromUserID);
+                  method.put("fromUserName", fromUserName);
+                  method.put("roomID", roomID);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onRecvEndJoinLiveCommand(String fromUserID, String fromUserName, String roomID) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onRecvEndJoinLiveCommand");
+                  method.put("fromUserID", fromUserID);
+                  method.put("fromUserName", fromUserName);
+                  method.put("roomID", roomID);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onVideoSizeChangedTo(String streamID, int width, int height) {
+
+              if(mEventSink != null) {
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onVideoSizeChangedTo");
+                  method.put("streamID", streamID);
+                  method.put("width", width);
+                  method.put("height", height);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+
+          }
+
+          @Override
+          public void onRemoteCameraStatusUpdate(String streamID, int status) {
+
+              if(mEventSink != null) {
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onRemoteCameraStatusUpdate");
+                  method.put("streamID", streamID);
+                  method.put("status", status);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onRemoteMicStatusUpdate(String streamID, int status) {
+
+              if(mEventSink != null) {
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onRemoteMicStatusUpdate");
+                  method.put("streamID", streamID);
+                  method.put("status", status);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onRecvRemoteAudioFirstFrame(String streamID) {
+
+              if(mEventSink != null) {
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onRecvRemoteAudioFirstFrame");
+                  method.put("streamID", streamID);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onRecvRemoteVideoFirstFrame(String streamID) {
+
+              if(mEventSink != null) {
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onRecvRemoteVideoFirstFrame");
+                  method.put("streamID", streamID);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onRenderRemoteVideoFirstFrame(String streamID) {
+
+              if(mEventSink != null) {
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onRenderRemoteVideoFirstFrame");
+                  method.put("streamID", streamID);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+      });
+
+      mZegoLiveRoom.setZegoLiveEventCallback(new IZegoLiveEventCallback() {
+          @Override
+          public void onLiveEvent(int event, HashMap<String, String> info) {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onLiveEvent");
+                  method.put("event", event);
+                  method.put("info", info);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+      });
+
+      mZegoLiveRoom.setZegoAVEngineCallback(new IZegoAVEngineCallback() {
+          @Override
+          public void onAVEngineStart() {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onAVEngineStart");
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+
+          @Override
+          public void onAVEngineStop() {
+              if(mEventSink != null) {
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onAVEngineStop");
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+      });
+
+      mZegoMediaSideInfo = new ZegoMediaSideInfo();
+      mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
+          @Override
+          public void onRecvMediaSideInfo(String streamID, ByteBuffer data, int dataLen) {
+
+              if(mEventSink != null) {
+
+                  if (dataLen == 0) {
+                      return;
+                  }
+
+                  int mediaType = (data.get(0) & 0xFF) << 24 | (data.get(1) & 0xFF) << 16 | (data.get(2) & 0xFF) << 8 | (data.get(3) & 0xFF);
+
+                  byte[] tempBuffer;
+                  if(mediaType == 1001 || mediaType == 1002) {
+
+                      tempBuffer = new byte[dataLen - 4];
+                      for (int i = 0; i < dataLen - 4; i++) {
+                          tempBuffer[i] = data.get(i + 4);
+                      }
+
+                  } else {
+
+                      tempBuffer = new byte[dataLen - 5];
+                      for (int i = 0; i < dataLen - 5; i++) {
+                          tempBuffer[i] = data.get(i + 5);
+                      }
+
+                  }
+
+
+                  String strData = new String(tempBuffer);
+
+                  HashMap<String, Object> returnMap = new HashMap<>();
+                  returnMap.put("type", EVENT_TYPE.TYPE_MEDIA_SIDE_INFO_EVENT.ordinal());
+
+                  HashMap<String, Object> method = new HashMap<>();
+                  method.put("name", "onRecvMediaSideInfo");
+                  method.put("streamID", streamID);
+                  method.put("data", strData);
+
+                  returnMap.put("method", method);
+                  mEventSink.success(returnMap);
+              }
+          }
+      });
 
     byte[] appSign = convertStringToSign(strAppSign);
     boolean success = mZegoLiveRoom.initSDK(appID, appSign, new IZegoInitSDKCompletionCallback() {
 
       @Override
       public void onInitSDK(int i) {
-        if(i == 0) {
-          mZegoLiveRoom.setZegoRoomCallback(new IZegoRoomCallback() {
-            @Override
-            public void onStreamUpdated(int type, ZegoStreamInfo[] zegoStreamInfos, String roomID) {
-              if(mEventSink != null) {
 
-                ArrayList<HashMap<String, Object>> streamList = new ArrayList<>();
-                for (ZegoStreamInfo streamInfo : zegoStreamInfos) {
-                  HashMap<String, Object> map = new HashMap<>();
-                  map.put("userID", streamInfo.userID);
-                  map.put("userName", streamInfo.userName);
-                  map.put("streamID", streamInfo.streamID);
-                  map.put("extraInfo", streamInfo.extraInfo);
-                  streamList.add(map);
-                }
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onStreamUpdated");
-                method.put("updateType", type);
-                method.put("roomID", roomID);
-                method.put("streamList", streamList);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onStreamExtraInfoUpdated(ZegoStreamInfo[] zegoStreamInfos, String roomID) {
-              if(mEventSink != null) {
-
-                ArrayList<HashMap<String, Object>> streamList = new ArrayList<>();
-                for (ZegoStreamInfo streamInfo : zegoStreamInfos) {
-                  HashMap<String, Object> map = new HashMap<>();
-                  map.put("userID", streamInfo.userID);
-                  map.put("userName", streamInfo.userName);
-                  map.put("streamID", streamInfo.streamID);
-                  map.put("extraInfo", streamInfo.extraInfo);
-                  streamList.add(map);
-                }
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onStreamExtraInfoUpdated");
-                method.put("roomID", roomID);
-                method.put("streamList", streamList);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onTempBroken(int errorCode, String roomID) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onTempBroken");
-                method.put("roomID", roomID);
-                method.put("errorCode", errorCode);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onReconnect(int errorCode, String roomID) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onReconnect");
-                method.put("roomID", roomID);
-                method.put("errorCode", errorCode);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onDisconnect(int errorCode, String roomID) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onDisconnect");
-                method.put("roomID", roomID);
-                method.put("errorCode", errorCode);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onKickOut(int reason, String roomID) {
-                if(mEventSink != null) {
-
-                    HashMap<String, Object> returnMap = new HashMap<>();
-                    returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                    HashMap<String, Object> method = new HashMap<>();
-                    method.put("name", "onKickOut");
-                    method.put("roomID", roomID);
-                    method.put("reason", reason);
-
-                    returnMap.put("method", method);
-                    mEventSink.success(returnMap);
-                }
-            }
-
-            @Override
-            public void onRecvCustomCommand(String userID, String userName, String content, String roomID) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onReceiveCustomCommand");
-                method.put("userID", userID);
-                method.put("userName", userName);
-                method.put("content", content);
-                method.put("roomID", roomID);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-          });
-
-          mZegoLiveRoom.setZegoIMCallback(new IZegoIMCallback() {
-            @Override
-            public void onUserUpdate(ZegoUserState[] zegoUserStates, int type) {
-              if(mEventSink != null) {
-
-                ArrayList<HashMap<String, Object>> userList = new ArrayList<>();
-                for (ZegoUserState userInfo : zegoUserStates) {
-                  HashMap<String, Object> map = new HashMap<>();
-                  map.put("userID", userInfo.userID);
-                  map.put("userName", userInfo.userName);
-                  map.put("updateFlag", userInfo.updateFlag);
-                  map.put("role", userInfo.roomRole);
-                  userList.add(map);
-                }
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onUserUpdate");
-                method.put("updateType", type);
-                method.put("userList", userList);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onRecvRoomMessage(String s, ZegoRoomMessage[] zegoRoomMessages) {
-
-            }
-
-            @Override
-            public void onRecvConversationMessage(String s, String s1, ZegoConversationMessage zegoConversationMessage) {
-
-            }
-
-            @Override
-            public void onUpdateOnlineCount(String s, int i) {
-
-            }
-
-            @Override
-            public void onRecvBigRoomMessage(String s, ZegoBigRoomMessage[] zegoBigRoomMessages) {
-
-            }
-          });
-
-          mZegoLiveRoom.setZegoLivePublisherCallback(new IZegoLivePublisherCallback() {
-            @Override
-            public void onPublishStateUpdate(int stateCode, String streamID, HashMap<String, Object> streamInfo) {
-
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onPublishStateUpdate");
-                method.put("stateCode", stateCode);
-                method.put("streamID", streamID);
-
-                HashMap<String, Object> info = new HashMap<>();
-                streamInfo.put("streamID", streamInfo.get(ZegoConstants.StreamKey.STREAM_ID));
-                streamInfo.put("rtmpList", streamInfo.get(ZegoConstants.StreamKey.RTMP_URL_LIST));
-                streamInfo.put("flvList", streamInfo.get(ZegoConstants.StreamKey.FLV_URL_LIST));
-                streamInfo.put("hlsList", streamInfo.get(ZegoConstants.StreamKey.HLS_URL_LST));
-                method.put("streamInfo", info);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onJoinLiveRequest(int seq, String fromUserID, String fromUserName, String roomID) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onJoinLiveRequest");
-                method.put("seq", seq);
-                method.put("fromUserID", fromUserID);
-                method.put("fromUserName", fromUserName);
-                method.put("roomID", roomID);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onPublishQualityUpdate(String streamID, ZegoPublishStreamQuality zegoStreamQuality) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onPublishQualityUpdate");
-                method.put("streamID", streamID);
-
-                method.put("acapFps", zegoStreamQuality.acapFps);
-                method.put("anetFps", zegoStreamQuality.anetFps);
-                method.put("akbps", zegoStreamQuality.akbps);
-
-                method.put("vcapFps", zegoStreamQuality.vcapFps);
-                method.put("vencFps", zegoStreamQuality.vencFps);
-                method.put("vnetFps", zegoStreamQuality.vnetFps);
-                method.put("vkbps", zegoStreamQuality.vkbps);
-
-                method.put("rtt", zegoStreamQuality.rtt);
-                method.put("pktLostRate", zegoStreamQuality.pktLostRate);
-
-                method.put("isHardwareVenc", zegoStreamQuality.isHardwareVenc);
-
-                method.put("width", zegoStreamQuality.width);
-                method.put("height", zegoStreamQuality.height);
-
-                method.put("quality", zegoStreamQuality.quality);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Deprecated
-            @Override
-            public AuxData onAuxCallback(int i) {
-              return null;
-            }
-
-            @Override
-            public void onCaptureVideoSizeChangedTo(int width, int height) {
-                if(mEventSink != null) {
-
-                    HashMap<String, Object> returnMap = new HashMap<>();
-                    returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
-
-                    HashMap<String, Object> method = new HashMap<>();
-                    method.put("name", "onCaptureVideoSizeChangedTo");
-                    method.put("width", width);
-                    method.put("height", height);
-
-                    returnMap.put("method", method);
-                    mEventSink.success(returnMap);
-                }
-            }
-
-            @Deprecated
-            @Override
-            public void onMixStreamConfigUpdate(int i, String s, HashMap<String, Object> hashMap) {
-
-            }
-
-            @Override
-            public void onCaptureVideoFirstFrame() {
-              if(mEventSink != null) {
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onCaptureVideoFirstFrame");
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-
-            }
-
-            @Override
-            public void onCaptureAudioFirstFrame() {
-              if(mEventSink != null) {
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onCaptureAudioFirstFrame");
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-          });
-
-          mZegoLiveRoom.setZegoLivePlayerCallback(new IZegoLivePlayerCallback2() {
-            @Override
-            public void onPlayStateUpdate(int stateCode, String streamID) {
-
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onPlayStateUpdate");
-                method.put("stateCode", stateCode);
-                method.put("streamID", streamID);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onPlayQualityUpdate(String streamID, ZegoPlayStreamQuality zegoStreamQuality) {
-
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onPlayQualityUpdate");
-                method.put("streamID", streamID);
-
-                method.put("vnetFps", zegoStreamQuality.vnetFps);
-                method.put("vdjFps", zegoStreamQuality.vdjFps);
-                method.put("vdecFps", zegoStreamQuality.vdecFps);
-                method.put("vrndFps", zegoStreamQuality.vrndFps);
-                method.put("vkbps", zegoStreamQuality.vkbps);
-
-                method.put("anetFps", zegoStreamQuality.anetFps);
-                method.put("adjFps", zegoStreamQuality.adjFps);
-                method.put("adecFps", zegoStreamQuality.adecFps);
-                method.put("arndFps", zegoStreamQuality.arndFps);
-                method.put("akbps", zegoStreamQuality.akbps);
-
-                method.put("audioBreakRate", zegoStreamQuality.audioBreakRate);
-                method.put("videoBreakRate", zegoStreamQuality.videoBreakRate);
-                method.put("rtt", zegoStreamQuality.rtt);
-                method.put("p2pRtt", zegoStreamQuality.peerToPeerDelay);
-                method.put("pktLostRate", zegoStreamQuality.pktLostRate);
-                method.put("p2pPktLostRate", zegoStreamQuality.peerToPeerPktLostRate);
-                method.put("quality", zegoStreamQuality.quality);
-                method.put("delay", zegoStreamQuality.delay);
-
-                method.put("isHardwareVdec", zegoStreamQuality.isHardwareVdec);
-
-                method.put("width", zegoStreamQuality.width);
-                method.put("height", zegoStreamQuality.height);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onInviteJoinLiveRequest(int seq, String fromUserID, String fromUserName, String roomID) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onInviteJoinLiveRequest");
-                method.put("seq", seq);
-                method.put("fromUserID", fromUserID);
-                method.put("fromUserName", fromUserName);
-                method.put("roomID", roomID);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onRecvEndJoinLiveCommand(String fromUserID, String fromUserName, String roomID) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onRecvEndJoinLiveCommand");
-                method.put("fromUserID", fromUserID);
-                method.put("fromUserName", fromUserName);
-                method.put("roomID", roomID);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onVideoSizeChangedTo(String streamID, int width, int height) {
-
-              if(mEventSink != null) {
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onVideoSizeChangedTo");
-                method.put("streamID", streamID);
-                method.put("width", width);
-                method.put("height", height);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-
-            }
-
-            @Override
-            public void onRemoteCameraStatusUpdate(String streamID, int status) {
-
-              if(mEventSink != null) {
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onRemoteCameraStatusUpdate");
-                method.put("streamID", streamID);
-                method.put("status", status);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onRemoteMicStatusUpdate(String streamID, int status) {
-
-              if(mEventSink != null) {
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onRemoteMicStatusUpdate");
-                method.put("streamID", streamID);
-                method.put("status", status);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onRecvRemoteAudioFirstFrame(String streamID) {
-
-              if(mEventSink != null) {
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onRecvRemoteAudioFirstFrame");
-                method.put("streamID", streamID);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onRecvRemoteVideoFirstFrame(String streamID) {
-
-              if(mEventSink != null) {
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onRecvRemoteVideoFirstFrame");
-                method.put("streamID", streamID);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-
-            @Override
-            public void onRenderRemoteVideoFirstFrame(String streamID) {
-
-              if(mEventSink != null) {
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onRenderRemoteVideoFirstFrame");
-                method.put("streamID", streamID);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-          });
-
-          mZegoLiveRoom.setZegoLiveEventCallback(new IZegoLiveEventCallback() {
-            @Override
-            public void onLiveEvent(int event, HashMap<String, String> info) {
-              if(mEventSink != null) {
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onLiveEvent");
-                method.put("event", event);
-                method.put("info", info);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-          });
-
-          mZegoLiveRoom.setZegoAVEngineCallback(new IZegoAVEngineCallback() {
-              @Override
-              public void onAVEngineStart() {
-                  if(mEventSink != null) {
-
-                      HashMap<String, Object> returnMap = new HashMap<>();
-                      returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                      HashMap<String, Object> method = new HashMap<>();
-                      method.put("name", "onAVEngineStart");
-
-                      returnMap.put("method", method);
-                      mEventSink.success(returnMap);
-                  }
-              }
-
-              @Override
-              public void onAVEngineStop() {
-                  if(mEventSink != null) {
-
-                      HashMap<String, Object> returnMap = new HashMap<>();
-                      returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
-
-                      HashMap<String, Object> method = new HashMap<>();
-                      method.put("name", "onAVEngineStop");
-
-                      returnMap.put("method", method);
-                      mEventSink.success(returnMap);
-                  }
-              }
-          });
-
-          mZegoMediaSideInfo = new ZegoMediaSideInfo();
-          mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
-            @Override
-            public void onRecvMediaSideInfo(String streamID, ByteBuffer data, int dataLen) {
-
-              if(mEventSink != null) {
-
-                if (dataLen == 0) {
-                  return;
-                }
-
-                int mediaType = (data.get(0) & 0xFF) << 24 | (data.get(1) & 0xFF) << 16 | (data.get(2) & 0xFF) << 8 | (data.get(3) & 0xFF);
-
-                byte[] tempBuffer;
-                if(mediaType == 1001 || mediaType == 1002) {
-
-                  tempBuffer = new byte[dataLen - 4];
-                  for (int i = 0; i < dataLen - 4; i++) {
-                    tempBuffer[i] = data.get(i + 4);
-                  }
-
-                } else {
-
-                  tempBuffer = new byte[dataLen - 5];
-                  for (int i = 0; i < dataLen - 5; i++) {
-                    tempBuffer[i] = data.get(i + 5);
-                  }
-
-                }
-
-
-                String strData = new String(tempBuffer);
-
-                HashMap<String, Object> returnMap = new HashMap<>();
-                returnMap.put("type", EVENT_TYPE.TYPE_MEDIA_SIDE_INFO_EVENT.ordinal());
-
-                HashMap<String, Object> method = new HashMap<>();
-                method.put("name", "onRecvMediaSideInfo");
-                method.put("streamID", streamID);
-                method.put("data", strData);
-
-                returnMap.put("method", method);
-                mEventSink.success(returnMap);
-              }
-            }
-          });
-
-        }
-
-
+        ZegoLogJNI.logNotice("[Flutter-Native] on init sdk, errorCode: " + i);
         result.success(i);
       }
     });
 
     if(!success)
-      result.success(success);
+      result.success(false);
 
   }
 
