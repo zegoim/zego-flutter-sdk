@@ -1,7 +1,9 @@
 #pragma once
 
-#define ZEGOAVKIT_API __attribute__((visibility("default")))
+#define ZEGO_API __attribute__((visibility("default")))
 
-extern ZEGOAVKIT_API void ZegoExternalLogWithNotice(const char* content);
 
-inline void log_string_notice(const char* content) { ZegoExternalLogWithNotice(content);}
+extern ZEGO_API void zego_liveroom_custom_log(const char* content);
+
+extern ZEGO_API void ZegoExternalLogWithNotice(const char* content);
+//inline void log_string_notice(const char* content) { zego_liveroom_custom_log(content);}

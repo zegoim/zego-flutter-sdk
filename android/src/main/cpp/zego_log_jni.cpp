@@ -28,7 +28,7 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_zego_zegoliveroomplugin_ZegoLogJNI_logNotice(JNIEnv *env, jclass, jstring content) {
 
     std::string strContent = jstring2string(env, content);
-    return log_string_notice(strContent.c_str());
+    return ZegoExternalLogWithNotice(strContent.c_str());
 }
 
 #ifdef __cplusplus

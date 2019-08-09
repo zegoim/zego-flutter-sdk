@@ -1,4 +1,8 @@
 
+## 1.0.6
+1. fix some bug and crash
+2. add log system
+
 ## 1.0.5
 1. add peer to peer delay/package lost rate.
 2. add remote user's device state notification(on/off)

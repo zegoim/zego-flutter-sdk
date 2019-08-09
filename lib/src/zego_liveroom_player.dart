@@ -318,7 +318,7 @@ class ZegoLiveRoomPlayerPlugin {
     _onRenderRemoteVideoFirstFrame = onRenderRemoteVideoFirstFrame;
 
     _addRoomNoticeLog('[Flutter-Dart] registerPlayerCallback, init player stream subscription');
-    _streamSubscription = ZegoLiveRoomEventChannel.listenPublishEvent().listen(_eventListener, onError: (error) {
+    _streamSubscription = ZegoLiveRoomEventChannel.listenPlayEvent().listen(_eventListener, onError: (error) {
       PlatformException exception = error;
       _addRoomNoticeLog('[Flutter-Dart] player stream subscription listen error: ${exception.message??'no error message'}');
     });

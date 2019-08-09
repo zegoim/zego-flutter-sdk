@@ -1,6 +1,7 @@
 #import "ZegoLiveRoomPlugin.h"
 #import "ZegoRendererController.h"
 #import "ZegoPlatformViewFactory.h"
+#import "ZegoLog.h"
 
 typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     TYPE_ROOM_EVENT = 0,
@@ -105,7 +106,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     } else if([@"uninitSDK" isEqualToString:call.method]){
         
         if(self.zegoApi == nil) {
-            
+            [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] repeat uninit sdk, ignore"]];
             result(@NO);
         }
         else {
@@ -128,6 +129,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
             [self.zegoApi setLiveEventDelegate:nil];
             [self.zegoApi setIMDelegate:nil];
             self.zegoApi = nil;
+            [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] unInitSDK"]];
             result(@YES);
         }
         
@@ -161,7 +163,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         NSString *roomID = args[@"roomID"];
         NSString *roomName = args[@"roomName"];
         int role = [self numberToIntValue:args[@"role"]];
-      
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] loginRoom enter, roomID: %@, roomName: %@, role: %d", roomID, roomName, role]];
         BOOL success = [self.zegoApi loginRoom:roomID roomName:roomName role:role withCompletionBlock:^(int errorCode, NSArray<ZegoStream *> *streamList) {
             
               
@@ -170,7 +172,10 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
                 
                     [streamArray addObject:@{@"userID": stream.userID, @"userName": stream.userName, @"streamID": stream.streamID, @"extraInfo": stream.extraInfo}];
             }
-            result(@{@"errorCode": @(errorCode), @"streamList": streamArray});
+            
+            NSDictionary *dic = @{@"errorCode": @(errorCode), @"streamList": streamArray};
+            [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onLoginRoom, return map: %@", dic]];
+            result(dic);
               
           }];
         
@@ -823,6 +828,10 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         if(self.isEnablePlatformView) {
             int viewID = [self numberToIntValue:args[@"viewID"]];
             view = [[ZegoPlatformViewFactory shareInstance]  getPlatformView:@(viewID)];
+            if(view == nil) {
+                result(@(NO));
+                return;
+            }
         }
         
         if(![info isKindOfClass:[NSNull class]]) {
@@ -1301,7 +1310,13 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         NSString *msg = [ZegoError getErrorMsg:error];
         result(msg);
         
-    } else {
+    }
+    else if([@"addNoticeLog" isEqualToString:call.method]) {
+        NSString *content = args[@"content"];
+        [ZegoLog logNotice:content];
+        result(nil);
+    }
+    else {
         result(FlutterMethodNotImplemented);
     }
 
@@ -1377,26 +1392,34 @@ Byte toByte(NSString* c) {
 }
 
 - (void)throwSdkNotInitError:(FlutterResult)result ofMethodName:(NSString *)methodName {
-    
-    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:[NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zegoliveroom api is not inited."] details:nil]);
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zegoliveroom api is not inited."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
 }
 
 - (void)throwNoRendererError:(FlutterResult)result ofMethodName:(NSString *)methodName {
-    
-    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:[NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zego preview or play renderer is null."] details:nil]);
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zego preview or play renderer is null."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
 }
 
 - (void)throwNoTextureError:(FlutterResult)result ofMethodName:(NSString *)methodName {
-    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:[NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is true. make sure you turn off this api before calling \'initSDK\' when you use texture to render."] details:nil]);
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is true. make sure you turn off this api before calling \'initSDK\' when you use texture to render."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
 }
 
 - (void)throwNoPlatformViewError:(FlutterResult)result ofMethodName:(NSString *)methodName {
-    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:[NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render."] details:nil]);
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
 }
 
 
 #pragma mark - Handle Flutter CallMethods
 - (void)initSDKWithAppID:(unsigned int)appID appSign: (NSString *)appsign result:(FlutterResult)result {
+    
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] enter init sdk, app id: %u", appID]];
     
     NSData *appSign = convertStringToSign(appsign);
     if(appSign == nil)
@@ -1410,6 +1433,8 @@ Byte toByte(NSString* c) {
     }
     
     self.zegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
+        
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] on init sdk, errorCode: %d", errorCode]];
         
         if(errorCode == 0)
         {
@@ -1430,12 +1455,14 @@ Byte toByte(NSString* c) {
         result(@(errorCode));
         
     }];
+    
 }
 
 #pragma mark - FlutterStreamHandler methods
 
 - (FlutterError* _Nullable)onCancelWithArguments:(id _Nullable)arguments {
-        
+    
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onCancel sink, object: %@", arguments]];
     _eventSink = nil;
     return nil;
 }
@@ -1444,6 +1471,7 @@ Byte toByte(NSString* c) {
                                        eventSink:(nonnull FlutterEventSink)sink {
  
     _eventSink = sink;
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onListen sink: %p, object: %@", _eventSink, arguments]];
     return nil;
 }
 
@@ -1453,6 +1481,7 @@ Byte toByte(NSString* c) {
 - (void)onStreamUpdated:(int)type streams:(NSArray<ZegoStream*> *)streamList roomID:(NSString *)roomID
 {
     FlutterEventSink sink = _eventSink;
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onStreamUpdated enter, sink: %p", sink]];
     if(sink) {
         
         NSMutableArray *streamArray = [NSMutableArray array];
@@ -1461,12 +1490,14 @@ Byte toByte(NSString* c) {
             [streamArray addObject:@{@"userID": stream.userID, @"userName": stream.userName, @"streamID": stream.streamID, @"extraInfo": stream.extraInfo}];
         }
         
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onStreamUpdated",
-                            @"updateType": @(type),
-                            @"roomID": roomID,
-                            @"streamList": streamArray}
-            });
+        NSDictionary *dic = @{@"type": @(TYPE_ROOM_EVENT),
+                              @"method": @{@"name": @"onStreamUpdated",
+                                           @"updateType": @(type),
+                                           @"roomID": roomID,
+                                           @"streamList": streamArray}
+                              };
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onStreamUpdated, return map: %@", dic]];
+        sink(dic);
     }
 }
 
@@ -1617,13 +1648,16 @@ Byte toByte(NSString* c) {
 - (void)onPublishStateUpdate:(int)stateCode streamID:(NSString *)streamID streamInfo:(NSDictionary *)info{
 
     FlutterEventSink sink = _eventSink;
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPublishStateUpdate enter, sink: %p", sink]];
     if(sink) {
-        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
-               @"method": @{@"name": @"onPublishStateUpdate",
-                            @"stateCode": @(stateCode), 
-                            @"streamID": streamID, 
-                            @"streamInfo": info}
-            });
+        NSDictionary *dic = @{@"type": @(TYPE_PUBLISH_EVENT),
+                              @"method": @{@"name": @"onPublishStateUpdate",
+                                           @"stateCode": @(stateCode),
+                                           @"streamID": streamID,
+                                           @"streamInfo": info}
+                              };
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPublishStateUpdate, return map: %@", dic]];
+        sink(dic);
     }
 }
 
@@ -1724,12 +1758,15 @@ Byte toByte(NSString* c) {
 - (void)onPlayStateUpdate:(int)stateCode streamID:(NSString *)streamID
 {
     FlutterEventSink sink = _eventSink;
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPlayStateUpdate enter, sink: %p", sink]];
     if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT), 
-               @"method": @{@"name": @"onPlayStateUpdate",
-                            @"stateCode": @(stateCode),
-                            @"streamID": streamID}
-            });
+        NSDictionary *dic = @{@"type": @(TYPE_PLAY_EVENT),
+                              @"method": @{@"name": @"onPlayStateUpdate",
+                                           @"stateCode": @(stateCode),
+                                           @"streamID": streamID}
+                              };
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPlayStateUpdate, return map: %@", dic]];
+        sink(dic);
     }
 }
 

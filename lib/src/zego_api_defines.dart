@@ -200,7 +200,7 @@ class ZegoAVConfig {
     this.avPresetType = presetType;
 
     
-    switch (presetType){
+    switch (this.avPresetType){
       case ZegoAVPresetType.AVCONFIG_VERYLOW:
         /// 分辨率：180 x 320
         this.videoCaptureResolutionWidth = 180;

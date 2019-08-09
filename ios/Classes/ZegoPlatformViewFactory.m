@@ -64,6 +64,9 @@ static ZegoPlatformViewFactory *g_factory = nil;
     if(!viewID)
         return NO;
     
+    if(![[self.views allKeys] containsObject:viewID])
+        return NO;
+    
     [self.views removeObjectForKey:viewID];
     return YES;
 }
