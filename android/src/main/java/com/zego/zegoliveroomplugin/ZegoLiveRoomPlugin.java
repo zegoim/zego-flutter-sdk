@@ -91,7 +91,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
 
   public static void registerWith(Registrar registrar) {
-
+    
     ZegoLiveRoomPlugin instance = new ZegoLiveRoomPlugin(registrar);
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.zego.im/zegoliveroom_plugin");
     channel.setMethodCallHandler(instance);
