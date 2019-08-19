@@ -26,7 +26,7 @@ public class ZegoViewRenderer {
         this.mTextureID = textureEntry.id();
         this.surfaceTexture = textureEntry.surfaceTexture();
         this.surfaceTexture.setDefaultBufferSize(viewWidth, viewHeight);
-        this.surface = new Surface(textureEntry.surfaceTexture());
+        this.surface = new Surface(this.surfaceTexture);
 
         this.mViewWidth = viewWidth;
         this.mViewHeight = viewHeight;
@@ -41,7 +41,13 @@ public class ZegoViewRenderer {
 
     public void release() {
 
-        surface.release();
+        textureEntry.release();
+
+        if(surface != null) {
+            surface.release();
+        }
+
+
 
         mIsInited = false;
     }

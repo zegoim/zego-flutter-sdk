@@ -915,11 +915,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         ArrayList<String> rtmpUrls = (ArrayList<String>)info.get("rtmpUrls");
         @SuppressWarnings("unchecked")
         ArrayList<String> flvUrls = (ArrayList<String>)info.get("flvUrls");
-
         ZegoStreamExtraPlayInfo extraPlayInfo = new ZegoStreamExtraPlayInfo();
         extraPlayInfo.params = params;
-        extraPlayInfo.rtmpUrls = (String[])rtmpUrls.toArray();
-        extraPlayInfo.flvUrls = (String[])flvUrls.toArray();
+        extraPlayInfo.rtmpUrls = (String[])rtmpUrls.toArray(new String[0]);
+        extraPlayInfo.flvUrls =  (String[])flvUrls.toArray(new String[0]);
 
         success = mZegoLiveRoom.startPlayingStream(streamID, mIsEnablePlatformView ? view.getSurfaceView() : surface, extraPlayInfo);
       } else {

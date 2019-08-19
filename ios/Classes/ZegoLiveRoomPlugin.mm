@@ -1996,8 +1996,10 @@ Byte toByte(NSString* c) {
 
 - (CVPixelBufferRef)onCreateInputBufferWithWidth:(int)width height:(int)height cvPixelFormatType:(OSType)cvPixelFormatType streamID:(NSString *)streamID
 {
-    if(![self.renderController isRendering])
+    if(![self.renderController isRendering]) {
+        [ZegoLog logNotice:@"[onCreateInputBufferWithWidth] render controller is not rendering, ignore"];
         return nil;
+    }
     
     ZegoPixelBufferPool *pool_ = [self.renderController getPixelBufferPool:streamID];
     
@@ -2010,14 +2012,18 @@ Byte toByte(NSString* c) {
     }
     
     if(width != [pool_ getWidth] || height != [pool_ getHeight]) {
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[onCreateInputBufferWithWidth] resize pixelbuffer pool, old width: %d, old height: %d, new width: %d, new height: %d", [pool_ getWidth], [pool_ getHeight], width, height]];
+        
         [self.renderController createPixelBufferPool:width height:height streamID:streamID];
         pool_ = [self.renderController getPixelBufferPool:streamID];
     }
     
     CVPixelBufferRef pixelBuffer;
     CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, [pool_ getBufferPool], &pixelBuffer);
-    if (ret != kCVReturnSuccess)
+    if (ret != kCVReturnSuccess) {
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[onCreateInputBufferWithWidth] pixelbuffer pool creates pixelbuffer failed, error: %d", ret]];
         return nil;
+    }
    
     return pixelBuffer;
     
@@ -2027,6 +2033,7 @@ Byte toByte(NSString* c) {
 {
     ZegoViewRenderer *renderer = [self.renderController getRenderer:streamID];
     if(renderer == nil) {
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[onPixelBufferCopyed] renderer %@ has been released, delete buffer", streamID]];
         CVBufferRelease(pixelBuffer);
         return;
     }
