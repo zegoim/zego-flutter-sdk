@@ -899,8 +899,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           ZegoViewRenderer renderer = mRenders.get(streamID);
           surface = renderer.getSurface();
         }else {
-          result.success(false);
-          return;
+
+          // 这个位置不能return false，对于纯语音场景会走到这个分支中，不能被过滤掉
+          // result.success(false);
+          //return;
         }
       }
 
