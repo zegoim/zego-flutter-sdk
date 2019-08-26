@@ -31,7 +31,7 @@ dependencies:
   flutter:
 	sdk: flutter
 
-  zegoliveroom_plugin: ^1.0.5
+  zegoliveroom_plugin: ^1.0.7
 ```
 
 * 以git形式依赖：
@@ -106,7 +106,11 @@ class _MyAppState extends State<MyApp> {
 
 更多功能请参考API用法。
 
-## 六、常见问题
+## 六、API文档
+
+参考 [ZegoLiveRoomPlugin API Reference](https://pub.dev/documentation/zegoliveroom_plugin/latest/)
+
+## 七、常见问题
 
 #### 1. 解决 iOS 平台下 `ZegoLiveRoomApi-AudioIO`、`audio_in_output` 模块编译错误问题：
 

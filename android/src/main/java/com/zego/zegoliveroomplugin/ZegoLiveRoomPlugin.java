@@ -91,7 +91,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
 
   public static void registerWith(Registrar registrar) {
-
+    
     ZegoLiveRoomPlugin instance = new ZegoLiveRoomPlugin(registrar);
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.zego.im/zegoliveroom_plugin");
     channel.setMethodCallHandler(instance);
@@ -898,12 +898,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         if(mRenders.containsKey(streamID)) {
           ZegoViewRenderer renderer = mRenders.get(streamID);
           surface = renderer.getSurface();
-        }else {
+        }//else {
 
           // 这个位置不能return false，对于纯语音场景会走到这个分支中，不能被过滤掉
           // result.success(false);
           //return;
-        }
+        //}
       }
 
       boolean success;
