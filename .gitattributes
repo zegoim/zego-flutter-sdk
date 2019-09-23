@@ -1,3 +1,4 @@
 *.m linguist-language=Dart
 *.mm linguist-language=Dart
 *.java linguist-language=Dart
+ios/ZegoLiveRoom.framework/ZegoLiveRoom filter=lfs diff=lfs merge=lfs -text
