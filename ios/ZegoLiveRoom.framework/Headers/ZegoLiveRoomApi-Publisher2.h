@@ -17,28 +17,33 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 /**
  设置本地预览视图
  
+ * 注意：
+ * 1.建议在调用 -startPreview: 开启预览前，调用该 API 设置本地预览视图，才能在视图上预览采集的视频。
+ * 2.建议本地预览结束后，调用该 API 设置预览视图为 nil。
+ 
  @param view 用于渲染本地预览视频的视图
  @param index 推流 channel Index
- @return true 成功，false 失败
- @discussion 建议本地预览结束后，调用该 API 设置预览视图为 nil
+ @return 设置结果。true 成功，false 失败
  */
 - (bool)setPreviewView:(ZEGOView *)view channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
  启动本地预览
  
+ * 注意：
+ * 1.建议在启动本地预览前，调用 -setPreviewView:channelIndex: 设置本地预览视图。
+ * 2.在退出房间后，SDK 内部会停止预览，如果需要继续预览，需要重新调用本方法开启预览。
+ 
  @param index 推流 channel Index
  @return true 成功，false 失败
- @discussion 启动本地预览前，要调用 [ZegoLiveRoomApi (Publisher) -setPreviewView:] 设置本地预览视图
  */
 - (bool)startPreview:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 结束本地预览
+ 停止本地预览
  
  @param index 推流 channel Index
  @return true 成功，false 失败
- @discussion 建议停止推流，或本地预览结束后，调用该 API 停止本地预览
  */
 - (bool)stopPreview:(ZegoAPIPublishChannelIndex)index;
 
@@ -155,10 +160,16 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 /**
  设置手机方向
  
+ * 本设置用于校正输出视频朝向，默认竖屏。建议在预览和推流之前设置好方向。
+ * 不建议在推流过程中旋转画面，原因：
+ * 1. 如果刚开始为竖屏开播，此时旋转为横屏，但是分辨率仍然是竖屏的，会导致横屏后，画面放大的效果(按照等比填充的模式) 或者 上下黑边的效果(按照等比缩放的模式)，除非旋转为横屏后，画面的分辨率也做修改。
+ * 2. 直播过程中修改分辨率的话，会导致录制文件(回放)有异常，因此不建议中途旋转画面。
+ 
  @param orientation 手机方向
  @param index 推流 channel Index
  @return true 成功，false 失败
- @discussion 本设置用于校正主播输出视频朝向
+ @see -startPreview:
+ @see -startPublishing2:title:flag:channelIndex:
  */
 - (bool)setAppOrientation:(UIInterfaceOrientation)orientation channelIndex:(ZegoAPIPublishChannelIndex)index;
 #endif
@@ -225,22 +236,27 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (bool)setFilter:(ZegoFilter)filter channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 设置本地预览视频视图的模式
+ 设置本地预览视图的模式
  
- @param mode 模式，参考 ZegoVideoViewMode 定义。默认 ZegoVideoViewModeScaleAspectFill
+ * 视图模式默认为 ZegoVideoViewModeScaleAspectFill。
+ 
+ @param mode 视图模式。详见 ZegoVideoViewMode 定义
  @param index 推流 channel Index
  @return true 成功，false 失败
- @discussion 推流开始前调用本 API 进行参数配置
  */
 - (bool)setPreviewViewMode:(ZegoVideoViewMode)mode channelIndex:(ZegoAPIPublishChannelIndex)index;
 
+
 /**
- 设置预览渲染朝向
+ 设置预览渲染图像的朝向
  
- @param rotate 旋转角度。默认 0
- @param index 推流 channel Index
+ * 注意：
+ * 1.只能设置(0/90/180/270)，默认为0。
+ * 2.该设置只是设置预览渲染图像的朝向，不会改变推流时的图像朝向。
+ 
+ @param rotate 逆时针旋转角度
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置。使用 setAppOrientation 替代
+ @see -setAppOrientation:channelIndex:
  */
 - (bool)setPreviewRotation:(int)rotate channelIndex:(ZegoAPIPublishChannelIndex)index;
 
@@ -265,13 +281,14 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (bool)enableCaptureMirror:(bool)enable channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 是否启用预览和推流镜像
+ 设置预览和推流镜像
  
- @param mode 镜像模式
+ * 预览镜像只对前置摄像头有效，后置无效。
+ * 默认预览启用镜像，推流不启用镜像（即 ZegoVideoMirrorModePreviewMirrorPublishNoMirror）
+ 
+ @param mode 镜像模式，详见 ZegoVideoMirrorMode
  @param index 推流 channel Index
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
- @note 默认启用预览镜像，不启用推流镜像
  */
 - (bool)setVideoMirrorMode:(ZegoVideoMirrorMode)mode channelIndex:(ZegoAPIPublishChannelIndex)index;
 
@@ -295,33 +312,35 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (void)setVideoEncoderRateControlConfig:(ZegoAPIVideoEncoderRateControlStrategy)strategy encoderCRF:(int)encoderCRF channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 是否使用前置摄像头
+ 是否使用前置摄像头，否则使用后置。
  
- @param bFront true 使用，false 不使用。默认 true
+ * 如果使用前置摄像头，本地预览和推流都将使用前置摄像头拍摄的数据。SDK 默认使用前置摄像头。
+ 
+ @param bFront 是否使用前置摄像头
  @param index 推流 channel Index
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
  */
 - (bool)setFrontCam:(bool)bFront channelIndex:(ZegoAPIPublishChannelIndex)index;
 
-
 /**
- 开启视频采集
+ 是否开启视频采集
  
- @param bEnable true 打开，false 关闭。默认 true
+ * 开启视频采集后，预览视图才能显示预览画面，推流时才包含采集的视频数据。SDK 默认开启视频采集。
+ 
+ @param bEnable 是否开启
  @param index 推流 channel Index
- @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
+ @return 设置结果。true 成功，false 失败
  */
 - (bool)enableCamera:(bool)bEnable channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 开关手电筒
+ 是否开启手电筒
  
- @param bEnable true 打开，false 关闭。默认 false
+ * 推流时可调用本 API 进行参数配置。SDK 默认关闭手电筒。
+ 
+ @param bEnable 是否开启
  @param index 推流 channel Index
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
  */
 - (bool)enableTorch:(bool)bEnable channelIndex:(ZegoAPIPublishChannelIndex)index;
 

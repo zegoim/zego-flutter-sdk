@@ -92,12 +92,14 @@ typedef enum {
     CAPTURE_ROTATE_270  = 270
 } CAPTURE_ROTATE;
 
-/** 分层编码 */
+/** 视频编解码器. */
 typedef enum {
-    /** 不支持分层编码 */
+    /** 默认编码, 不支持分层编码 */
     VIDEO_CODEC_DEFAULT = 0,
     /** 分层编码 要达到和VIDEO_CODEC_DEFAULT相同的编码质量，建议码率和VIDEO_CODEC_DEFAULT相比增加20%左右 */
-    VIDEO_CODEC_MULTILAYER = 1
+    VIDEO_CODEC_MULTILAYER = 1,
+    /** VP8编码 */
+    VIDEO_CODEC_VP8 = 2,
 } ZegoVideoCodecAvc;
 
 /** 视频分层类型 */
@@ -110,21 +112,44 @@ typedef enum {
     VideoStreamLayer_ExtendLayer = 1
 } VideoStreamLayer;
 
-/** MediaInfo类型 */
+/**
+ MediaInfo类型
+ */
 typedef enum {
-    /**< side info  */
+    /**
+     ZEGO 定义的打包类型，跟视频编码器产生的信息不存兼容性问题。
+     <br>但是在其它 CDN 上转码视频的时候，其它 CDN 基本上不支持提取这种方式打包的信息数据，转码完成后再从其它 CDN 拉流时，可能就丢失了这些次媒体信息。
+     <br>ZEGO CDN 转码支持提取此种方式打包的信息数据。
+     */
     SideInfoZegoDefined = 0,
-    /**< sei (nalu type = 6,payload type = 243), sei recommend useing this  */
+    /**
+     采用 H264 的 SEI (nalu type = 6,payload type = 243) 类型打包，此类型是 SEI 标准未规定的类型，跟视频编码器或者视频文件中的 SEI 不存在冲突性，用户不需要根据 SEI 的内容做过滤。
+     <br>若需要发送 SEI 推荐采用此种类型。
+     */
     SeiZegoDefined = 1,
-    /**< sei (nalu type = 6,payload type = 5) */
+    /**
+     采用 H264 的 SEI (nalu type = 6,payload type = 5) 类型打包，H264 标准对于此类型有规定的格式：startcode + nalu type(6) + payload type(5) + len + pay load(uuid + context)+ trailing bits；
+     
+     <br>因为视频编码器自身会产生 payload type 为 5 的 SEI，或者使用视频文件推流时，视频文件中也可能存在这样的 SEI，所以使用此类型时，用户需要把 uuid + context 当作一段 buffer 塞给次媒体的发送接口；
+     
+     <br>为了区别视频编码器自身产生的 SEI，所以对 uuid 有格式要求，即 uuid 16字节的前四个字节固定为 'Z' 'E' 'G' 'O' 四个字符（全部大写），后面12字节用户任意填写；
+     
+     <br>在 SDK 接收端，对于 payload type = 5的 SEI 会根据'ZEGO'字样做过滤，识别出符合要求的 SEI 抛给用户，避免用户收到编码器自身产生的 SEI。
+     */
     SeiUserUnregisted = 2
 }MediaInfoType;
 
-/** SEI发送类型 */
+/**
+ SEI发送类型
+ */
 typedef enum {
-    /**< sei send single frame  */
+    /**
+     SEI 单帧发送，此种发送方式下，ffmpeg 解码会产生类似“此帧无视频”的警告，可能会导致一些 CDN 兼容性问题，例如转码失败等。
+     */
     SeiSendSingleFrame = 0,
-    /**< sei send in any video frame(I, B, P)  */
+    /**
+     SEI 随视频帧(I, B, P)发送，推荐采用此类型。
+     */
     SeiSendInVideoFrame = 1
 } SeiSendType;
 
@@ -185,22 +210,38 @@ typedef enum : NSUInteger {
 } ZegoBeautifyFeature;
 
 
-/** 混流图层信息，原点在左上角 */
+/**
+ 混流图层信息
+ */
 @interface ZegoMixStreamInfo : NSObject
 
-/** 要混流的单流ID */
+/**
+ 要混流的单流ID
+ */
 @property (copy) NSString *streamID;
-/** 混流图层左上角坐标的第二个值 */
+/**
+ 混流画布左上角坐标的第二个值，左上角坐标为 (left, top)
+ */
 @property int top;
-/** 混流图层左上角坐标的第一个值，即左上角坐标为 (left, top) */
+/**
+ 混流画布左上角坐标的第一个值，左上角坐标为 (left, top)
+ */
 @property int left;
-/** 混流图层右下角坐标的第二个值 */
+/**
+ 混流画布右下角坐标的第二个值，右下角坐标为 (right, bottom)
+ */
 @property int bottom;
-/** 混流图层左上角坐标的第一个值，即右下角坐标为 (right, bottom) */
+/**
+ 混流画布右下角坐标的第一个值，右下角坐标为 (right, bottom)
+ */
 @property int right;
-/** 音浪ID，用于标识用户，注意大小是32位无符号数 */
+/**
+ 音浪ID，用于标识用户（比如拉取混流方可根据此标识明确到混流中的单条流是主播/观众/副主播），soundLevelID 必须大于等于 0 且小于等于 4294967295L（即2^32-1）
+ */
 @property unsigned int soundLevelID;
-/** 推流内容控制， 0表示音视频都要， 1表示只要音频， 2表示只要视频。default：0。*/
+/**
+ 推流内容控制， 0 表示输出的混流包含音视频，1 表示只包含音频，2 表示只包含视频；默认值为 0。
+ */
 @property int contentControl;
 
 /**
@@ -217,36 +258,75 @@ typedef enum : NSUInteger {
 @end
 
 
-/** 混流配置 */
+/**
+ 混流配置
+ */
 @interface ZegoCompleteMixStreamConfig : NSObject
 
-/**  outputIsUrl 为 YES，则此值为 Url；否则为流名 */
+/**
+ outputIsUrl 为 YES时，则此值为 Url；否则为流名。
+ */
 @property (copy) NSString *outputStream;
-/**  输出为流名，或 Url */
+/**
+ 输出流是否为 URL
+ */
 @property BOOL outputIsUrl;
-/**  输出帧率 */
+/**
+ 混流输出视频帧率，值范围：[1,30]，根据网络情况设定该值，帧率越高画面越流畅。
+ */
 @property int outputFps;
-/**  输出码率 */
+/**
+ 混流输出视频码率，输出码率控制模式参数设置为 CBR恒定码率 时此设置值生效。
+ <br>视频码率值范围：(0M,10M]，此参数单位是 bps，1M = 1 * 1000 * 1000 bps
+ */
 @property int outputBitrate;
-/**  输出音频码率 */
+/**
+ 混流输出音频码率，码率范围值是[10000, 192000]。
+ <br>若音频编码格式采用 默认音频编码--即 outputAudioConfig 参数填 0，采用 1/2声道时，对应的建议码率值是 48k/64k，可根据需要在此基础上调整。
+ <br>若音频编码格式采用 可选音频编码--即 outputAudioConfig 参数填 1，采用 1/2声道时，对应的建议码率值是 80k/128k，可根据需要在此基础上调整。
+ */
 @property int outputAudioBitrate;
-/**  输出分辨率 */
+/**
+ 混流输出视频分辨率，不确定用什么分辨率时可采用16:9的规格设置。
+ <br>此参数中的宽必须大于等于 输入流列表中所有输入流中最大的分辨率宽，即right布局值；此参数中的高必须大于等于 输入流列表中所有输入流中最大的分辨率高，即bottom布局值；且输入流的布局位置不能超出此参数规定的范围。
+ */
 @property CGSize outputResolution;
-/**  音频编码，默认为 0 */
+/**
+ 混流输出音频编码格式，可选值为 0--默认编码，1--可选编码；默认值为 0。
+ <br>0--默认编码：在低码率下，编码后的音质要明显好于 1--可选编码，在码率较大后，达到128kbps及以上，两种编码后的音质近乎相同。
+ <br>1--可选编码：优点在于低复杂性，能兼容更多的设备播放；但是目前经过 0--默认编码 编码后的音频不能正常播放的情况很少。
+ */
 @property int outputAudioConfig;
-/**  输入流列表 */
+/**
+ 混流输入流列表，SDK 根据输入流列表中的流进行混流。
+ */
 @property (strong) NSMutableArray<ZegoMixStreamInfo*> *inputStreamList;
-/** 用户自定义数据 */
+/**
+ 用户自定义数据
+ <b>注意：</b>1. userData自定义的数据通过媒体次要信息的 -onRecvMediaSideInfo:ofStream: 接口回调出来。
+ */
 @property NSData* userData;
-/** 混流声道数，默认为单声道*/
+/**
+ 混流声道数，1-单声道，2-双声道，默认为单声道。
+ */
 @property int channels;
-/** 混流背景颜色，前三个字节为 RGB，即 0xRRGGBBxx */
+/**
+ 混流背景颜色，前三个字节为 RGB，即 0xRRGGBBxx。
+ <br>例如：选取RGB为 #87CEFA 作为背景色，此处写为 0x87CEFA00。
+ */
 @property int outputBackgroundColor;
-/** 混流背景图，支持预设图片，如 (preset-id://xxx) */
+/**
+ 混流背景图，支持预设图片，如 (preset-id://xxx)
+ <br>此值由 ZEGO 提供，开发者先将背景图提供给 ZEGO，ZEGO 设置后再反馈背景图片的设置参数。
+ */
 @property (copy) NSString *outputBackgroundImage;
-/** 是否开启音浪。true：开启，false：关闭 */
+/**
+ 是否开启音浪。YES：开启，NO：关闭；默认值是NO。
+ */
 @property BOOL withSoundLevel;
-/** 扩展信息 **/
+/**
+ 扩展信息，备用。
+ */
 @property int extra;
 @end
 
@@ -436,22 +516,22 @@ enum ZegoAPIAudioRecordMask
 {
     /** 关闭音频录制 */
     ZEGOAPI_AUDIO_RECORD_NONE      = 0x0,
-    /** 打开采集录制 */
+    /** 打开采集录制，即录制推流端音频 */
     ZEGOAPI_AUDIO_RECORD_CAP       = 0x01,
-    /** 打开渲染录制 */
+    /** 打开渲染录制，即录制拉流端音频 */
     ZEGOAPI_AUDIO_RECORD_RENDER    = 0x02,
-    /** 打开采集和渲染混音结果录制 */
+    /** 打开采集和渲染混音结果录制，即录制推流、拉流端混音音频 */
     ZEGOAPI_AUDIO_RECORD_MIX       = 0x04
 };
 
 /** 音频录制配置信息 */
 typedef struct
 {
-    /** 启用音频源选择，参考 ZegoAVAPIAudioRecordMask */
+    /** 启用音频源选择，详细请参考 ZegoAVAPIAudioRecordMask */
     unsigned int mask;
-    /** 采样率 8000, 16000, 22050, 24000, 32000, 44100, 48000 */
+    /** 采样率 支持 8000, 16000, 22050, 24000, 32000, 44100, 48000 */
     int sampleRate;
-    /** 声道数 1(单声道) 或 2(双声道) */
+    /** 声道数 支持1(单声道) 或 2(双声道) */
     int channels;
     
 } ZegoAPIAudioRecordConfig;
@@ -523,11 +603,18 @@ typedef enum : NSUInteger
 
 @end
 
+/**
+ 混流中，发言者及其说话音量信息。
+ */
 @interface ZegoSoundLevelInMixedStreamInfo : NSObject
 
-/** sound level id */
+/**
+ 音浪ID，用于标识用户，对应于 ZegoMixStreamConfig 的 inputStreamList 中的单条输入流信息的 soundLevelID 参数的设置值。
+ */
 @property (assign) unsigned int soundLevelID;
-/** sound level value */
+/**
+ 音量level
+ */
 @property (assign) unsigned char soundLevel;
 
 @end
@@ -564,6 +651,12 @@ typedef enum : NSUInteger
     ZEGOAPI_RELAY_CDN_SERVER_DISCONNECTED = 13,
     /**< 主动断开 */
     ZEGOAPI_RELAY_DISCONNECTED = 14,
+    /**< 混流输入流会话关闭, 混流转推CDN时有效 */
+    ZEGOAPI_MIXSTREAM_ALL_INPUT_STREAM_CLOSED = 1214,
+    /**< 混流输入流全部没有数据, 混流转推CDN时有效 */
+    ZEGOAPI_MIXSTREAM_ALL_INPUT_STREAM_NODATA = 1215,
+    /**< 混流服务器内部错误，混流转推CDN时有效 */
+    ZEGOAPI_MIXSTREAM_SERVER_INTERNAL_ERROR = 1230,
 } ZegoAPIStreamRelayCDNDetail;
 
 /**
@@ -587,9 +680,23 @@ typedef enum : NSUInteger
  */
 typedef enum : NSUInteger
 {
+    /** 激进模式 */
     ZEGOAPI_AEC_MODE_ARRGRESSIVE,
+    /** 中等模式 */
     ZEGOAPI_AEC_MODE_MEDIUM,
+    /** 轻度模式 */
     ZEGOAPI_AEC_MODE_SOFT,
 } ZegoAPIAECMode;
+
+
+typedef enum : NSInteger
+{
+    /** 一般性错误 */
+    ZEGOAPI_DEVICE_ERROR_GENERIC = -1,
+    /** 没有权限 */
+    ZEGOAPI_DEVICE_ERROR_NO_AUTHORIZATION = -3,
+    /** 采集帧率为0 */
+    ZEGOAPI_DEVICE_ERROR_ZERO_FPS = -4,
+} ZegoAPIDeviceErrorCode;
 
 #endif /* zego_api_defines_oc_h */

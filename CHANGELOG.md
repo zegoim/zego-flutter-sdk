@@ -1,10 +1,12 @@
 
+## 1.0.8
+1. add setVideoMirrorMode API
+2. update iOS/Android native sdk
+
 ## 1.0.7
 1. fix android texture render crash into background
 2. fix android startPlayingStream bugs
 3. update android native sdk
-
-
 
 ## 1.0.6
 1. fix some bug and crash

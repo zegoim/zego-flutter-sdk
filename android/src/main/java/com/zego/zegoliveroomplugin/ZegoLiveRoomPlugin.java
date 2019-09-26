@@ -314,6 +314,17 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       mZegoLiveRoom.setLatencyMode(mode);
       result.success(null);
 
+    } else if (call.method.equals("setVideoMirrorMode")) {
+      
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      int mode = numberToIntValue((Number) call.argument("mode"));
+      boolean success = mZegoLiveRoom.setVideoMirrorMode(mode, 0);
+      result.success(success);
+
     } else if(call.method.equals("setAudioDeviceMode")) {
 
       int mode = numberToIntValue((Number) call.argument("mode"));
@@ -1718,11 +1729,6 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
           @Override
           public void onRecvRoomMessage(String s, ZegoRoomMessage[] zegoRoomMessages) {
-
-          }
-
-          @Override
-          public void onRecvConversationMessage(String s, String s1, ZegoConversationMessage zegoConversationMessage) {
 
           }
 

@@ -13,6 +13,7 @@
 @protocol ZegoLiveEventDelegate;
 @protocol ZegoDeviceEventDelegate;
 @protocol ZegoAVEngineDelegate;
+@protocol ZegoLogInfoDelegate;
 
 typedef void(^ZegoInitSDKCompletionBlock)(int errorCode);
 typedef void(^ZegoLoginCompletionBlock)(int errorCode, NSArray<ZegoStream*> *streamList);
@@ -66,7 +67,7 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
  @param bChatRoom 是否使用聊天室功能，true 使用，false 不使用。默认为 false
  @discussion zegoliveroom 自带 IM 功能，随 SDK 初始化。如果要额外使用聊天室，需要启用聊天室功能
  */
-+ (void)setUseChatRoom:(bool)bChatRoom;
+//+ (void)setUseChatRoom:(bool)bChatRoom;
 
 /**
  上报日志
@@ -94,6 +95,16 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
  @discussion 在初始化 SDK 之前调用有效
  */
 + (void)setLogSize:(unsigned int)size;
+
+/**
+ 设置SDK日志存储目录及大小
+ 
+ @param logDir 日志文件存储路径，如果为空，则存储到默认路径
+ @param size 日志大小，单位为字节。取值范围[5*1024*1024, 100*1024*1024]
+ @param subFolder 日志存储子文件夹，当为空时，不创建子文件夹。该文件夹是 logDir 的子目录。
+ @discussion 在初始化 SDK 之前调用有效
+ */
++ (void)setLogDir:(NSString *)logDir size:(unsigned int)size subFolder:(NSString *)subFolder;
 
 /**
  初始化 SDK
@@ -186,11 +197,14 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
 /**
  发送自定义信令
  
+ * 该 API 可以向指定列表内的用户发送自定义信令，信令内容由用户自定义。发送结果通过 block 回调。
+ * 用户可通过代理 [ZegoRoomDelegate -onReceiveCustomCommand:userName:content:roomID:] 方法收到信令。
+ * 信令不能保证 100% 可达。
+ 
  @param memberList 发送对象列表
  @param content 消息内容。长度不超过 1024 字节
  @param block 消息发送结果
- @return true 成功，false 失败
- @discussion 信令内容由用户自定义。发送结果通过 block 回调
+ @return 发起请求是否成功
  */
 - (bool)sendCustomCommand:(NSArray<ZegoUser*> *)memberList content:(NSString *)content completion:(ZegoCustomCommandBlock)block;
 
@@ -233,10 +247,11 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
 /**
  设置是否允许SDK使用麦克风设备
  
+ * 调用时机为引擎创建后的任意时刻。
+ * 接口由于涉及对设备的操作，极为耗时，不建议随便调用，只在真正需要让出麦克风给其他应用的时候才调用。
+ 
  @param enable YES 表示允许使用麦克风，NO 表示禁止使用麦克风，此时如果SDK在占用麦克风则会立即释放。
- @return YES 调用成功 NO 调用失败
- @discussion 调用时机为引擎创建后的任意时刻。
- @note 接口由于涉及对设备的操作，极为耗时，不建议随便调用，只在真正需要让出麦克风给其他应用的时候才调用
+ @return YES 调用成功，NO 调用失败
  */
 - (BOOL)enableMicDevice:(BOOL)enable;
 #endif
@@ -437,6 +452,15 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
  */
 + (void)setConfig:(NSString *)config;
 
+
+/**
+ 设置 LogInfo 代理对象
+
+ @param delegate 代理对象
+ @return true 成功, false 失败
+ */
+- (bool)setLogInfoDelegate:(id<ZegoLogInfoDelegate>)delegate;
+
 @end
 
 
@@ -498,13 +522,14 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
 - (void)onStreamExtraInfoUpdated:(NSArray<ZegoStream *> *)streamList roomID:(NSString *)roomID;
 
 /**
- 收到自定义消息
+ 收到自定义信令
+ 
+ * 调用 -sendCustomCommand:content:completion: 发送自定义信令后，消息列表中的用户会触发此回调。
  
  @param fromUserID 消息来源 UserID
  @param fromUserName 消息来源 UserName
  @param content 消息内容
  @param roomID 房间 ID
- @discussion 调用 [ZegoLiveRoomApi -sendCustomCommand:content:completion:] 发送自定义消息后，消息列表中的用户会收到此通知
  */
 - (void)onReceiveCustomCommand:(NSString *)fromUserID userName:(NSString *)fromUserName content:(NSString*)content roomID:(NSString *)roomID;
 
@@ -567,8 +592,8 @@ typedef enum : NSUInteger {
 /**
  设备事件回调
  
- @param deviceName 设备名，取值 "audio_device", "camera", "hw_encoder", "sw_encoder"
- @param errorCode 错误码。设备无错误不会回调，目前没有权限的错误码为-3，其他错误情况的错误码均为-1
+ @param deviceName 设备类型名称。返回值 kZegoDeviceCameraName 或 kZegoDeviceMicrophoneName
+ @param errorCode 错误码。 返回值参考 ZegoAPIDeviceErrorCode 定义
  @discussion 调用 [ZegoLiveRoomApi -setDeviceEventDelegate] 设置设备事件代理对象后，在此回调中获取设备状态或错误
  */
 - (void)zego_onDevice:(NSString *)deviceName error:(int)errorCode;
@@ -624,5 +649,23 @@ typedef enum : NSUInteger {
  音视频引擎停止时回调
  */
 - (void)onAVEngineStop;
+
+@end
+
+@protocol ZegoLogInfoDelegate <NSObject>
+
+@optional
+
+/**
+ 日志将要写满
+ */
+- (void)onLogWillOverwrite;
+
+/**
+ 日志上报结果
+ 
+ @param errorCode 错误码
+ */
+- (void)onLogUploadResult:(int)errorCode;
 
 @end

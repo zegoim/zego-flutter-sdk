@@ -91,11 +91,13 @@ typedef enum : NSUInteger {
 
 /**
  接受已编码的视频帧数据
-
- @param data 已编码数据
+ 
+ @param data 已编码数据，目前只支持 H.264 码流
  @param config 编码配置，请参考 ZegoVideoCodecConfig 定义
- @param bKeyframe 是否为关键帧
+ @param bKeyframe 是否为关键帧，建议关键帧间隔在 2S 左右
  @param time 采集到该帧的时间戳，用于音画同步，如果采集实现是摄像头，最好使用系统采集回调的原始时间戳。如果不是，最好是生成该帧的UTC时间戳
+ @discussion 推荐每 2S 一个 gop，每个 I 帧必须携带 sps 和 pps，且放在最前面。
+ @discussion 仅接受 I 帧 和 P 帧，不接受 B 帧
  */
 - (void)onEncodedFrame:(nonnull NSData *)data config:(ZegoVideoCodecConfig)config bKeyframe:(bool)bKeyframe withPresentationTimeStamp:(CMTime)time;
 

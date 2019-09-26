@@ -24,6 +24,8 @@ typedef NS_ENUM(NSInteger, ZegoVideoBufferType) {
     ZegoVideoBufferTypeSyncPixelBuffer = 1 << 2,
     /** 异步I420 */
     ZegoVideoBufferTypeAsyncI420PixelBuffer = 1 << 7,
+    /** 异步NV12 */
+    ZegoVideoBufferTypeAsyncNV12PixelBuffer = 1 << 8,
 };
 
 /** 外部滤镜内存池协议（用于 SDK 与开发者间相互传递外部滤镜数据） */

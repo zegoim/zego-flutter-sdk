@@ -244,6 +244,7 @@
 /**
  音频录制开关
  
+ @warning Deprecated，请使用 enableSelectedAudioRecord:
  @param enable 开启音频录制。true 开启，false 关闭。默认 false
  @return true 成功，false 失败
  @discussion 初始化 SDK 后调用。开启音频录制后，调用方需要设置音频录制回调代理对象，并通过 [ZegoLiveRoomApi (Player) -onAudioRecord:sampleRate:numOfChannels:bitDepth:type:] 获取 SDK 录制的数据。使用此接口开启音频录制，相当于调用 enableSelectedAudioRecord:(ZegoAPIAudioRecordConfig)config，且 config 中的参数默认值为：ZEGO_AUDIO_RECORD_MIX、44100、单声道。
@@ -261,20 +262,24 @@
 - (bool)enableSelectedAudioRecord:(unsigned int)mask sampleRate:(int)sampleRate;
 
 /**
- 音频录制开关
+ 开/关音频录制功能
  
- @param config 配置信息, 参考 ZegoAPIAudioRecordConfig
- @return true 成功，false 失败
- @discussion 初始化 SDK 后调用。开启音频录制后，调用方需要设置音频录制回调代理对象，并通过 [ZegoLiveRoomApi (Player) -onAudioRecord:sampleRate:numOfChannels:bitDepth:type:] 获取 SDK 录制的数据
- @discussion 在启动推流或者启动本地录制（MediaRecorder）的时候，才能开启音频录制
+ * 注意：
+ * 1.必须在初始化 SDK 后调用。
+ * 2.开启音频录制后，App 需要设置音频录制代理(-setAudioRecordDelegate:)，才能通过 -onAudioRecord:sampleRate:numOfChannels:bitDepth:type: 获取 SDK 抛出的音频数据。
+ * 3.在启动推流或者启动本地录制（MediaRecorder）之后，才能开启音频录制。
+ 
+ @param config 配置信息, 详细请参考 struct ZegoAPIAudioRecordConfig
+ @return true 调用成功，false 调用失败
  */
 - (bool)enableSelectedAudioRecord:(ZegoAPIAudioRecordConfig)config;
 
 /**
- 设置音频录制回调代理对象
+ 设置音频录制代理对象
  
- @param audioRecordDelegate 遵循 ZegoLiveApiAudioRecordDelegate 协议的代理对象
- @discussion 开启音频录制功能，需要设置代理对象。未设置代理对象，或对象设置错误，可能导致无法正常收到相关回调
+ * 开启音频录制功能，需要设置代理对象。未设置代理对象，或对象设置错误，可能导致 App 无法正常收到 -onAudioRecord:sampleRate:numOfChannels:bitDepth:type: 回调。
+ 
+ @param audioRecordDelegate 音频录制回调
  */
 - (void)setAudioRecordDelegate:(id<ZegoLiveApiAudioRecordDelegate>)audioRecordDelegate;
 
@@ -444,12 +449,14 @@
 /**
  音频录制回调
  
- @param audioData SDK 录制的音频源数据
- @param sampleRate 采样率，与 [ZegoLiveRoomApi (Player) enableSelectedAudioRecord] 中设置的值一致
+ * 1.开启音频录制(-enableSelectedAudioRecord:)并成功设置音频录制代理(-setAudioRecordDelegate:)对象后，SDK 会触发该回调，App 可通过此 API 获取 SDK 抛出的音频数据。用户可自行对数据进行处理，例如：存储等。
+ * 2.存储数据时注意取 sampleRate、numOfChannels、bitDepth 参数写包头信息。退出房间或停止录制后，不会再收到该回调。
+ 
+ @param audioData SDK 返回的音频源数据
+ @param sampleRate 采样率，与 - enableSelectedAudioRecord: 参数中设置的值一致
  @param numOfChannels 通道数量，单通道
  @param bitDepth 位深度，16 bit
- @param type 音源类型，参考 ZegoAPIAudioRecordMask
- @discussion 开启音频录制并设置成功代理对象后，用户调用此 API 获取 SDK 录制的音频数据。用户可自行对数据进行处理，例如：存储等。存储数据时注意取 sampleRate、numOfChannels、bitDepth 参数写包头信息。退出房间后或停止录制后，该回调不再被调用
+ @param type 音源类型，请参考 enum ZegoAPIAudioRecordMask
  */
 - (void)onAudioRecord:(NSData *)audioData sampleRate:(int)sampleRate numOfChannels:(int)numOfChannels bitDepth:(int)bitDepth type:(unsigned int)type;
 

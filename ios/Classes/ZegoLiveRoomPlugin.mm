@@ -276,6 +276,16 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         [self.zegoApi setLatencyMode:(ZegoAPILatencyMode)mode];
         result(nil);
         
+    } else if([@"setVideoMirrorMode" isEqualToString:call.method]) {
+        
+        if (self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+        }
+        
+        int mode = [self numberToIntValue:args[@"mode"]];
+        BOOL success = [self.zegoApi setVideoMirrorMode:(ZegoVideoMirrorMode)mode];
+        result(@(success));
+        
     } else if([@"setAudioDeviceMode" isEqualToString:call.method]) {
         
         int mode = [self numberToIntValue:args[@"mode"]];
@@ -2040,6 +2050,16 @@ Byte toByte(NSString* c) {
     
     //Notify the Flutter new pixelBufferRef to be ready.
     [renderer setSrcFrameBuffer:pixelBuffer processBuffer:nil];
+}
+
+- (void)onSetFlipMode:(int)mode streamID:(NSString *)streamID {
+    ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMainPublishingStream];
+    if (renderer == nil) {
+        return;
+    }
+    
+    // Need to manually flip the frame when mode == 1
+    [renderer setUseMirrorEffect:mode == 1];
 }
 
 @end

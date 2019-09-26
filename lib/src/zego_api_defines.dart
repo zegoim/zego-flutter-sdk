@@ -322,6 +322,18 @@ class ZegoLatencyMode {
 
 }
 
+/// 设置预览和推流镜像
+class ZegoVideoMirrorMode {
+    /// 预览启用镜像，推流不启用镜像
+    static const int ZegoVideoMirrorModePreviewMirrorPublishNoMirror = 0;
+    /// 预览启用镜像，推流启用镜像
+    static const int ZegoVideoMirrorModePreviewCaptureBothMirror = 1;
+    /// 预览不启用镜像，推流不启用镜像
+    static const int ZegoVideoMirrorModePreviewCaptureBothNoMirror = 2;
+    /// 预览不启用镜像，推流启用镜像
+    static const int ZegoVideoMirrorModePreviewNoMirrorPublishMirror = 3;
+}
+
 /// 流量控制属性
 class ZegoTrafficControlProperty {
 

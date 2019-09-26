@@ -8,9 +8,9 @@
 #ifndef ZegoLiveRoomApiDefines_Publisher_h
 #define ZegoLiveRoomApiDefines_Publisher_h
 
-/** 外部渲染推流第一路流 */
+/** 对推流进行外部渲染时，表示所推流是第一路流 */
 ZEGO_EXTERN NSString *const kZegoVideoDataMainPublishingStream;
-/** 外部渲染推流第二路流 */
+/** 对推流进行外部渲染时，表示所推流是第二路流 */
 ZEGO_EXTERN NSString *const kZegoVideoDataAuxPublishingStream;
 
 #ifndef ZegoAVConfig_h

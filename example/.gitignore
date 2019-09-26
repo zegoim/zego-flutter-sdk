@@ -30,10 +30,13 @@
 # Android related
 **/android/**/gradle-wrapper.jar
 **/android/.gradle
+**/android/**/.settings
+**/android/**/.project
 **/android/captures/
 **/android/gradlew
 **/android/gradlew.bat
 **/android/local.properties
+**/android/**/.classpath
 **/android/**/GeneratedPluginRegistrant.java
 
 # iOS/XCode related
@@ -58,6 +61,7 @@
 **/ios/Flutter/Generated.xcconfig
 **/ios/Flutter/app.flx
 **/ios/Flutter/app.zip
+**/ios/Flutter/flutter_export_environment.sh
 **/ios/Flutter/flutter_assets/
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*

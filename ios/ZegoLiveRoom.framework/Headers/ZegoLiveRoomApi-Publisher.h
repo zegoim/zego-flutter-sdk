@@ -36,25 +36,30 @@
 /**
  设置本地预览视图
  
+ * 注意：
+ * 1.建议在调用 -startPreview 开启预览前，调用该 API 设置本地预览视图，才能在视图上预览采集的视频。
+ * 2.建议本地预览结束后，调用该 API 设置预览视图为 nil。
+ 
  @param view 用于渲染本地预览视频的视图
- @return true 成功，false 失败
- @discussion 建议本地预览结束后，调用该 API 设置预览视图为 nil
+ @return 设置结果。true 成功，false 失败
  */
 - (bool)setPreviewView:(ZEGOView *)view;
 
 /**
  启动本地预览
  
+ * 注意：
+ * 1.建议在启动本地预览前，调用 -setPreviewView: 设置本地预览视图。
+ * 2.在退出房间后，SDK 内部会停止预览，如果需要继续预览，需要重新调用本方法开启预览。
+ 
  @return true 成功，false 失败
- @discussion 启动本地预览前，要调用 [ZegoLiveRoomApi (Publisher) -setPreviewView:] 设置本地预览视图
  */
 - (bool)startPreview;
 
 /**
- 结束本地预览
+ 停止本地预览
  
  @return true 成功，false 失败
- @discussion 建议停止推流，或本地预览结束后，调用该 API 停止本地预览
  */
 - (bool)stopPreview;
 
@@ -139,20 +144,22 @@
 /**
  设置混流配置
  
- @warning Deprecated，请使用 [ZegoLiveRoomApi (Publisher) mixStream:seq:]
+ @warning Deprecated，请使用 zego-api-mix-stream-oc.h 中的 [ZegoStreamMixer mixStreamEx:mixStreamID:] 代替
  */
 - (bool)setMixStreamConfig:(NSDictionary *)config;
 
 /**
  更新混流配置
  
- @warning Deprecated，请使用 [ZegoLiveRoomApi (Publisher) mixStream:seq:]
+ @warning Deprecated，请使用 zego-api-mix-stream-oc.h 中的 [ZegoStreamMixer mixStreamEx:mixStreamID:] 代替
  */
 - (bool)updateMixInputStreams:(NSArray<ZegoMixStreamInfo*> *)lstMixStreamInfo;
 
 
 /**
  开始混流
+ 
+ @warning Deprecated，请使用 zego-api-mix-stream-oc.h 中的 [ZegoStreamMixer mixStreamEx:mixStreamID:] 代替
  
  @param completeMixConfig 混流配置
  @param seq 请求序号，回调会带回次 seq
@@ -183,9 +190,15 @@
 /**
  设置手机方向
  
+ * 本设置用于校正输出视频朝向，默认竖屏。建议在预览和推流之前设置好方向。
+ * 不建议在推流过程中旋转画面，原因：
+ * 1. 如果刚开始为竖屏开播，此时旋转为横屏，但是分辨率仍然是竖屏的，会导致横屏后，画面放大的效果(按照等比填充的模式) 或者 上下黑边的效果(按照等比缩放的模式)，除非旋转为横屏后，画面的分辨率也做修改。
+ * 2. 直播过程中修改分辨率的话，会导致录制文件(回放)有异常，因此不建议中途旋转画面。
+ 
  @param orientation 手机方向
  @return true 成功，false 失败
- @discussion 本设置用于校正主播输出视频朝向
+ @see -startPreview
+ @see -startPublishing:title:flag:
  */
 - (bool)setAppOrientation:(UIInterfaceOrientation)orientation;
 #endif
@@ -246,20 +259,25 @@
 - (bool)setFilter:(ZegoFilter)filter;
 
 /**
- 设置本地预览视频视图的模式
+ 设置本地预览视图的模式
  
- @param mode 模式，参考 ZegoVideoViewMode 定义。默认 ZegoVideoViewModeScaleAspectFill
+ * 视图模式默认为 ZegoVideoViewModeScaleAspectFill。
+ 
+ @param mode 视图模式。详见 ZegoVideoViewMode 定义
  @return true 成功，false 失败
- @discussion 推流开始前调用本 API 进行参数配置
  */
 - (bool)setPreviewViewMode:(ZegoVideoViewMode)mode;
 
 /**
- 设置预览渲染朝向
+ 设置预览渲染图像的朝向
  
- @param rotate 旋转角度。默认 0
+ * 注意：
+ * 1.只能设置(0/90/180/270)，默认为0。
+ * 2.该设置只是设置预览渲染图像的朝向，不会改变推流时的图像朝向。
+ 
+ @param rotate 逆时针旋转角度
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置。使用 setAppOrientation 替代
+ @see -setAppOrientation:
  */
 - (bool)setPreviewRotation:(int)rotate;
 
@@ -282,12 +300,13 @@
 - (bool)enableCaptureMirror:(bool)enable;
 
 /**
- 是否启用预览和推流镜像
+ 设置预览和推流镜像
  
- @param mode 镜像模式
+ * 预览镜像只对前置摄像头有效，后置无效。
+ * 默认预览启用镜像，推流不启用镜像（即 ZegoVideoMirrorModePreviewMirrorPublishNoMirror）
+ 
+ @param mode 镜像模式，详见 ZegoVideoMirrorMode
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
- @note 默认启用预览镜像，不启用推流镜像
  */
 - (bool)setVideoMirrorMode:(ZegoVideoMirrorMode)mode;
 
@@ -309,71 +328,79 @@
 - (void)setVideoEncoderRateControlConfig:(ZegoAPIVideoEncoderRateControlStrategy)strategy encoderCRF:(int)encoderCRF;
 
 /**
- 是否使用前置摄像头
+ 是否使用前置摄像头，否则使用后置。
  
- @param bFront true 使用，false 不使用。默认 true
+ * 如果使用前置摄像头，本地预览和推流都将使用前置摄像头拍摄的数据。SDK 默认使用前置摄像头。
+ 
+ @param bFront 是否使用前置摄像头
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
  */
 - (bool)setFrontCam:(bool)bFront;
 
 /**
- 开启麦克风
+ 是否开启麦克风
  
- @param bEnable true 打开，false 关闭。默认 true
+ * 开启麦克风后，推流数据才包含麦克风采集的音频数据。SDK 默认开启麦克风。
+ 
+ @param bEnable true 打开，false 关闭
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
  */
 - (bool)enableMic:(bool)bEnable;
 
 /**
- 开启视频采集
+ 是否开启视频采集
  
- @param bEnable true 打开，false 关闭。默认 true
- @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
+ * 开启视频采集后，预览视图才能显示预览画面，推流时才包含采集的视频数据。SDK 默认开启视频采集。
+
+ @param bEnable 是否开启
+ @return 设置结果。true 成功，false 失败
  */
 - (bool)enableCamera:(bool)bEnable;
 
 /**
- 开关手电筒
+ 是否开启手电筒
  
- @param bEnable true 打开，false 关闭。默认 false
+ * 推流时可调用本 API 进行参数配置。SDK 默认关闭手电筒。
+ 
+ @param bEnable 是否开启
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置
  */
 - (bool)enableTorch:(bool) bEnable;
 
 /**
  预览截图
  
- @param blk 截图结果通过 blk 回调
+ * 截图结果通过 blk 回调。
+ 
+ @param blk 截图结果回调
  @return true 成功，false 失败
  */
 - (bool)takePreviewSnapshot:(ZegoSnapshotCompletionBlock)blk;
 
 /**
- 开启采集监听
+ 是否开启采集监听（即耳返）
+ 
+ * 开启耳返后，主播方讲话会听到自己的声音。
+ * 在连接上耳麦时耳返功能才实际生效。
  
  @param bEnable true 打开，false 关闭。默认 false
  @return true 成功，false 失败
- @discussion 推流时可调用本 API 进行参数配置。连接耳麦时设置才实际生效。开启采集监听，主播方讲话后，会听到自己的声音。
  */
 - (bool)enableLoopback:(bool)bEnable;
 
 /**
- 设置采集监听音量
+ 设置采集监听（耳返）音量
  
- @param volume 音量大小，取值（0, 100）。默认 80
- @discussion 推流时可调用本 API 进行参数配置
+ @param volume 音量大小。取值范围为（0, 100），默认 80
  */
 - (void)setLoopbackVolume:(int)volume;
 
 /**
  设置采集音量
  
+ * SDK 采集音频时会根据该 API 设置的音量值进行音量大小的控制。开发者可在推流时调用该 API 调节音频数据的音量大小。
+ 
  @param volume 音量大小，取值（0, 100）。默认 100
- @discussion SDK初始化成功后调用
  */
 - (void)setCaptureVolume:(int)volume;
 
@@ -382,18 +409,21 @@
  
  @param enable true 启用混音输入，false 关闭混音输入。默认 false
  @return true 成功，false 失败
- @discussion 推流开始前调用本 API 进行参数配置。主播端开启混音后，SDK 在 [ZegoLiveRoomApi (Publisher) -onAuxCallback:dataLen:sampleRate:channelCount:] 中获取混音输入数据
- @warning Deprecated，请使用 [ZegoAudioAux enableAux:]
+ @discussion 推流开始前调用本 API 进行参数配置。主播端开启混音后，SDK 在 ZegoLiveRoomApi (Publisher) -onAuxCallback:dataLen:sampleRate:channelCount: 中获取混音输入数据
+ @warning Deprecated，请使用 ZegoAudioAux 的 enableAux:
  */
 - (bool)enableAux:(BOOL)enable;
 
 /**
  混音静音开关
  
- @param bMute true: aux 输入播放静音，false: 不静音。默认 false
- @return true 成功，false 失败
- @discussion 该接口调用时机无要求，开发者按需调用即可
- @warning Deprecated，请使用 [ZegoAudioAux muteAux:]
+ @note 1. 当开启静音后，主播端将听不到混音内容，观众端依然能听到混音声音。
+ 
+ * 2.此 API 可以在混音中的任意时间调用，取决于用户需求。
+ @param bMute  true 表示静音，false 表示恢复音量。
+ @return  true 表示调用成功，false 表示调用失败。
+ @see 相关接口请查看 ZegoLiveRoomApi (Publisher) -setAuxVolume:
+ @warning Deprecated，请使用 ZegoAudioAux 的 muteAux:
  */
 - (bool)muteAux:(bool)bMute;
 
@@ -439,34 +469,59 @@
 /**
  设置音频设备模式
  
- @param mode 模式， 默认 ZEGOAPI_AUDIO_DEVICE_MODE_AUTO
- @discussion 在 Init 前调用
+ * 使用该 API 设置不同的模式可实现硬件音频前处理，功能包括回音消除、噪声抑制。
+ * 建议开发者根据情景选择合适的模式，以达到前处理的最优效果。
+ * 直播场景下，推荐使用 ZEGOAPI_AUDIO_DEVICE_MODE_AUTO；
+ * 实时音、视频场景下（比如教育、游戏等），推荐使用 ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION，可避免 SDK 内部因切换 Mode 而启动、停止音频设备等耗时操作。
+ * 当业务方的用户主要在带耳机的情况下推流时，如果需要保证较好的音质效果，可使用 ZEGOAPI_AUDIO_DEVICE_MODE_GENERAL，除此情景之外，不推荐使用 GENERAL 模式，因为无法保证采集的音质效果。
+ * 默认使用 ZEGOAPI_AUDIO_DEVICE_MODE_AUTO。
+ 
+ * 注意：
+ * 1.必须在 Init SDK 前调用才能生效。
+ * 2.如果需要在使用耳机时进行音频前处理，需要调用 [ZegoLiveRoomApi(AudioIO) -enableAECWhenHeadsetDetected:] 设置 YES，该情况只在音频设备模式为 ZEGOAPI_AUDIO_DEVICE_MODE_AUTO，ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION 下才有效。
+ 
+ @param mode 音频设备模式，详见 ZegoAPIAudioDeviceMode
+ @see -enableAEC:
+ @see -enableNoiseSuppress:
  */
 + (void)setAudioDeviceMode:(ZegoAPIAudioDeviceMode) mode;
 
 /**
- 回声消除开关
+ 是否开启软件回声消除
  
- @param enable true 打开 false 关闭
+ * 推荐结合硬件音频前处理一起使用，当硬件音频前处理效果不好、被关闭或不被支持时，可开启软件音频前处理。
+ * 建议在推流前调用设置。
+ 
+ * 注意：
+ * 1.软件回音消除只能处理 zego SDK 播放的音频，不能处理第三方播放器播放的视频。
+ * 2.如果使用音频外部采集，需要开发者自己去回声消除，该开关无效。
+ * 3.iOS 默认不开启该开关，Android 是默认开启该开关。
+ 
+ @param enable 是否开启
  @return true 成功 false 失败
- @discussion 建议在推流前调用设置
+ @see -setAECMode:
+ @see -enableNoiseSuppress:
+ @see +setAudioDeviceMode:
  */
 - (bool)enableAEC:(bool)enable;
 
 /**
  设置回声消除模式
 
+ * 建议在推流前调用设置。默认为 ZEGOAPI_AEC_MODE_ARRGRESSIVE。
+ 
  @param mode 回声消除模式
- @discussion 建议在推流前调用设置
  */
 - (void)setAECMode:(ZegoAPIAECMode)mode;
 
 /**
  音频采集自动增益开关
  
- @param enable 是否开启，默认关闭
+ * 开启该开关后，SDK 可将太小或太大的音量处理成一定范围的音量，让整段音频的音量控制在一定范围内。在教育、视频会议等对音量稳定性有要求的场景可启用该开关。
+ * 建议在推流前调用设置。默认关闭。
+ 
+ @param enable 是否开启
  @return true 成功，false 失败
- @discussion 建议在推流前调用设置
  */
 - (bool)enableAGC:(bool)enable;
 
@@ -510,8 +565,12 @@
 /**
  设置视频采集缩放时机
  
- @param mode 视频采集缩放时机，请参考 ZegoAPICapturePipelineScaleMode 定义。默认为 ZEGOAPI_CAPTURE_PIPELINE_SCALE_MODE_PRE
- @discussion 初始化 SDK 后，startPreview 前调用。startPreview 之后设置不会立即生效，而是在下次摄像头启动预览时生效。
+ * 注意：
+ * 1.建议在启动本地预览前调用，之后调用不会立即生效，而是在下次摄像头启动预览时生效。
+ * 2.如果设置为先缩放（ZEGOAPI_CAPTURE_PIPELINE_SCALE_MODE_PRE），预览的分辨率就是编码分辨率；设置为后缩放（ZEGOAPI_CAPTURE_PIPELINE_SCALE_MODE_POST），预览的分辨率就是采集分辨率。
+ * 默认为 ZEGOAPI_CAPTURE_PIPELINE_SCALE_MODE_PRE。
+ 
+ @param mode 视频采集缩放时机。详见 ZegoAPICapturePipelineScaleMode
  */
 - (void)SetCapturePipelineScaleMode:(ZegoAPICapturePipelineScaleMode)mode;
 
@@ -533,11 +592,17 @@
  */
 - (void)setAudioChannelCount:(int)count;
 
+
 /**
  设置混音音量
  
- @param volume 0~100，默认为 50
- @warning Deprecated，请使用 [ZegoAudioAux setAuxVolume:]
+ @note 1. 此 API 可以在混音之前或者混完音之后调用，取决于用户需求。
+ 
+ * 2.SetAuxVolume 的工作逻辑都是基于对引擎的输入输出数据进行处理，即对输入 SDK 的音频数据的音量大小进行设置，与进行混音的推流设备的系统音量没有关系。
+ * 3.采集混音需要的音频数据时采用 general 模式，一般是媒体音量；采用 communication 模式，一般是通话音量；采用 auto 模式，连麦时会变成通话音量。
+ @param volume 音量值范围 0 ~ 100，默认为 50。
+ @see 相关接口请查看 ZegoLiveRoomApi (Publisher) -muteAux:，ZegoLiveRoomApi (Publisher)-enableAux:
+ @warning Deprecated，请使用 ZegoAudioAux setAuxVolume:
  */
 - (void)setAuxVolume:(int)volume;
 
@@ -578,10 +643,20 @@
 - (void)setMinVideoBitrateForTrafficControl:(int)bitrate mode:(ZegoAPITrafficControlMinVideoBitrateMode)mode;
 
 /**
- 音频采集噪声抑制开关
+ 是否开启软件音频采集噪声抑制
  
- @param enable true 开启，false 关闭
- @return true 调用成功，false 调用失败
+ *  推荐结合硬件音频前处理一起使用，当硬件音频前处理效果不好、被关闭或不被支持时，可开启软件音频前处理。
+ * 建议在推流前调用设置。
+ 
+ * 注意：
+ * 1.软件回音消除只能处理 zego SDK 播放的音频，不能处理第三方播放器播放的视频。
+ * 2.如果使用音频外部采集，需要开发者自己去噪声抑制，该开关无效。
+ * 3.iOS 默认不开启该开关，Android 是默认开启该开关。
+ 
+ @param enable 是否开启
+ @return true 成功 false 失败
+ @see -enableAEC:
+ @see +setAudioDeviceMode:
  */
 - (bool)enableNoiseSuppress:(bool)enable;
 
@@ -592,6 +667,17 @@
  @discussion 必须在推流前调用才能生效。该设置会影响 [ZegoLivePublisherDelegate -onPublishQualityUpdate:quality:] 的回调频率
  */
 + (void)setPublishQualityMonitorCycle:(unsigned int)timeInMS;
+
+
+/**
+ 音效均衡器
+
+ @param bandGain 取值范围[-15, 15]。默认值是0，如果所有频带的增益值全部为0，则会关闭EQ功能
+ @param bandIndex 取值范围[0, 9]。分别对应10个频带，其中心频率分别是[31, 62, 125, 250, 500, 1K, 2K, 4K, 8K, 16K]Hz
+ @return true 调用成功，false 调用失败
+ @attention 在InitSDK之后调用有效。使用此接口前请与即构技术支持联系确认是否支持此功能。
+ */
+- (bool)setAudioEqualizerGain:(float)bandGain index:(int)bandIndex;
 
 @end
 
@@ -657,6 +743,8 @@
 /**
  混流配置更新结果回调
  
+ @warning Deprecated，请使用 zego-api-mix-stream-oc.h 中的 [ZegoMixStreamExDelegate onMixStreamExConfigUpdate:mixStream:streamInfo:] 代替
+ 
  @param errorCode 错误码，0 表示没有错误
  @param mixStreamID 混流ID
  @param info 混流播放信息
@@ -668,10 +756,11 @@
 /**
  混音数据输入回调
  @param pData 混音数据
- <p><b>注意：</b>
- 1. 最大支持 48k 采样率、双声道、16位深的 PCM 音频数据；<br>
- 2. 实际数据长度应根据当前音频数据的采样率及声道数决定；<br>
- 3. 为确保混音效果，请不要在此 API 中执行耗时操作</p>
+ @note 注意：
+ 
+ * 1. 最大支持 48k 采样率、双声道、16位深的 PCM 音频数据；
+ * 2. 实际数据长度应根据当前音频数据的采样率及声道数决定；
+ * 3. 为确保混音效果，请不要在此 API 中执行耗时操作
  @param pDataLen pDataLen既是输入参数也是输出参数；
                  作为输入参数，SDK会提供好长度值，用户按照这个长度写入数据即可，数据充足的情况下，无需更改*pDataLen的值
                  作为输出参数，如果填写的数据不足SDK提供的长度值，则*pDataLen = 0,

@@ -207,6 +207,19 @@ class ZegoLiveRoomPublisherPlugin {
     });
   }
 
+  ///设置预览和推流镜像
+  ///
+  ///@param mode 镜像模式，参考 [ZegoVideoMirrorMode] 定义。默认 [ZegoVideoMirrorMode.ZegoVideoMirrorModePreviewMirrorPublishNoMirror]
+  ///@discussion 预览镜像只对前置摄像头有效，后置无效。
+  ///@return true 成功，false 失败
+  static Future<void> setVideoMirrorMode(int mode) async {
+    final bool success = await _channel.invokeMethod('setVideoMirrorMode', {
+      'mode': mode
+    });
+
+    return success;
+  }
+
   ///开启麦克风
   ///
   ///@param enable true 打开，false 关闭。默认 true
