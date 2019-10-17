@@ -1,6 +1,6 @@
 # zegoliveroom_plugin [![pub package](https://img.shields.io/pub/v/zegoliveroom_plugin.svg)](https://pub.dartlang.org/packages/zegoliveroom_plugin)
 
-[中文 README](README_CN.md)
+[Chinese Version](README_CN.md)
 
 Zego's audio and video Flutter SDK provides live video and real-time audio and video services.
 
@@ -60,7 +60,7 @@ dependencies:
     ref: branch_name
 ```
 
-## 五、初始化 SDK
+## V. Init SDK
 
 ```Dart
 import 'package:flutter/material.dart';
@@ -120,17 +120,15 @@ class _MyAppState extends State<MyApp> {
 
 Please refer to the API usage for more features.
 
-## 六、API文档
+## VI. API documentation
 
 Reference [ZegoLiveRoomPlugin API Reference](https://pub.dev/documentation/zegoliveroom_plugin/latest/)
 
-## 七、常见问题
+## VII. FAQ
 
 #### 1. Solve the problem of compiling errors of `ZegoLiveRoomApi-AudioIO` and `audio_in_output` modules on iOS platform
 
-Open the iOS project file `Runner. xcworkspace` -> `Build Settings`, change `Compile Sources As` to `Objective-C++`, recompile
-
-打开需要使用 Platform View 的 iOS 工程，在`Info.plist`中添加字段`io.flutter.embedded_views_preview`，其值为`YES`。
+Open the iOS project file `Runner. xcworkspace` -> `Build Settings`, change `Compile Sources As` to `Objective-C++`, recompile.
 
 #### 2. iOS compiler error: `ld: symbol(s) not found for architecture x86_64`
 
