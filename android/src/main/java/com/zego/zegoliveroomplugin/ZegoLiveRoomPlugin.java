@@ -3,6 +3,8 @@ package com.zego.zegoliveroomplugin;
 import android.app.Application;
 import android.content.Context;
 import android.view.Surface;
+import android.os.Looper;
+import android.os.Handler;
 
 
 import io.flutter.plugin.common.EventChannel;
@@ -2137,7 +2139,21 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           }
       });
 
-      mZegoMediaSideInfo = new ZegoMediaSideInfo();
+    byte[] appSign = convertStringToSign(strAppSign);
+    boolean success = mZegoLiveRoom.initSDK(appID, appSign, new IZegoInitSDKCompletionCallback() {
+
+      @Override
+      public void onInitSDK(int i) {
+
+        ZegoLogJNI.logNotice("[Flutter-Native] on init sdk, errorCode: " + i);
+        result.success(i);
+      }
+    });
+
+    if(!success)
+      result.success(false);
+
+    mZegoMediaSideInfo = new ZegoMediaSideInfo();
       mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
           @Override
           public void onRecvMediaSideInfo(String streamID, ByteBuffer data, int dataLen) {
@@ -2170,7 +2186,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
                   String strData = new String(tempBuffer);
 
-                  HashMap<String, Object> returnMap = new HashMap<>();
+                  final HashMap<String, Object> returnMap = new HashMap<>();
                   returnMap.put("type", EVENT_TYPE.TYPE_MEDIA_SIDE_INFO_EVENT.ordinal());
 
                   HashMap<String, Object> method = new HashMap<>();
@@ -2179,24 +2195,16 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   method.put("data", strData);
 
                   returnMap.put("method", method);
-                  mEventSink.success(returnMap);
+                  Handler mainHandler = new Handler(Looper.getMainLooper());
+                  mainHandler.post(new Runnable() {
+                      @Override
+                      public void run() {
+                          mEventSink.success(returnMap);
+                      }
+                  });
               }
           }
       });
-
-    byte[] appSign = convertStringToSign(strAppSign);
-    boolean success = mZegoLiveRoom.initSDK(appID, appSign, new IZegoInitSDKCompletionCallback() {
-
-      @Override
-      public void onInitSDK(int i) {
-
-        ZegoLogJNI.logNotice("[Flutter-Native] on init sdk, errorCode: " + i);
-        result.success(i);
-      }
-    });
-
-    if(!success)
-      result.success(false);
 
   }
 

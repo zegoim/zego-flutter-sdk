@@ -1,4 +1,7 @@
 
+## 1.0.9
+Fix the problem that Android can't receive media sideinfo callback
+
 ## 1.0.8
 1. add setVideoMirrorMode API
 2. update iOS/Android native sdk
