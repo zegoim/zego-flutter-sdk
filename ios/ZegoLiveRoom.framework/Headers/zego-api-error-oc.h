@@ -82,11 +82,15 @@ typedef enum : NSUInteger {
  kDispatchEmptyPublishIpsError  = 32001002,
  kDispatchEmptyPlayIpsError     = 32001003,
  kDispatchStreamNotExistError   = 32001004,
+ kDispatchAgentTimeoutError     = 35500001,
+ kDispatchAgentDroppedError     = 35500002,
 
  kLogicServerNoUrlError         = 40000404,
  kLogicServerCouldntConnectError= 41200007,
  kLogicServerTimeoutError       = 41200028,
  kLogicServerSslCaCertError     = 41200060,
+ kLoginAgentTimeoutError        = 45500001,
+ kLoginAgentDroppedError        = 45500002,
 
  kLiveRoomRequestParamError     = 50001001,
  kLiveRoomHBTimeoutError        = 50001002,
@@ -114,6 +118,8 @@ typedef enum : NSUInteger {
  kLiveRoomRequiredReloginError  = 52002001,
  kLiveRoomThirdTokenAuthError   = 52002002,
  kLiveRoomNetBrokenTimeoutError = 52002003,
+ kLiveRoomAgentTimeoutError     = 55500001,
+ kLiveRoomAgentDroppedError     = 55500002,
 
  kRoomConnectError              = 60001001,
  kRoomDoHandShakeReqError       = 60001002,
@@ -154,22 +160,9 @@ typedef enum : NSUInteger {
  kMixStreamWaterMarkParamError  = 82000170, //混流水印参数错误
  kMixStreamWaterMarkImageError  = 82000171, //混流水印image错误
  kMixStreamQpsOverloadError     = 82000190, //混流请求qps超限错误
+ kMixStreamAgentTimeoutError    = 85500001,
+ kMixStreamAgentDroppedError    = 85500002,
 
- kNetAgentDispatchIllegalParams       = 111100003, //调度请求包含非法参数
- kNetAgentDispatchQuicConnectFailed   = 111200005, //调度请求中连接quic调度服务器失败
- kNetAgentDispatchQuicStreamClosed    = 111200006, //调度请求中quic流被关闭
- kNetAgentDispatchRequestLocalFailed  = 111100007, //发起调度请求本地失败
- kNetAgentDispatchRequestServerFailed = 111200007, //发起调度请求服务端失败
- kNetAgentDispatchCreateStreamFailed  = 111100012, //调度请求是创建 stream 失败
- kNetAgentNodeTimeout                 = 112200002, //执行 http 任务超时
- kNetAgentNodeIllegalParams           = 112100003, //任务包含非法参数
- kNetAgentNodeDropped                 = 112200004, //任务被丢弃
- kNetAgentLinkConnectLocalFailed      = 113100001, //本地发起连接失败
- kNetAgentLinkConnectServerFailed     = 113200001, //连接服务端失败
- kNetAgentLinkClosed                  = 113200009, //连接被关闭
- kNetAgentLinkGetAddressFailed        = 113100014, //连接时获取地址失败
- kNetAgentLinkHeartbeatTimeout        = 113100015, //连接心跳超时
- kNetAgentLinkManualClosed            = 113100016, //手动断开连接
 } ZegoErrorCode;
 
 @interface ZegoError : NSObject

@@ -12,24 +12,34 @@
 
 @protocol ZegoLivePublisherDelegate;
 
-
+/**
+ 推流相关功能分类
+ */
 @interface ZegoLiveRoomApi (Publisher)
 
 /**
  设置 Publisher 代理对象
  
- @param publisherDelegate 遵循 ZegoLivePublisherDelegate 协议的代理对象
- @return true 成功，false 失败
- @discussion 使用 Publisher 功能，初始化相关视图控制器时需要设置代理对象。未设置代理对象，或对象设置错误，可能导致无法正常收到相关回调
+ * 注意：使用 Publisher 功能前需要设置代理对象，用于接收 ZegoLivePublisherDelegate 回调方法。
+ 
+ @param publisherDelegate 遵守 ZegoLivePublisherDelegate 协议的代理对象，SDK 内部会弱引用该对象。
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)setPublisherDelegate:(id<ZegoLivePublisherDelegate>)publisherDelegate;
 
 /**
- 设置选用分层编码
+ 设置是否使用分层视频编码
+
+ * 使用分层视频编码可以实现开发者(连麦/混流)业务中不同终端显示不同质量的视频流、根据网络状态自适应拉取视频流的质量的场景，分层视频编码更详细的描述见官网相关文档。
  
- @param codecId 是否选用分层编码
- @return true 成功，false 失败
- @discussion 设置选用分层编码,在InitSDK后，推流前调用有效
+ * 注意：
+ * 1.在推流前调用有效。
+ * 2.分层视频编码使用的是 ZEGO 的私有协议，仅限于连麦/混流方使用。
+ * 3.推流方设置使用分层视频编码后，拉流方可以使用 [ZegoLiveRoomApi(Player) -activateVideoPlayStream:active:videoLayer:] 接口指定拉取的视频分层。
+ 
+ @param codecId 是否使用分层视频编码，默认 VIDEO_CODEC_DEFAULT 即不使用分层视频编码
+ @param channel 要设置的推流通道，默认设置主通道 ZEGOAPI_CHN_MAIN
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)setVideoCodecId:(ZegoVideoCodecAvc)codecId ofChannel:(ZegoAPIPublishChannelIndex)channel;
 
@@ -37,79 +47,112 @@
  设置本地预览视图
  
  * 注意：
- * 1.建议在调用 -startPreview 开启预览前，调用该 API 设置本地预览视图，才能在视图上预览采集的视频。
- * 2.建议本地预览结束后，调用该 API 设置预览视图为 nil。
- 
- @param view 用于渲染本地预览视频的视图
- @return 设置结果。true 成功，false 失败
+ * 1.可以在初始化 SDK 之后的任意时间调用，建议在调用 -startPreview 开启预览前，调用该 API 设置本地预览视图，才能在视图上预览采集的视频。
+ * 2.建议本地预览结束后调用该 API 将本地预览视图置空。
+
+ @param view 用于渲染本地预览视频的视图，SDK 内部会强引用该对象，传空表示停止 SDK 的本地预览渲染
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)setPreviewView:(ZEGOView *)view;
+
+/**
+ 设置预览控件的背景颜色
+ @param color 颜色,取值为0x00RRGGBB
+ @return true 表示调用成功，false 表示调用失败。
+ */
+- (bool)setPreviewViewBackgroundColor:(int)color;
 
 /**
  启动本地预览
  
  * 注意：
- * 1.建议在启动本地预览前，调用 -setPreviewView: 设置本地预览视图。
- * 2.在退出房间后，SDK 内部会停止预览，如果需要继续预览，需要重新调用本方法开启预览。
- 
- @return true 成功，false 失败
+ * 1.可以在初始化 SDK 之后的任意时间调用。
+ * 2.调用 API 前，需要调用 [ZegoLiveRoomApi(Publisher) -setPreviewView:] 设置本地预览视图才可以看到采集的画面。
+ * 3.在退出房间后，SDK 内部会停止预览，如果需要继续预览，需要重新调用本方法开启预览。
+ * 4.本地预览默认开启预览镜像功能。
+
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)startPreview;
 
 /**
  停止本地预览
- 
- @return true 成功，false 失败
+
+ * 注意：
+ * 1.可以在初始化 SDK 之后的任意时间调用。
+ * 2.建议本地预览结束后调用 [ZegoLiveRoomApi(Publisher) -setPreviewView:] 将本地预览视图置空。
+
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)stopPreview;
 
 /**
- 开始发布直播
+ 开始发布直播（推流）
  
- @param streamID 流 ID
- @param title 直播名称，可选，默认为主播用户名
- @param flag 直播属性，参考 ZegoApiPublishFlag 定义
- @return true 成功，false 失败
- @discussion 发布直播成功后，等待 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知
+ * 注意：
+ * 1.可以在登录房间成功后调用，发布直播后可以使用 [ZegoLiveRoomApi(Publisher) -stopPublishing] 停止发布直播。
+ * 2.发布直播 API 调用成功后，SDK 会在 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 回调中通知发布结果，同一房间的其他人会在 [ZegoLiveRoomDelegate -onStreamUpdated:streams:roomID:] 回调中收到流新增通知。
+ * 3.为了满足客户的秒开播需求，该接口可以在调用登录房间接口后同步调用，如果登录房间失败，则直播发布也失败。
+
+ @param streamID 发布直播流的流ID，仅支持长度不超过 256 字节的数字、下划线、字母，streamID 需要在整个 AppID 内全局唯一
+ @param title 直播名称，可空，默认为主播用户名
+ @param flag 发布直播的模式，参考 ZegoApiPublishFlag 定义
+ @return true 表示调用成功，false 表示调用失败。
+ @see -stopPublishing
  */
 - (bool)startPublishing:(NSString *)streamID title:(NSString *)title flag:(int)flag;
 
 /**
- 开始发布直播
+ 开始发布直播（推流）
  
- @param streamID 流 ID
- @param title 直播名称，可选，默认为主播用户名
- @param flag 直播属性，参考 ZegoApiPublishFlag 定义
- @param extraInfo 流附加信息, 最大为 1024 字节
- @return true 成功，false 失败
- @discussion 发布直播成功后，等待 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知
+ * 注意：
+ * 1.可以在登录房间成功后调用，发布直播后可以使用 [ZegoLiveRoomApi(Publisher) -stopPublishing] 停止发布直播。
+ * 2.发布直播 API 调用成功后，SDK 会在 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 回调中通知发布结果，同一房间的其他人会在 [ZegoLiveRoomDelegate -onStreamUpdated:streams:roomID:] 回调中收到流新增通知。
+ * 3.为了满足客户的秒开播需求，该接口可以在调用登录房间接口后同步调用，如果登录房间失败，则直播发布也失败。
+
+ @param streamID 发布直播流的流ID，仅支持长度不超过 256 字节的数字、下划线、字母，streamID 需要在整个 AppID 内全局唯一
+ @param title 直播名称，可空，默认为主播用户名
+ @param flag 发布直播的模式，参考 ZegoApiPublishFlag 定义
+ @param extraInfo 流初始附加信息，可空，传空表示附加信息为空字符串，仅支持长度不超过 1024 字节的字符串
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)startPublishing:(NSString *)streamID title:(NSString *)title flag:(int)flag extraInfo:(NSString *)extraInfo;
 
 /**
  更新流附加信息
  
- @param extraInfo 流附加信息, 最大为 1024 字节
- @return true 成功，false 失败
- @discussion 通常在主播方的 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知中，或其他需更新流附加信息的场合下调用。更新流附加信息成功后，除调用方外，同一房间内的其他人会收到 [ZegoLiveRoomDelegate -onStreamExtraInfoUpdated:roomID] 通知
+ * 接收端只要开始拉流就会收到流附加信息及其后续更新，适用于想要在流信息中附带附加信息的情况（非变动频繁的信息）。
+ 
+ * 注意：
+ * 1.可以在初始化 SDK 之后的任意时间调用，会在直播流中附带该信息。
+ * 2.更新流附加信息后，同一房间播放该直播流的人会收到 [ZegoLiveRoomDelegate -onStreamExtraInfoUpdated:roomID:] 回调。
+ 
+ @param extraInfo 流附加信息，可空，传空表示附加信息为空字符串，仅支持长度不超过 1024 字节的字符串
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)updateStreamExtraInfo:(NSString *)extraInfo;
 
 /**
- 停止直播
+ 停止发布直播（结束推流）
  
- @return true 成功，false 失败
- @discussion 注意混流结束后，要先调用 [-updateMixInputStreams] 将流列表清空结束混流，然后调用 stopPublishing 结束直播
+ * 注意：
+ * 1.用于停止已发布的直播，可以在发布直播后调用。
+ * 2.停止发布直播不会触发 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 回调。
+ 
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)stopPublishing;
 
 /**
- 自定义推流配置
+ 自定义发布直播（推流）配置
  
- @param config 配置信息 key-value，目前 key 仅支持 kPublishCustomTarget ，value 为用户自定义的转推 RTMP 地址。参考 zego-api-defines-oc.h 中相关定义
- @discussion 开发者如果使用自定义转推功能，推流开始前，必须调用此接口设置转推 RTMP 地址（SDK 推流方式必须为 UDP，转推地址必须为 RTMP），否则可能导致转推失败。
+ * 使用连麦/混流推流模式时，可以通过该接口指定即构服务器转推 CDN 的地址。
+ 
+ * 注意：推流开始前调用有效。
+
+ @param config 推流配置信息，目前 key 仅支持 kPublishCustomTarget，value 为用户指定的转推 RTMP 地址，非 RTMP 地址可能导致转推失败
  */
-- (void)setPublishConfig:(NSDictionary *)config;
+- (void)setPublishConfig:(NSDictionary<NSString*,NSString*> *)config;
 
 /**
  响应连麦请求
@@ -171,18 +214,26 @@
 /**
  硬件编码开关
  
+ * 注意：
+ * 1.在推流之前设置有效。
+ * 2.硬编硬解开关最好后台可控，避免碰到版本升级或者硬件升级时出现硬编硬解失败的问题。
+
  @param bRequire true 开启，false 关闭。默认 false
- @return true 成功，false 失败
- @discussion 如果要打开，需要在推流前设置。打开硬编硬解开关需后台可控，避免碰到版本升级或者硬件升级时出现硬编硬解失败的问题
+ @return true 表示调用成功，false 表示调用失败。
  */
 + (bool)requireHardwareEncoder:(bool)bRequire;
 
 /**
- 设置视频配置
+ 设置发布直播（推流）视频配置
  
- @param config 配置参数（视频编码输出分辨率、视频采集分辨率、视频帧率、视频码率），参考 ZegoAVConfig 定义
- @return true 成功，false 失败
- @discussion 推流开始前调用本 API 进行视频采集参数配置
+ * 调用本 API 可以配置发布直播时视频采集、编码的参数。
+ 
+ * 注意：
+ * 1.在推流之前设置有效，在推流后设置的视频采集分辨率将无效并且不推荐在推流之后修改设置。
+ * 2.推荐使用 [ZegoLiveRoomApi(Publisher) -enableTrafficControl:properties:] 流量控制，让 SDK 进行动态码率、帧率、分辨率控制。
+
+ @param config 发布直播视频配置参数（视频编码输出分辨率、视频采集分辨率、视频帧率、视频码率）
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)setAVConfig:(ZegoAVConfig *)config;
 
@@ -313,17 +364,23 @@
 /**
  是否开启码率控制
  
- @param enable true 启用，false 不启用。默认不启用
- @return true 成功，false 失败
- @discussion 开启后，在带宽不足的情况下码率自动适应当前带宽
+ * 注意：
+ * 1.在推流之前设置有效。
+ * 2.不推荐使用此接口，可使用 [ZegoLiveRoomApi(Publisher) -setVideoEncoderRateControlConfig:encoderCRF:] 调整编码器的码率控制策略。
+
+ @param enable true 启用，false 不启用。默认 false
+ @return true 表示调用成功，false 表示调用失败。
+ @see -setVideoEncoderRateControlConfig:encoderCRF:
  */
 - (bool)enableRateControl:(bool)enable;
 
 /**
  设置编码器码率控制策略
  
- @param strategy 策略配置，参考 ZegoVideoEncoderRateControlStrategy
- @param encoderCRF 当策略为恒定质量（ZEGOAPI_RC_VBR/ZEGOAPI_RC_CRF）有效，取值范围 [0~51]，越小质量越好，但是码率会相应变大。建议取值范围 [18, 28]
+ * 注意：在推流之前设置有效。
+
+ @param strategy 码率控制策略，默认 ZEGOAPI_RC_CBR 恒定码率
+ @param encoderCRF 当策略为恒定质量（ZEGOAPI_RC_VBR/ZEGOAPI_RC_CRF）有效，取值范围 [0,51]，越小质量越好，但是码率会相应变大。默认 23，建议取值范围 [18,28]
  */
 - (void)setVideoEncoderRateControlConfig:(ZegoAPIVideoEncoderRateControlStrategy)strategy encoderCRF:(int)encoderCRF;
 
@@ -459,10 +516,14 @@
 - (void)setPreviewWaterMarkRect:(CGRect)waterMarkRect;
 
 /**
- 设置音频码率
+ 设置音频编码码率
  
- @param bitrate 码率
- @return true 成功 false 失败
+ * 注意：
+ * 1.可以在初始化 SDK 后任意时间设置，但不推荐在推流时动态修改码率。
+ * 2.推荐使用 [ZegoLiveRoomApi(Publisher) -enableTrafficControl:properties:] 让 SDK 进行动态码率控制。
+
+ @param bitrate 音频编码码率(bps)
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)setAudioBitrate:(int)bitrate;
 
@@ -577,18 +638,23 @@
 /**
  设置延迟模式
  
- @param mode 延迟模式，默认 ZEGOAPI_LATENCY_MODE_NORMAL
- @discussion 在推流前调用
+ * 设置 SDK 推流时音频使用的延迟模式，可以根据自己的业务场景选择最合适的延迟模式，详情可咨询 ZEGO 技术支持。
+ 
+ * 注意：在推流前调用有效。
+ 
+ @param mode 延迟模式，默认 ZEGOAPI_LATENCY_MODE_NORMAL 普通延迟模式
  */
 - (void)setLatencyMode:(ZegoAPILatencyMode)mode;
 
 /**
  设置推流音频声道数
  
+ * 注意：
+ * 1.在推流前调用有效。
+ * 2.[ZegoLiveRoomApi(Publisher) -setLatencyMode:] 中将延迟模式设置为 ZEGO_LATENCY_MODE_NORMAL、ZEGO_LATENCY_MODE_NORMAL2、ZEGO_LATENCY_MODE_LOW3 才能设置双声道。
+ * 3.在移动端双声道通常需要配合音频前处理才能体现效果。
+
  @param count 声道数，1 或 2，默认为 1（单声道）
- @discussion 必须在初始化 SDK 后，调用推流前设置。
- @discussion setLatencyMode 设置为 ZEGO_LATENCY_MODE_NORMAL, ZEGO_LATENCY_MODE_NORMAL2, ZEGO_LATENCY_MODE_LOW3 才能设置双声道
- @discusssion 在移动端双声道通常需要配合音频前处理才能体现效果
  */
 - (void)setAudioChannelCount:(int)count;
 
@@ -596,49 +662,66 @@
 /**
  设置混音音量
  
- @note 1. 此 API 可以在混音之前或者混完音之后调用，取决于用户需求。
- 
+ * 注意：
+ * 1.可以在初始化 SDK 之后任意时刻调用。
  * 2.SetAuxVolume 的工作逻辑都是基于对引擎的输入输出数据进行处理，即对输入 SDK 的音频数据的音量大小进行设置，与进行混音的推流设备的系统音量没有关系。
  * 3.采集混音需要的音频数据时采用 general 模式，一般是媒体音量；采用 communication 模式，一般是通话音量；采用 auto 模式，连麦时会变成通话音量。
- @param volume 音量值范围 0 ~ 100，默认为 50。
- @see 相关接口请查看 ZegoLiveRoomApi (Publisher) -muteAux:，ZegoLiveRoomApi (Publisher)-enableAux:
- @warning Deprecated，请使用 ZegoAudioAux setAuxVolume:
+ @param volume 音量值范围 [0,100]，默认为 50
+ @see 相关接口请查看 [ZegoLiveRoomApi(Publisher) -muteAux:]，[ZegoLiveRoomApi(Publisher) -enableAux:]
+ @warning Deprecated，请使用 [ZegoAudioAux -setAuxVolume:]
  */
 - (void)setAuxVolume:(int)volume;
 
 /**
- 是否开启离散音频包发送
+ 静音后不发送音频包（离散音频包发送）
  
- @param enable true 开启，此时关闭麦克风后，不会发送静音包；false 关闭，此时关闭麦克风后会发送静音包
- 默认状态下，关闭麦克风后会发送静音包
- @discussion 在推流前调用，只有纯 UDP 方案才可以调用此接口
+ * 开启离散音频包发送可以在关闭麦克风或者静音的状态下，停止音频包的发送，节省用户流量。
+ 
+ * 注意：
+ * 1.推流前调用有效，连麦/混流方式调用此接口有效。
+ * 2.可以和 [ZegoLiveRoomApi(Publisher) -enableVAD:] 配合使用。
+ * 3.如果为音频单流(非混流)转推 CDN，开启此选项将导致 CDN 在设定时间内未收到数据包认为流关闭而断开连接，所以此种情况不建议开启。
+ 
+ @param enable true 开启，false 关闭，默认 true
  */
 - (void)enableDTX:(bool)enable;
 
 /**
  是否开启语音活动检测
  
- @param enable true 开启；false 关闭，默认关闭
- @discussion 在推流前调用，只有纯 UDP 方案才可以调用此接口
+ * 开启语音活动检测可以在检测到没有语音只有底噪声的情况下，直接发送静音包，节省用户流量。
+ 
+ * 注意：
+ * 1.推流前调用有效，连麦/混流方式调用此接口有效。
+ * 2.可以和 [ZegoLiveRoomApi(Publisher) -enableDTX:] 配合使用。
+
+ @param enable true 开启；false 关闭，默认 false
  */
 - (void)enableVAD:(bool)enable;
 
 /**
  是否开启流量控制
  
- @param enable true 开启；false 关闭。默认开启流量控制，property 为 ZEGOAPI_TRAFFIC_CONTROL_ADAPTIVE_FPS
- @param properties 流量控制属性 (帧率，分辨率）可以多选, 参考ZegoAPITrafficControlProperty定义
- @discussion enable设置为false时，properties参数会被忽略
- @discussion 在推流前调用，在纯 UDP 方案才可以调用此接口
+ * 开启流量控制开关可以使 SDK 通过动态调整音视频的码率、帧率、分辨率来适应当前网络环境，从而保证直播的流畅发布。
+ 
+ * 注意：
+ * 1.在推流前调用，连麦/混流方式调用此接口有效。
+ * 2.当关闭流量控制时，流量控制属性将被忽略。
+
+ @param enable true 开启；false 关闭，默认 true
+ @param properties 流量控制属性 (码率、帧率、分辨率），可以多选，默认为 ZEGOAPI_TRAFFIC_CONTROL_ADAPTIVE_FPS 自适应帧率，参考 ZegoAPITrafficControlProperty 类型选项
  */
 - (void)enableTrafficControl:(bool)enable properties:(NSUInteger)properties;
 
 /**
- 设置TrafficControl视频码率最小值
+ 设置流量控制中视频码率最小值
  
- @param bitrate 码率，单位为bps
- @attention InitSDK 之后调用有效
- @note 设置一个在traffic control中video码率的一个最小值，当网络不足以发送这个最小值的时候视频会被卡住，而不是以低于该码率继续发送。初始化SDK后默认情况下没有设置该值，即尽可能的保持视频流畅，InitSDK之后可以随时修改，未重新InitSDK之前如果需要取消该设置值的限制可以设置为0
+ * 开启流量控制后，设置视频码率最小值可以让 SDK 当网络不足以达到发送视频最小码率时采取用户设置的策略。
+ 
+ * 注意：可以在初始化之后的任意时间调用，需要开启流量控制该参数才会生效。
+
+ @param bitrate 视频最小码率(bps)，默认为 0，即尽可能的保持视频流畅
+ @param mode 视频码率低于最小值后 SDK 的视频推流策略，默认为 ZEGOAPI_TRAFFIC_CONTROL_MIN_VIDEO_BITRATE_NO_VIDEO 停止视频发送
  */
 - (void)setMinVideoBitrateForTrafficControl:(int)bitrate mode:(ZegoAPITrafficControlMinVideoBitrateMode)mode;
 
@@ -661,10 +744,13 @@
 - (bool)enableNoiseSuppress:(bool)enable;
 
 /**
- 设置推流质量监控周期
+ 设置发布直播（推流）质量监控周期
  
- @param timeInMS 时间周期，单位为毫秒，取值范围为(500, 60000)。默认为 3000
- @discussion 必须在推流前调用才能生效。该设置会影响 [ZegoLivePublisherDelegate -onPublishQualityUpdate:quality:] 的回调频率
+ * 注意：
+ * 1.推流前调用有效。
+ * 2.该设置会影响 [ZegoLivePublisherDelegate -onPublishQualityUpdate:quality:] 的回调频率。
+
+ @param timeInMS 质量监控回调的时间周期，单位为毫秒，取值范围为[500,60000]。默认为 3000
  */
 + (void)setPublishQualityMonitorCycle:(unsigned int)timeInMS;
 
@@ -679,21 +765,49 @@
  */
 - (bool)setAudioEqualizerGain:(float)bandGain index:(int)bandIndex;
 
+/**
+ 推流时是否发送视频数据。
+
+ @param mute true 不发送(仅预览)，false 发送
+ @return 0 代表设置成功成功，否则设置失败
+ @attention 拉流端通过 OnRemoteCameraStatusUpdate 回调监听此状态是否改变;
+ @attention 仅拉 UDP 流时，才能接收到状态变更通知;
+ */
+- (int)muteVideoPublish:(bool)mute;
+
+/**
+ 推流时是否发送音频数据。
+ 
+ @param mute true 不发送，false 发送
+ @return 0 代表设置成功成功，否则设置失败
+ @attention 可以通过 ZegoLiveApiAudioRecordDelegate 回调获取本地音频数据
+ */
+- (int)muteAudioPublish:(bool)mute;
+
+
 @end
 
 
+/**
+ Publisher 代理
+ */
 @protocol ZegoLivePublisherDelegate <NSObject>
 
 /**
- 推流状态更新
+ 发布直播（推流）状态更新
  
- @param stateCode 状态码
- @param streamID 流 ID
- @param info 推流信息
- @discussion 主播调用 [ZegoLiveRoomApi (Publisher) -startPublishing:title:flag:] 推流成功后，通过该 API 通知主播方
- @note 推流状态码，详见 enum ZegoErrorCode
+ * 用户调用发布直播接口后，会通过该 API 通知用户发布直播操作的状态更新，在发布直播状态变化后就会回调，即可能会回调多次。
+ 
+ * 注意：
+ * 2.当回调失败，发布直播就已经停止，无需调用停止发布直播接口，SDK 不会自动重试发布直播，需要调用方重新尝试发布直播，或者提示用户发布失败执行其他业务逻辑。
+ * 3.用户手动调用停止发布直播接口、房间登录回调错误的情况下，该 API 不会回调。
+ * 4.info 目前的结构为 @{kZegoRtmpUrlListKey:@[RtmpUrlList], kZegoHlsUrlListKey:@[HlsUrlList], kZegoFlvUrlListKey:@[FlvUrlList]}。
+
+ @param stateCode 发布直播状态码，详见 ZegoErrorCode，0 为推流操作成功，否则为操作失败
+ @param streamID 发布直播的流ID，在用户同时推多路流的情况下需要以此判断本次回调表示的是哪一路流的状态更新
+ @param info CDN 转推相关信息
  */
-- (void)onPublishStateUpdate:(int)stateCode streamID:(NSString *)streamID streamInfo:(NSDictionary *)info;
+- (void)onPublishStateUpdate:(int)stateCode streamID:(NSString *)streamID streamInfo:(NSDictionary<NSString*,NSArray<NSString*>*> *)info;
 
 @optional
 
@@ -709,24 +823,32 @@
 - (void)onJoinLiveRequest:(int)seq fromUserID:(NSString *)userId fromUserName:(NSString *)userName roomID:(NSString *)roomID;
 
 /**
- 发布质量更新
+ 发布直播（推流）质量更新
  
- @param quality 发布质量，0 ~ 3 分别对应优、良、中、差
- @param streamID 发布流 ID
- @param fps 帧率(frame rate)
- @param kbs 码率(bit rate) kb/s
- @discussion 调用者可以在此回调中获取当前的视频质量数据，加以处理
- @note 不建议使用，请用 onPublishQualityUpdate:quality: 代替
+ * 可以在此 API 中获取当前发布直播的质量，加以处理。
+ 
+ * 注意：
+ * 1.此接口目前不建议使用，推荐使用 [ZegoLivePublisherDelegate -onPublishQualityUpdate:quality:] 获取质量。
+ * 2.在发布直播后，此 API 就会以 [ZegoLiveRoomApi(Publisher) -setPublishQualityMonitorCycle:] 接口设置的回调间隔持续回调。
+
+ @param quality 发布直播质量，[0,3]分别对应优、良、中、差
+ @param streamID 发布直播的流ID，在用户同时推多路流的情况下需要以此判断本次回调表示的是哪一路流的状态更新
+ @param fps 发布直播的帧率(fps)
+ @param kbs 发布直播的码率（kbps）
+ @see -setPublishQualityMonitorCycle:
  */
 - (void)onPublishQualityUpdate:(int)quality stream:(NSString *)streamID videoFPS:(double)fps videoBitrate:(double)kbs;
 
-
 /**
- 发布质量更新
+ 发布直播（推流）质量更新
  
- @param streamID streamID 发布流 ID
- @param quality quality 参考ZegoApiPublishQuality定义
- @discussion startPublish 后，该 API 会被多次回调。调用者可以在此回调中获取当前的视频质量数据，加以处理
+ * 可以在此 API 中获取当前发布直播的质量，加以处理。
+ 
+ * 注意：在发布直播后，此 API 就会以 [ZegoLiveRoomApi(Publisher) -setPublishQualityMonitorCycle:] 设置的回调间隔持续回调。
+
+ @param streamID streamID 发布直播的流ID，在用户同时推多路流的情况下需要以此判断本次回调表示的是哪一路流的状态更新
+ @param quality 发布直播质量结构体
+ @see -setPublishQualityMonitorCycle:
  */
 - (void)onPublishQualityUpdate:(NSString *)streamID quality:(ZegoApiPublishQuality)quality;
 
@@ -755,41 +877,59 @@
 
 /**
  混音数据输入回调
- @param pData 混音数据
- @note 注意：
  
- * 1. 最大支持 48k 采样率、双声道、16位深的 PCM 音频数据；
- * 2. 实际数据长度应根据当前音频数据的采样率及声道数决定；
- * 3. 为确保混音效果，请不要在此 API 中执行耗时操作
+ * 注意：
+ * 1.最大支持 48k 采样率、双声道、16位深的 PCM 音频数据。
+ * 2.实际数据长度应根据当前音频数据的采样率及声道数决定。
+ * 3.为确保混音效果，请不要在此 API 中执行耗时操作。
+ * 4.用户调用该 API 将混音数据传递给 SDK，混音数据 bit depth 必须为 16。
+ @param pData 混音数据
  @param pDataLen pDataLen既是输入参数也是输出参数；
                  作为输入参数，SDK会提供好长度值，用户按照这个长度写入数据即可，数据充足的情况下，无需更改*pDataLen的值
                  作为输出参数，如果填写的数据不足SDK提供的长度值，则*pDataLen = 0,
                  或者最后的尾音不足 SDK提供的长度值，可以用静音数据补齐。
  @param pSampleRate 混音数据采样率，支持16k、32k、44.1k、48k
  @param pChannelCount 混音数据声道数，支持1、2
- @discussion 用户调用该 API 将混音数据传递给 SDK。混音数据 bit depth 必须为 16
  @warning Deprecated，请使用 ZegoAudioAuxDelgate 代替
  */
 - (void)onAuxCallback:(void *)pData dataLen:(int *)pDataLen sampleRate:(int *)pSampleRate channelCount:(int *)pChannelCount;
 
 /**
- 转推CDN状态信息更新
- @param statesInfo CDN状态信息
- @param streamID 推流的流ID
+ 发布直播转推 CDN 状态信息更新
+ 
+ * 可以通过此 API 获取当前发布的直播转推 CDN 的状态更新。
+
+ @param statesInfo 转推CDN状态信息数组
+ @param streamID 发布直播的流ID，在用户同时推多路流的情况下需要以此判断本次回调表示的是哪一路流的状态更新
  */
 - (void)onRelayCDNStateUpdate:(NSArray<ZegoAPIStreamRelayCDNInfo *> *)statesInfo streamID:(NSString*)streamID;
 
 /**
  采集视频的首帧通知
+ 
+ * 可以通过此 API 获取 SDK 采集到视频首帧的时间，可以在此 API 中移除预览占位图，然后设置预览视图。
+ * 开始预览和开始发布直播均会触发采集。
  */
 - (void)onCaptureVideoFirstFrame;
 
+/**
+ 采集视频的首帧通知
+ 
+ * 可以通过此 API 获取 SDK 采集到视频首帧的时间，可以在此 API 中移除预览占位图，然后设置预览视图。
+ 
+ * 注意：开始预览和开始发布直播均会触发采集。
+
+ @param index 推流使用的推流通道
+ */
 - (void)onCaptureVideoFirstFrame:(ZegoAPIPublishChannelIndex)index;
 
 /**
  采集音频的首帧通知
+ 
+ * 可以通过此 API 获取 SDK 采集到音频首帧的时间。
+ 
+ * 注意：开始预览和开始发布直播均会触发采集。
  */
 - (void)onCaptureAudioFirstFrame;
 
 @end
-

@@ -173,6 +173,15 @@
 - (bool)setViewRotation:(int)rotate ofStream:(NSString *)streamID;
 
 /**
+ 设置视频控件的背景颜色
+ 
+ @param  color 颜色,取值为0x00RRGGBB
+ @param streamID 播放流 ID
+ @return true 成功，false 失败
+ */
+- (bool)setViewBackgroundColor:(int)color ofStream:(NSString *)streamID;
+
+/**
  对观看直播视图进行截图
  
  @param streamID 流 ID
@@ -358,16 +367,18 @@
  
  @param streamID 流的唯一标识
  @param status 参考 zego-api-defines-oc.h 中 ZegoAPIDeviceStatus 的定义
+ @param reason 参考 zego-api-defines-oc.h 中 ZegoAPIDeviceErrorReason 的定义
  */
-- (void)onRemoteCameraStatusUpdate:(int)status ofStream:(NSString *)streamID;
+- (void)onRemoteCameraStatusUpdate:(int)status ofStream:(NSString *)streamID reason:(int)reason;
 
 /**
  远端麦克风状态通知
  
  @param streamID 流的唯一标识
  @param status 参考 zego-api-defines-oc.h 中 ZegoAPIDeviceStatus 的定义
+ @param reason 参考 zego-api-defines-oc.h 中 ZegoAPIDeviceErrorReason 的定义
  */
-- (void)onRemoteMicStatusUpdate:(int)status ofStream:(NSString *)streamID;
+- (void)onRemoteMicStatusUpdate:(int)status ofStream:(NSString *)streamID reason:(int)reason;
 
 /**
  接收到远端音频的首帧通知

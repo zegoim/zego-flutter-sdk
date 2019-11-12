@@ -299,8 +299,8 @@ class ZegoLiveRoomPlayerPlugin {
     Function(String streamID, int width, int height) onVideoSizeChangedTo,
     Function(int seq, String fromUserID, String fromUserName, String roomID) onInviteJoinLiveRequest,
     Function(String fromUserID, String fromUserName, String roomID) onRecvEndJoinLiveCommand,
-    Function(int status, String streamID) onRemoteCameraStatusUpdate,
-    Function(int status, String streamID) onRemoteMicStatusUpdate,
+    Function(int status, String streamID, int reason) onRemoteCameraStatusUpdate,
+    Function(int status, String streamID, int reason) onRemoteMicStatusUpdate,
     Function(String streamID) onRecvRemoteAudioFirstFrame,
     Function(String streamID) onRecvRemoteVideoFirstFrame,
     Function(String streamID) onRenderRemoteVideoFirstFrame
@@ -407,7 +407,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///@param status 参考 [ZegoDeviceStatus]
   ///@discussion 当房间内其他正在推流的用户关闭或开启摄像头时，当前用户可以收到此通知。
   ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRemoteCameraStatusUpdate 对象参数之后才能收到该回调
-  static void Function(int status, String streamID) _onRemoteCameraStatusUpdate;
+  static void Function(int status, String streamID, int reason) _onRemoteCameraStatusUpdate;
 
   ///远端麦克风状态通知
   ///
@@ -415,7 +415,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///@param status 参考
   ///@discussion 当房间内其他正在推流的用户关闭或开启麦克风时，当前用户可以收到此通知。
   ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRemoteMicStatusUpdate 对象参数之后才能收到该回调
-  static void Function(int status, String streamID) _onRemoteMicStatusUpdate;
+  static void Function(int status, String streamID, int reason) _onRemoteMicStatusUpdate;
 
   ///接收到远端音频的首帧通知
   ///
@@ -566,8 +566,9 @@ class ZegoLiveRoomPlayerPlugin {
 
           int status = args['status'];
           String streamID = args['streamID'];
+          int reason = args['reason'];
 
-          _onRemoteCameraStatusUpdate(status, streamID);
+          _onRemoteCameraStatusUpdate(status, streamID, reason);
         }
         break;
       case 'onRemoteMicStatusUpdate':
@@ -575,8 +576,9 @@ class ZegoLiveRoomPlayerPlugin {
 
           int status = args['status'];
           String streamID = args['streamID'];
+          int reason = args['reason'];
 
-          _onRemoteMicStatusUpdate(status, streamID);
+          _onRemoteMicStatusUpdate(status, streamID, reason);
         }
         break;
       case 'onRecvRemoteAudioFirstFrame':

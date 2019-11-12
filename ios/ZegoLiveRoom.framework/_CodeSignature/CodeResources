@@ -22,15 +22,15 @@
 		</data>
 		<key>Headers/ZegoLiveRoomApi-Player.h</key>
 		<data>
-		PqC0GzdzdAjqe+HTMbNA+B3GnpM=
+		j+ucRq4rrqlmeT2PhIucKKNXZpM=
 		</data>
 		<key>Headers/ZegoLiveRoomApi-Publisher.h</key>
 		<data>
-		BU6ZpgxGUGnPkVvI4w0GdHikY8A=
+		Nz8mqPqHcv1jcRc+6D1pIsudDdM=
 		</data>
 		<key>Headers/ZegoLiveRoomApi-Publisher2.h</key>
 		<data>
-		+6QjEV6iq1XVvK5BJfEXWL140wE=
+		MCF5JBzLp8v3G5BkRFS3nsm9U9k=
 		</data>
 		<key>Headers/ZegoLiveRoomApi-ReliableMessage.h</key>
 		<data>
@@ -42,7 +42,7 @@
 		</data>
 		<key>Headers/ZegoLiveRoomApi.h</key>
 		<data>
-		360loBf9tRd614+HjZgmnWk/nWA=
+		kt+UmNqGoM3LN+WVn6xGISgcv7U=
 		</data>
 		<key>Headers/ZegoLiveRoomApiDefines-IM.h</key>
 		<data>
@@ -50,7 +50,7 @@
 		</data>
 		<key>Headers/ZegoLiveRoomApiDefines-Publisher.h</key>
 		<data>
-		O6rT+QdM6UulKWGGVcPOAug24fQ=
+		ELq9XynZ/0TB516VcKvngZzmk1Y=
 		</data>
 		<key>Headers/ZegoLiveRoomApiDefines-ReliableMessage.h</key>
 		<data>
@@ -94,11 +94,11 @@
 		</data>
 		<key>Headers/zego-api-defines-oc.h</key>
 		<data>
-		yWvAvXd2dWTY8oFR3/fEVkGyK+o=
+		YgTKhNcW2Vb/Z+YZfMgSTsR08oc=
 		</data>
 		<key>Headers/zego-api-error-oc.h</key>
 		<data>
-		DwCvQGG4d2h6/TRT4j4w056UulY=
+		Jq3m57ka0EF2nqtXX0giV0E+vHI=
 		</data>
 		<key>Headers/zego-api-external-audio-device-oc.h</key>
 		<data>
@@ -199,33 +199,33 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			PqC0GzdzdAjqe+HTMbNA+B3GnpM=
+			j+ucRq4rrqlmeT2PhIucKKNXZpM=
 			</data>
 			<key>hash2</key>
 			<data>
-			ufYdP4ghyosLZ/qwMYblWLOmgdwityinKTP64/9HJAI=
+			o1A8qDnm8z+PyLeqKHqi+kmC5KUU2rlV3Qo79JZWfGo=
 			</data>
 		</dict>
 		<key>Headers/ZegoLiveRoomApi-Publisher.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			BU6ZpgxGUGnPkVvI4w0GdHikY8A=
+			Nz8mqPqHcv1jcRc+6D1pIsudDdM=
 			</data>
 			<key>hash2</key>
 			<data>
-			X01WyfYr5LAorK36Gv70aDq2AV+gsl0L4AyluUDgT04=
+			ptgWo2VvReYHn9o7S18ZfJ0q1fKH0mB+KRk5dIDRzHo=
 			</data>
 		</dict>
 		<key>Headers/ZegoLiveRoomApi-Publisher2.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			+6QjEV6iq1XVvK5BJfEXWL140wE=
+			MCF5JBzLp8v3G5BkRFS3nsm9U9k=
 			</data>
 			<key>hash2</key>
 			<data>
-			0iK1mgnQOGh6qGcdPOH9DKlbPwBI6quWf73p+K3ewO8=
+			mcx3Av7M3lcAVntVqvVHFoK0OkeF+vG27I80nYf/sRQ=
 			</data>
 		</dict>
 		<key>Headers/ZegoLiveRoomApi-ReliableMessage.h</key>
@@ -254,11 +254,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			360loBf9tRd614+HjZgmnWk/nWA=
+			kt+UmNqGoM3LN+WVn6xGISgcv7U=
 			</data>
 			<key>hash2</key>
 			<data>
-			le0tEtpnr0sfZP1h1A0O8cg1bgtr8Ba/b9OIAmoA2HY=
+			IQilv/k83ePQ/QXJFG6ZriAgo4dKv9PHYhyJJux3WqM=
 			</data>
 		</dict>
 		<key>Headers/ZegoLiveRoomApiDefines-IM.h</key>
@@ -276,11 +276,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			O6rT+QdM6UulKWGGVcPOAug24fQ=
+			ELq9XynZ/0TB516VcKvngZzmk1Y=
 			</data>
 			<key>hash2</key>
 			<data>
-			1ULrjteoA3z8naBFsrkwOUZ7EhKNEBx0ifGRaNr1i0U=
+			G5b6O/1OpZC533/mfvENic+3+mfeJqt6OlmifoF9YNU=
 			</data>
 		</dict>
 		<key>Headers/ZegoLiveRoomApiDefines-ReliableMessage.h</key>
@@ -397,22 +397,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			yWvAvXd2dWTY8oFR3/fEVkGyK+o=
+			YgTKhNcW2Vb/Z+YZfMgSTsR08oc=
 			</data>
 			<key>hash2</key>
 			<data>
-			PhAuiETHNr2Mhj5hLfEzni9apSsCMMKkL8Ip7s5yjqM=
+			JQBrsrplSjzyhh8x3PWV39xb+adI90MNiqe2a5s+u78=
 			</data>
 		</dict>
 		<key>Headers/zego-api-error-oc.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			DwCvQGG4d2h6/TRT4j4w056UulY=
+			Jq3m57ka0EF2nqtXX0giV0E+vHI=
 			</data>
 			<key>hash2</key>
 			<data>
-			jX9NbI6VKXE6AbCjqglzpxbb6hGEp1Mz0OGrD5LYxGc=
+			trucuJqoI7KlHukTgvsWlC+MT4Mh5HgG52a8Ci21SRg=
 			</data>
 		</dict>
 		<key>Headers/zego-api-external-audio-device-oc.h</key>

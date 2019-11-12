@@ -246,7 +246,7 @@ class ZegoLiveRoomPlugin {
     Function(int errorCode, String roomID) onTempBroken,
     Function(int errorCode, String roomID) onReconnect,
     Function(int errorCode, String roomID) onDisconnect,
-    Function(int reason, String roomID) onKickOut,
+    Function(int reason, String roomID, String customReason) onKickOut,
     Function(String fromUserID, String fromUserName, String content, String roomID) onReceiveCustomCommand,
     Function(List<ZegoUserInfo> userList, int updateType) onUserUpdate,
     Function(int event, Map<String, String> info) onLiveEvent,
@@ -351,7 +351,7 @@ class ZegoLiveRoomPlugin {
   ///@param roomID 房间 ID
   ///@discussion 可在该回调中处理用户被踢出房间后的下一步处理（例如报错、重新登录提示等）
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onKickOut 对象参数之后才能收到该回调
-  static void Function(int reason, String roomID) _onKickOut;
+  static void Function(int reason, String roomID, String customReason) _onKickOut;
 
   ///收到自定义消息
   ///
@@ -475,8 +475,9 @@ class ZegoLiveRoomPlugin {
 
           int reason = args['reason'];
           String roomID = args['roomID'];
+          String customReason = args['customReason'];
 
-          _onKickOut(reason, roomID);
+          _onKickOut(reason, roomID, customReason);
 
         }
         break;

@@ -28,6 +28,14 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (bool)setPreviewView:(ZEGOView *)view channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
+ 设置预览控件的背景颜色
+ @param color 颜色,取值为0x00RRGGBB
+ @param index 推流 channel Index
+ @return true 表示调用成功，false 表示调用失败。
+ */
+- (bool)setPreviewViewBackgroundColor:(int)color channelIndex:(ZegoAPIPublishChannelIndex)index;
+
+/**
  启动本地预览
  
  * 注意：
@@ -48,27 +56,37 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (bool)stopPreview:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 开始发布直播
+ 开始指定通道发布直播（推流）
  
- @param streamID 流 ID
- @param title 直播名称，可选，默认为主播用户名
- @param flag 直播属性，参考 ZegoApiPublishFlag 定义
- @param index 推流 channel Index
- @return true 成功，false 失败
- @discussion 发布直播成功后，等待 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知
+ * 注意：
+ * 1.可以登录房间成功后调用，发布直播后可以使用 [ZegoLiveRoomApi(Publisher2) -stopPublishing:] 停止发布直播。
+ * 2.发布直播 API 调用成功后，SDK 会在 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 回调中通知发布结果，同一房间的其他人会在 [ZegoLiveRoomDelegate -onStreamUpdated:streams:roomID:] 回调中收到流新增通知。
+ * 3.为了满足客户的秒开播需求，该接口可以在调用登录房间接口后同步调用，如果登录房间失败，则直播发布也失败。
+ * 4.[ZegoLiveRoonApi(Publisher) -startPublishing] 既是主通道推流。
+ 
+ @param streamID 发布直播流的流ID，仅支持长度不超过 256 字节的数字、下划线、字母，streamID 需要在整个 AppID 内全局唯一
+ @param title 直播名称，可空，默认为主播用户名
+ @param flag 发布直播的模式
+ @param channelIndex 推流使用的推流通道
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)startPublishing2:(NSString *)streamID title:(NSString *)title flag:(int)flag channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 开始发布直播
+ 开始发布直播（指定通道推流）
  
- @param streamID 流 ID
- @param title 直播名称，可选，默认为主播用户名
- @param flag 直播属性，参考 ZegoApiPublishFlag 定义
- @param extraInfo 流附加信息, 最大为 1024 字节
- @param index 推流 channel Index
- @return true 成功，false 失败
- @discussion 发布直播成功后，等待 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 通知
+ * 注意：
+ * 1.可以登录房间成功后调用，发布直播后可以使用 [ZegoLiveRoomApi(Publisher2) -stopPublishing:] 停止发布直播。
+ * 2.发布直播 API 调用成功后，SDK 会在 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 回调中通知发布结果，同一房间的其他人会在 [ZegoLiveRoomDelegate -onStreamUpdated:streams:roomID:] 回调中收到流新增通知。
+ * 3.为了满足客户的秒开播需求，该接口可以在调用登录房间接口后同步调用，如果登录房间失败，则直播发布也失败。
+ * 4.[ZegoLiveRoonApi(Publisher) -startPublishing] 既是主通道推流。
+ 
+ @param streamID 发布直播流的流ID，仅支持长度不超过 256 字节的数字、下划线、字母，streamID 需要在整个 AppID 内全局唯一
+ @param title 直播名称，可空，默认为主播用户名
+ @param flag 发布直播的模式，参考 ZegoApiPublishFlag 定义
+ @param extraInfo 流附加信息，可空，传空表示附加信息为空字符串，仅支持长度不超过 1024 字节的字符串
+ @param channelIndex 推流使用的推流通道
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)startPublishing2:(NSString *)streamID title:(NSString *)title flag:(int)flag extraInfo:(NSString *)extraInfo channelIndex:(ZegoAPIPublishChannelIndex)index;
 
@@ -87,6 +105,27 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (bool)startPublishing2:(NSString *)streamID title:(NSString *)title flag:(int)flag extraInfo:(NSString *)extraInfo params:(NSString *)params channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
+ 推流时是否发送视频数据。
+
+ @param mute true 不发送(仅预览)，false 发送
+ @param channelIndex 推流通道索引
+ @return 0 代表设置成功成功，否则设置失败
+ @attention 拉流端通过 OnRemoteCameraStatusUpdate 回调监听此状态是否改变;
+ @attention 仅拉 UDP 流时，才能接收到状态变更通知;
+ */
+- (int)muteVideoPublish:(bool)mute channelIndex:(ZegoAPIPublishChannelIndex)index;
+
+/**
+ 推流时是否发送音频数据。
+ 
+ @param mute true 不发送，false 发送
+ @param channelIndex 推流通道索引
+ @return 0 代表设置成功成功，否则设置失败
+ @attention 可以通过 ZegoLiveApiAudioRecordDelegate 回调获取本地音频数据
+ */
+- (int)muteAudioPublish:(bool)mute channelIndex:(ZegoAPIPublishChannelIndex)index;
+
+/**
  更新流附加信息
  
  @param extraInfo 流附加信息, 最大为 1024 字节
@@ -97,11 +136,14 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (bool)updateStreamExtraInfo:(NSString *)extraInfo channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 停止直播
+ 停止指定通道发布直播（推流）
  
- @param index 推流 channel Index
- @return true 成功，false 失败
- @discussion 注意混流结束后，要先调用 [-updateMixInputStreams] 将流列表清空结束混流，然后调用 stopPublishing 结束直播
+ * 注意：
+ * 1.用于停止已发布的直播，可以在发布直播后调用。
+ * 2.停止发布直播不会触发 [ZegoLivePublisherDelegate -onPublishStateUpdate:streamID:streamInfo:] 回调。
+ 
+ @param index 推流使用的推流通道
+ @return true 表示调用成功，false 表示调用失败。
  */
 - (bool)stopPublishing:(ZegoAPIPublishChannelIndex)index;
 
@@ -115,14 +157,13 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (void)setPublishConfig:(NSDictionary *)config channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 添加转推地址
- 
- @param strTarget 转推地址（支持rtmp/avertp）
- @param pszStreamID 推流ID
- @param completionBlock 添加转推地址回调
- @return true 成功，false 失败
- @attention 在InitSDK之后调用
-  */
+ 添加已发布直播的转推地址
+
+ @param target 添加的转推地址（支持rtmp/avertp）
+ @param streamID 正在发布的直播流ID
+ @param completionBlock 完成回调
+ @return true 表示调用成功，false 表示调用失败。
+ */
 - (bool)addPublishTarget:(NSString *)target streamID:(NSString *)streamID completion:(ZegoUpdatePublishTargetCompletionBlock)completionBlock;
 
 /**
@@ -149,10 +190,11 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 /**
  设置视频关键帧间隔
  
- @param intervalSecond 关键帧间隔，单位为秒，默认2秒
- @param index 推流 channel Index
- @return true 成功，false 失败
- @attention 推流开始前调用本 API 进行参数配置
+ * 注意：推流前调用有效。
+ 
+ @param intervalSecond 关键帧间隔，单位为秒，默认 2 秒
+ @param index 推流使用的推流通道
+ @return true 表示调用成功，false 表示调用失败
  */
 - (bool)setVideoKeyFrameInterval:(int)intervalSecond channelIndex:(ZegoAPIPublishChannelIndex)index;
 

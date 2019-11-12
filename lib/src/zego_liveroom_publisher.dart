@@ -554,6 +554,47 @@ class ZegoLiveRoomPublisherPlugin {
     return success;
   }
 
+  ///自定义发布直播（推流）配置
+  ///
+  ///@param  rtmpURL 用户指定的转推 RTMP 地址，非 RTMP 地址可能导致转推失败
+  static Future<void> setPublishConfig(String rtmpURL) async {
+    return await _channel.invokeMethod('setPublishConfig', {
+      'rtmpURL': rtmpURL
+    });
+  }
+
+  ///添加已发布直播的转推地址
+  ///
+  ///@param target 添加的转推地址（支持rtmp/avertp）
+  ///@param streamID 推流ID
+  ///@return true 表示调用成功，false 表示调用失败。
+  ///@discussion 注意: 必须在 initSDK 后调用
+  static Future<ZegoStreamRelayCDNResult> addPublishTarget(String target, String streamID) async {
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('addPublishTarget', {
+      'target': target,
+      'streamID': streamID
+    });
+
+    ZegoStreamRelayCDNResult result = new ZegoStreamRelayCDNResult(mapResult['errorCode'], mapResult['streamID']);
+    return result;
+  }
+
+  ///删除转推地址
+  ///
+  ///@param target 转推地址（支持rtmp/avertp）
+  ///@param streamID 推流ID
+  ///@return true 表示调用成功，false 表示调用失败。
+  ///@discussion 注意: 必须在 initSDK 后调用
+  static Future<ZegoStreamRelayCDNResult> deletePublishTarget(String target, String streamID) async {
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('deletePublishTarget', {
+      'target': target,
+      'streamID': streamID
+    });
+
+    ZegoStreamRelayCDNResult result = new ZegoStreamRelayCDNResult(mapResult['errorCode'], mapResult['streamID']);
+    return result;
+  }
+
   ///设置回调对象
   ///
   ///@param onPublishStateUpdate 设置接收 推流状态更新 回调，参考 [_onPublishStateUpdate] 定义
@@ -566,6 +607,7 @@ class ZegoLiveRoomPublisherPlugin {
   static void registerPublisherCallback({
     Function(int stateCode, String streamID, Map<String, dynamic> info) onPublishStateUpdate,
     Function(String streamID, ZegoPublishStreamQuality quality) onPublishQualityUpdate,
+    Function(String streamID, List<ZegoStreamRelayCDNInfo> statesInfo) onRelayCDNStateUpdate,
     Function(int width, int height) onCaptureVideoSizeChangedTo,
     Function() onCaptureAudioFirstFrame,
     Function() onCaptureVideoFirstFrame,
@@ -574,6 +616,7 @@ class ZegoLiveRoomPublisherPlugin {
 
     _onPublishStateUpdate = onPublishStateUpdate;
     _onPublishQualityUpdate = onPublishQualityUpdate;
+    _onRelayCDNStateUpdate = onRelayCDNStateUpdate;
     _onCaptureVideoSizeChangedTo = onCaptureVideoSizeChangedTo;
     _onCaptureAudioFirstFrame = onCaptureAudioFirstFrame;
     _onCaptureVideoFirstFrame = onCaptureVideoFirstFrame;
@@ -596,6 +639,7 @@ class ZegoLiveRoomPublisherPlugin {
 
     _onPublishStateUpdate = null;
     _onPublishQualityUpdate = null;
+    _onRelayCDNStateUpdate = null;
     _onCaptureVideoSizeChangedTo = null;
     _onCaptureAudioFirstFrame = null;
     _onCaptureVideoFirstFrame = null;
@@ -631,10 +675,17 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 开发者必须调用 [registerPublisherCallback] 且设置 onPublishQualityUpdate 对象参数之后才能收到该回调
   static void Function(String streamID, ZegoPublishStreamQuality quality) _onPublishQualityUpdate;
 
+  ///发布直播转推 CDN 状态信息更新
+  ///
+  ///@param statesInfo 转推CDN状态信息数组
+  ///@param streamID 发布直播的流ID，在用户同时推多路流的情况下需要以此判断本次回调表示的是哪一路流的状态更新
+  ///@discussion 可以通过此 API 获取当前发布的直播转推 CDN 的状态更新。
+  static void Function(String streamID, List<ZegoStreamRelayCDNInfo> statesInfo) _onRelayCDNStateUpdate;
+
   ///采集视频的宽度和高度变化通知
   ///
   ///@param width 视频宽度
-  ///param height 视频高度
+  ///@param height 视频高度
   ///@discussion 发布直播成功后，当视频尺寸变化时，发布者会收到此回调通知
   ///@discussion 开发者必须调用 [registerPublisherCallback] 且设置 onCaptureVideoSizeChangedTo 对象参数之后才能收到该回调
   static void Function(int width, int height) _onCaptureVideoSizeChangedTo;
@@ -736,6 +787,20 @@ class ZegoLiveRoomPublisherPlugin {
 
           _onPublishQualityUpdate(streamID, publishStreamQuality);
 
+        }
+        break;
+      case 'onRelayCDNStateUpdate':
+        if(_onRelayCDNStateUpdate != null) {
+          
+          String streamID = args['streamID'];
+          List<ZegoStreamRelayCDNInfo> statesInfo = [];
+          List<dynamic> objList = args['statesInfo'];
+
+          for (Map<dynamic, dynamic> obj in objList) {
+            ZegoStreamRelayCDNInfo info = new ZegoStreamRelayCDNInfo(obj['rtmpURL'], obj['state'], obj['detail'], obj['stateTime']);
+            statesInfo.add(info);
+          }
+          _onRelayCDNStateUpdate(streamID, statesInfo);
         }
         break;
       case 'onCaptureVideoSizeChangedTo':

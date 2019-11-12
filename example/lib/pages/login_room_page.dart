@@ -54,7 +54,6 @@ class _LoginRoomPageState extends State<LoginRoomPage> {
       Authorization authorization = await checkAuthorization();
       //权限对象为null，表明当前运行系统下无需进行动态检查权限（如Android 6.0以下系统）
       if (authorization == null) {
-        print('loginroom without authorization');
         _loginRoom();
         return;
       }
@@ -85,7 +84,6 @@ class _LoginRoomPageState extends State<LoginRoomPage> {
 
       if(result.errorCode == 0) {
 
-        print('登录房间成功');
         ZegoConfig.getInstance().roomID = roomID;
         ZegoConfig.getInstance().saveConfig();
 

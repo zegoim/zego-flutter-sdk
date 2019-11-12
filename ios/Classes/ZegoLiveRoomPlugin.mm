@@ -43,6 +43,755 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     return self;
 }
 
+- (void)dealloc {
+    
+    [ZegoPlatformViewFactory release];
+    
+    if(self.zegoApi)
+        self.zegoApi = nil;
+    if(self.mediaSideInfoApi)
+        self.mediaSideInfoApi = nil;
+}
+
+- (bool)numberToBoolValue:(NSNumber *)number {
+    
+    return [number isKindOfClass:[NSNull class]] ? false : [number boolValue];
+}
+
+- (int)numberToIntValue:(NSNumber *)number {
+    
+    return [number isKindOfClass:[NSNull class]] ? 0 : [number intValue];
+}
+
+- (unsigned int)numberToUintValue:(NSNumber *)number {
+   
+    return [number isKindOfClass:[NSNull class]] ? 0 : [number unsignedIntValue];
+}
+
+- (unsigned long)numberToULongValue:(NSNumber *)number {
+    
+    return [number isKindOfClass:[NSNull class]] ? 0 : [number unsignedLongValue];
+}
+
+- (float)numberToFolatValue:(NSNumber *)number {
+    
+    return [number isKindOfClass:[NSNull class]] ? 0.f : [number floatValue];
+}
+
+NSData* convertStringToSign(NSString* strSign) {
+    
+    if(strSign == nil || strSign.length == 0)
+        return nil;
+    
+    strSign = [strSign lowercaseString];
+    strSign = [strSign stringByReplacingOccurrencesOfString:@" " withString:@""];
+    strSign = [strSign stringByReplacingOccurrencesOfString:@"0x" withString:@""];
+    NSArray* szStr = [strSign componentsSeparatedByString:@","];
+    int nLen = (int)[szStr count];
+    nLen = nLen > 32 ? 32 : nLen;
+    Byte szSign[32];
+    for(int i = 0; i < nLen; i++)
+    {
+        NSString *strTmp = [szStr objectAtIndex:i];
+        if(strTmp.length == 1)
+            szSign[i] = toByte(strTmp);
+        else
+        {
+            szSign[i] = toByte([strTmp substringWithRange:NSMakeRange(0, 1)]) << 4 | toByte([strTmp substringWithRange:NSMakeRange(1, 1)]);
+        }
+    }
+    
+    NSData *sign = [NSData dataWithBytes:szSign length:32];
+    return sign;
+}
+
+Byte toByte(NSString* c) {
+    NSString *str = @"0123456789abcdef";
+    Byte b = [str rangeOfString:c].location;
+    return b;
+}
+
+- (void)throwSdkNotInitError:(FlutterResult)result ofMethodName:(NSString *)methodName {
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zegoliveroom api is not inited."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
+}
+
+- (void)throwNoRendererError:(FlutterResult)result ofMethodName:(NSString *)methodName {
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zego preview or play renderer is null."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
+}
+
+- (void)throwNoTextureError:(FlutterResult)result ofMethodName:(NSString *)methodName {
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is true. make sure you turn off this api before calling \'initSDK\' when you use texture to render."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
+}
+
+- (void)throwNoPlatformViewError:(FlutterResult)result ofMethodName:(NSString *)methodName {
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
+}
+
+
+#pragma mark - Handle Flutter CallMethods
+- (void)initSDKWithAppID:(unsigned int)appID appSign: (NSString *)appsign result:(FlutterResult)result {
+    
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] enter init sdk, app id: %u", appID]];
+    
+    NSData *appSign = convertStringToSign(appsign);
+    if(appSign == nil)
+        return;
+    
+    //默认使用外部渲染
+    if(!self.isEnablePlatformView) {
+    
+        [ZegoExternalVideoRender enableExternalVideoRender:YES type:VideoExternalRenderTypeDecodeRgbSeries];
+        self.renderController = [[ZegoRendererController alloc] init];
+    }
+    
+    self.zegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
+        
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] on init sdk, errorCode: %d", errorCode]];
+        
+        if(errorCode == 0)
+        {
+            //设置代理
+            [self.zegoApi setRoomDelegate:self];
+            [self.zegoApi setPublisherDelegate:self];
+            [self.zegoApi setPlayerDelegate:self];
+            [self.zegoApi setLiveEventDelegate:self];
+            [self.zegoApi setIMDelegate:self];
+            
+            [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
+            
+            //初始化媒体次要信息模块
+            self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
+            [self.mediaSideInfoApi setMediaSideDelegate:self];
+        }
+        
+        result(@(errorCode));
+        
+    }];
+    
+}
+
+#pragma mark - FlutterStreamHandler methods
+
+- (FlutterError* _Nullable)onCancelWithArguments:(id _Nullable)arguments {
+    
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onCancel sink, object: %@", arguments]];
+    _eventSink = nil;
+    return nil;
+}
+
+- (FlutterError* _Nullable)onListenWithArguments:(id _Nullable)arguments
+                                       eventSink:(nonnull FlutterEventSink)sink {
+ 
+    _eventSink = sink;
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onListen sink: %p, object: %@", _eventSink, arguments]];
+    return nil;
+}
+
+
+#pragma mark - ZegoRoomDelegate
+
+- (void)onStreamUpdated:(int)type streams:(NSArray<ZegoStream*> *)streamList roomID:(NSString *)roomID
+{
+    FlutterEventSink sink = _eventSink;
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onStreamUpdated enter, sink: %p", sink]];
+    if(sink) {
+        
+        NSMutableArray *streamArray = [NSMutableArray array];
+        for (ZegoStream *stream in streamList)
+        {
+            [streamArray addObject:@{@"userID": stream.userID, @"userName": stream.userName, @"streamID": stream.streamID, @"extraInfo": stream.extraInfo}];
+        }
+        
+        NSDictionary *dic = @{@"type": @(TYPE_ROOM_EVENT),
+                              @"method": @{@"name": @"onStreamUpdated",
+                                           @"updateType": @(type),
+                                           @"roomID": roomID,
+                                           @"streamList": streamArray}
+                              };
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onStreamUpdated, return map: %@", dic]];
+        sink(dic);
+    }
+}
+
+
+- (void)onStreamExtraInfoUpdated:(NSArray<ZegoStream *> *)streamList roomID:(NSString *)roomID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        
+        NSMutableArray *streamArray = [NSMutableArray array];
+        for (ZegoStream *stream in streamList)
+        {
+            [streamArray addObject:@{@"userID": stream.userID, @"userName": stream.userName, @"streamID": stream.streamID, @"extraInfo": stream.extraInfo}];
+        }
+        
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onStreamExtraInfoUpdated",
+                            @"roomID": roomID,
+                            @"streamList": streamArray}
+               });
+    }
+    
+}
+
+//房间连接失败
+- (void)onDisconnect:(int)errorCode roomID:(NSString *)roomID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onDisconnect",
+                            @"errorCode": @(errorCode),
+                            @"roomID": roomID}
+               });
+    }
+}
+
+//房间重连成功
+- (void)onReconnect:(int)errorCode roomID:(NSString *)roomID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onReconnect",
+                            @"errorCode": @(errorCode),
+                            @"roomID": roomID}
+               });
+    }
+}
+
+//房间连接暂时断开，SDK内部尝试重新连接
+- (void)onTempBroken:(int)errorCode roomID:(NSString *)roomID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onTempBroken",
+                            @"errorCode": @(errorCode),
+                            @"roomID": roomID}
+               });
+    }
+}
+
+//用户被踢出房间
+- (void)onKickOut:(int)reason roomID:(NSString *)roomID customReason:(NSString *)customReason
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onKickOut",
+                            @"reason": @(reason),
+                            @"roomID": roomID,
+                            @"customReason": customReason}
+               });
+    }
+}
+
+- (void)onReceiveCustomCommand:(NSString *)fromUserID userName:(NSString *)fromUserName content:(NSString*)content roomID:(NSString *)roomID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onReceiveCustomCommand",
+                            @"userID": fromUserID,
+                            @"userName": fromUserName,
+                            @"content": content,
+                            @"roomID": roomID}
+               });
+    }
+}
+
+- (void)onUserUpdate:(NSArray<ZegoUserState *> *)userList updateType:(ZegoUserUpdateType)type {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        
+        NSMutableArray *userArray = [NSMutableArray array];
+        for (ZegoUserState *user in userList)
+        {
+            [userArray addObject:@{@"userID": user.userID, @"userName": user.userName, @"updateFlag": @(user.updateFlag), @"role": @(user.role)}];
+        }
+        
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onUserUpdate",
+                            @"updateType": @(type),
+                            @"userList": userArray}
+               });
+    }
+}
+
+//音视频引擎开始时回调
+- (void)onAVEngineStart
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onAVEngineStart"}
+               });
+    }
+}
+
+//音视频引擎停止时回调
+- (void)onAVEngineStop
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onAVEngineStop"}
+               });
+    }
+}
+
+#pragma mark - ZegoLiveEventDelegate
+
+- (void)zego_onLiveEvent:(ZegoLiveEvent)event info:(NSDictionary<NSString*, NSString*>*)info
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onLiveEvent",
+                            @"event": @(event),
+                            @"info": info}
+               });
+    }
+}
+
+#pragma mark - ZegoLivePublisherDelegate
+
+- (void)onPublishStateUpdate:(int)stateCode streamID:(NSString *)streamID streamInfo:(NSDictionary *)info{
+
+    FlutterEventSink sink = _eventSink;
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPublishStateUpdate enter, sink: %p", sink]];
+    if(sink) {
+        NSDictionary *dic = @{@"type": @(TYPE_PUBLISH_EVENT),
+                              @"method": @{@"name": @"onPublishStateUpdate",
+                                           @"stateCode": @(stateCode),
+                                           @"streamID": streamID,
+                                           @"streamInfo": info}
+                              };
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPublishStateUpdate, return map: %@", dic]];
+        sink(dic);
+    }
+}
+
+- (void)onPublishQualityUpdate:(NSString *)streamID quality:(ZegoApiPublishQuality)quality
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onPublishQualityUpdate",
+                            @"streamID": streamID,
+                            
+                            @"acapFps": @(quality.acapFps),
+                            @"anetFps": @(quality.afps),
+                            @"akbps" : @(quality.akbps),
+                            
+                            @"vcapFps" : @(quality.cfps),
+                            @"vencFps": @(quality.vencFps),
+                            @"vnetFps" : @(quality.fps),
+                            @"vkbps" : @(quality.kbps),
+                            
+                            @"rtt" : @(quality.rtt),
+                            @"pktLostRate" : @(quality.pktLostRate),
+                            
+                            @"isHardwareVenc": @(quality.isHardwareVenc),
+                            
+                            @"width": @(quality.width),
+                            @"height": @(quality.height),
+                            
+                            @"quality" : @(quality.quality)}
+               });
+    }
+}
+
+- (void)onRelayCDNStateUpdate:(NSArray<ZegoAPIStreamRelayCDNInfo *> *)statesInfo streamID:(NSString *)streamID {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        NSMutableArray *infoArray = [NSMutableArray array];
+        for (ZegoAPIStreamRelayCDNInfo *info in statesInfo) {
+            [infoArray addObject:@{@"rtmpURL": info.rtmpURL, @"state": @(info.state), @"detail": @(info.detail), @"stateTime": @(info.stateTime)}];
+        }
+        
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onRelayCDNStateUpdate",
+                            @"streamID": streamID,
+                            @"statesInfo": infoArray}
+               });
+    }
+}
+
+- (void)onCaptureAudioFirstFrame {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onCaptureAudioFirstFrame"}
+               });
+    }
+}
+
+- (void)onCaptureVideoFirstFrame {
+    
+    if(!self.isEnablePlatformView) {
+        
+        BOOL isUseFrontCam = [self.renderController isUseFrontCam];
+        ZegoViewRenderer *preview = [self.renderController getRenderer:kZegoVideoDataMainPublishingStream];
+        if(preview) {
+        
+            [preview setUseMirrorEffect:isUseFrontCam];
+        }
+    }
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onCaptureVideoFirstFrame"}
+               });
+    }
+}
+
+- (void)onCaptureVideoSizeChangedTo:(CGSize)size
+{
+    int width = size.width;
+    int height = size.height;
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onCaptureVideoSizeChangedTo",
+                            @"width": @(width),
+                            @"height": @(height)}
+               });
+    }
+}
+
+/**
+ 收到连麦请求
+ */
+- (void)onJoinLiveRequest:(int)seq fromUserID:(NSString *)userId fromUserName:(NSString *)userName roomID:(NSString *)roomID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onJoinLiveRequest",
+                            @"seq": @(seq),
+                            @"fromUserID": userId,
+                            @"fromUserName": userName,
+                            @"roomID": roomID}
+               });
+    }
+}
+
+#pragma mark - ZegoLivePlayerDelegate
+
+- (void)onPlayStateUpdate:(int)stateCode streamID:(NSString *)streamID
+{
+    FlutterEventSink sink = _eventSink;
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPlayStateUpdate enter, sink: %p", sink]];
+    if(sink) {
+        NSDictionary *dic = @{@"type": @(TYPE_PLAY_EVENT),
+                              @"method": @{@"name": @"onPlayStateUpdate",
+                                           @"stateCode": @(stateCode),
+                                           @"streamID": streamID}
+                              };
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPlayStateUpdate, return map: %@", dic]];
+        sink(dic);
+    }
+}
+
+- (void)onPlayQualityUpate:(NSString *)streamID quality:(ZegoApiPlayQuality)quality
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type" : @(TYPE_PLAY_EVENT),
+               @"method": @{@"name" : @"onPlayQualityUpdate",
+                            @"streamID" : streamID,
+                            
+                            @"vnetFps" : @(quality.fps),
+                            @"vdjFps": @(quality.vdjFps),
+                            @"vdecFps": @(quality.vdecFps),
+                            @"vrndFps": @(quality.vrndFps),
+                            @"vkbps" : @(quality.kbps),
+                            
+                            @"anetFps": @(quality.afps),
+                            @"adjFps":@(quality.adjFps),
+                            @"adecFps":@(quality.adecFps),
+                            @"arndFps":@(quality.arndFps),
+                            @"akbps" : @(quality.akbps),
+                            
+                            @"audioBreakRate" : @(quality.audioBreakRate),
+                            @"videoBreakRate":@(quality.videoBreakRate),
+                            @"rtt" : @(quality.rtt),
+                            @"p2pRtt": @(quality.peerToPeerDelay),
+                            @"pktLostRate" : @(quality.pktLostRate),
+                            @"p2pPktLostRate": @(quality.peerToPeerPktLostRate),
+                            @"quality" : @(quality.quality),
+                            @"delay" : @(quality.delay),
+                            
+                            @"isHardwareVdec": @(quality.isHardwareVdec),
+                            
+                            @"width": @(quality.width),
+                            @"height": @(quality.height)
+                            }
+               });
+    }
+}
+
+- (void)onVideoSizeChangedTo:(CGSize)size ofStream:(NSString *)streamID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onVideoSizeChangedTo",
+                            @"streamID": streamID,
+                            @"width": @((int)size.width),
+                            @"height": @((int)size.height)
+                            }
+               });
+    }
+}
+
+/**
+ 收到主播端的邀请连麦请求
+ */
+- (void)onInviteJoinLiveRequest:(int)seq fromUserID:(NSString *)userId fromUserName:(NSString *)userName roomID:(NSString *)roomID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onInviteJoinLiveRequest",
+                            @"seq": @(seq),
+                            @"fromUserID": userId,
+                            @"fromUserName": userName,
+                            @"roomID": roomID
+                            }
+               });
+    }
+}
+
+/**
+ 收到结束连麦信令
+ */
+- (void)onEndJoinLiveCommad:(NSString *)fromUserId userName:(NSString *)fromUserName roomID:(NSString *)roomID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRecvEndJoinLiveCommand",
+                            @"fromUserID": fromUserId,
+                            @"fromUserName": fromUserName,
+                            @"roomID": roomID
+                            }
+               });
+    }
+}
+
+/**
+ 远端摄像头状态通知
+ */
+- (void)onRemoteCameraStatusUpdate:(int)status ofStream:(NSString *)streamID reason:(int)reason {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRemoteCameraStatusUpdate",
+                            @"status": @(status),
+                            @"streamID": streamID,
+                            @"reason": @(reason)
+                            }
+               });
+    }
+}
+
+/**
+ 远端麦克风状态通知
+ */
+- (void)onRemoteMicStatusUpdate:(int)status ofStream:(NSString *)streamID reason:(int)reason {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRemoteMicStatusUpdate",
+                            @"status": @(status),
+                            @"streamID": streamID,
+                            @"reason": @(reason)
+                            }
+               });
+    }
+}
+
+/**
+ 接收到远端音频的首帧通知
+ */
+
+- (void)onRecvRemoteAudioFirstFrame:(NSString *)streamID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRecvRemoteAudioFirstFrame",
+                            @"streamID": streamID,
+                            }
+               });
+    }
+}
+
+/**
+ 接收到远端视频的首帧通知
+ */
+- (void)onRecvRemoteVideoFirstFrame:(NSString *)streamID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRecvRemoteVideoFirstFrame",
+                            @"streamID": streamID,
+                            }
+               });
+    }
+}
+
+/**
+ 远端视频渲染首帧通知
+ */
+- (void)onRenderRemoteVideoFirstFrame:(NSString *)streamID {
+    
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PLAY_EVENT),
+               @"method": @{@"name": @"onRenderRemoteVideoFirstFrame",
+                            @"streamID": streamID,
+                            }
+               });
+    }
+}
+
+#pragma mark - ZegoMediaSideDelegate
+
+- (void)onRecvMediaSideInfo:(NSData *)data ofStream:(NSString *)streamID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        
+        uint32_t mediaType = ntohl(*(uint32_t*)data.bytes);
+        NSData *mediaInfo;
+        if(mediaType == 1001 || mediaType == 1002) {
+            
+            mediaInfo = [data subdataWithRange:NSMakeRange(4, data.length - 4)];
+        } else {
+            
+            mediaInfo = [data subdataWithRange:NSMakeRange(5, data.length - 5)];
+        }
+        
+        NSString * str_data = [[NSString alloc] initWithData:mediaInfo encoding:NSUTF8StringEncoding];
+        sink(@{@"type": @(TYPE_MEDIA_SIDE_INFO_EVENT),
+               @"method" : @{@"name" : @"onRecvMediaSideInfo",
+                             @"streamID": streamID,
+                             @"data" : str_data == nil ? @"" : str_data}
+               });
+    }
+}
+
+#pragma mark - ZegoSoundLevelDelegate
+
+- (void)onSoundLevelUpdate:(NSArray<ZegoSoundLevelInfo *> *)soundLevels {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        
+        NSMutableArray *soundLevelList = [NSMutableArray array];
+        for(ZegoSoundLevelInfo *info in soundLevels) {
+            [soundLevelList addObject:@{@"streamID": info.streamID,
+                                        @"soundLevel": @(info.soundLevel)
+                                        }];
+        }
+        
+        sink(@{@"type": @(TYPE_SOUND_LEVEL_EVENT),
+               @"method" : @{@"name" : @"onSoundLevelUpdate",
+                             @"soundLevels" : soundLevelList}
+               });
+    }
+}
+
+- (void)onCaptureSoundLevelUpdate:(ZegoSoundLevelInfo *)captureSoundLevel {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_SOUND_LEVEL_EVENT),
+               @"method" : @{@"name" : @"onCaptureSoundLevelUpdate",
+                             @"streamID": captureSoundLevel.streamID,
+                             @"soundLevel" : @(captureSoundLevel.soundLevel)}
+               });
+    }
+}
+
+#pragma mark - ZegoLiveApiRenderDelegate
+
+- (CVPixelBufferRef)onCreateInputBufferWithWidth:(int)width height:(int)height cvPixelFormatType:(OSType)cvPixelFormatType streamID:(NSString *)streamID
+{
+    if(![self.renderController isRendering]) {
+        [ZegoLog logNotice:@"[onCreateInputBufferWithWidth] render controller is not rendering, ignore"];
+        return nil;
+    }
+    
+    ZegoPixelBufferPool *pool_ = [self.renderController getPixelBufferPool:streamID];
+    
+    if(pool_ == nil) {
+        [self.renderController createPixelBufferPool:width height:height streamID:streamID];
+        pool_ = [self.renderController getPixelBufferPool:streamID];
+        
+        if(pool_ == nil)
+            return nil;
+    }
+    
+    if(width != [pool_ getWidth] || height != [pool_ getHeight]) {
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[onCreateInputBufferWithWidth] resize pixelbuffer pool, old width: %d, old height: %d, new width: %d, new height: %d", [pool_ getWidth], [pool_ getHeight], width, height]];
+        
+        [self.renderController createPixelBufferPool:width height:height streamID:streamID];
+        pool_ = [self.renderController getPixelBufferPool:streamID];
+    }
+    
+    CVPixelBufferRef pixelBuffer;
+    CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, [pool_ getBufferPool], &pixelBuffer);
+    if (ret != kCVReturnSuccess) {
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[onCreateInputBufferWithWidth] pixelbuffer pool creates pixelbuffer failed, error: %d", ret]];
+        return nil;
+    }
+   
+    return pixelBuffer;
+    
+}
+
+- (void)onPixelBufferCopyed:(CVPixelBufferRef)pixelBuffer streamID:(NSString *)streamID
+{
+    ZegoViewRenderer *renderer = [self.renderController getRenderer:streamID];
+    if(renderer == nil) {
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[onPixelBufferCopyed] renderer %@ has been released, delete buffer", streamID]];
+        CVBufferRelease(pixelBuffer);
+        return;
+    }
+    
+    //Notify the Flutter new pixelBufferRef to be ready.
+    [renderer setSrcFrameBuffer:pixelBuffer processBuffer:nil];
+}
+
+- (void)onSetFlipMode:(int)mode streamID:(NSString *)streamID {
+    ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMainPublishingStream];
+    if (renderer == nil) {
+        return;
+    }
+    
+    // Need to manually flip the frame when mode == 1
+    [renderer setUseMirrorEffect:mode == 1];
+}
+
+
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     
     ZegoLiveRoomPlugin* instance = [[ZegoLiveRoomPlugin alloc] initWithRegistrar:registrar];
@@ -700,6 +1449,45 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
         BOOL success = [self.zegoApi setAppOrientation:obj_orientation];
         result(@(success));
  
+    } else if ([@"setPublishConfig" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        NSString *target = args[@"rtmpURL"];
+        [self.zegoApi setPublishConfig:@{kPublishCustomTarget: target}];
+        result(nil);
+    
+    } else if ([@"addPublishTarget" isEqualToString:call.method]) {
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+
+        NSString *target = args[@"target"];
+        NSString *stream_ID = args[@"streamID"];
+        [self.zegoApi addPublishTarget:target streamID:stream_ID completion:^(int errorCode, NSString *streamID) {
+            NSDictionary *dic = @{@"errorCode": @(errorCode), @"streamID": streamID};
+            result(dic);
+        }];
+    
+    } else if ([@"deletePublishTarget" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        NSString *target = args[@"target"];
+        NSString *stream_ID = args[@"streamID"];
+        [self.zegoApi deletePublishTarget:target streamID:stream_ID completion:^(int errorCode, NSString *streamID) {
+            NSDictionary *dic = @{@"errorCode": @(errorCode), @"streamID": streamID};
+            result(dic);
+        }];
+    
     } else if([@"respondJoinLiveReq" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
@@ -1332,735 +2120,6 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 
 }
 
-
-- (void)dealloc {
-    
-    [ZegoPlatformViewFactory release];
-    
-    if(self.zegoApi)
-        self.zegoApi = nil;
-    if(self.mediaSideInfoApi)
-        self.mediaSideInfoApi = nil;
-}
-
-- (bool)numberToBoolValue:(NSNumber *)number {
-    
-    return [number isKindOfClass:[NSNull class]] ? false : [number boolValue];
-}
-
-- (int)numberToIntValue:(NSNumber *)number {
-    
-    return [number isKindOfClass:[NSNull class]] ? 0 : [number intValue];
-}
-
-- (unsigned int)numberToUintValue:(NSNumber *)number {
-   
-    return [number isKindOfClass:[NSNull class]] ? 0 : [number unsignedIntValue];
-}
-
-- (unsigned long)numberToULongValue:(NSNumber *)number {
-    
-    return [number isKindOfClass:[NSNull class]] ? 0 : [number unsignedLongValue];
-}
-
-- (float)numberToFolatValue:(NSNumber *)number {
-    
-    return [number isKindOfClass:[NSNull class]] ? 0.f : [number floatValue];
-}
-
-NSData* convertStringToSign(NSString* strSign) {
-    
-    if(strSign == nil || strSign.length == 0)
-        return nil;
-    
-    strSign = [strSign lowercaseString];
-    strSign = [strSign stringByReplacingOccurrencesOfString:@" " withString:@""];
-    strSign = [strSign stringByReplacingOccurrencesOfString:@"0x" withString:@""];
-    NSArray* szStr = [strSign componentsSeparatedByString:@","];
-    int nLen = (int)[szStr count];
-    nLen = nLen > 32 ? 32 : nLen;
-    Byte szSign[32];
-    for(int i = 0; i < nLen; i++)
-    {
-        NSString *strTmp = [szStr objectAtIndex:i];
-        if(strTmp.length == 1)
-            szSign[i] = toByte(strTmp);
-        else
-        {
-            szSign[i] = toByte([strTmp substringWithRange:NSMakeRange(0, 1)]) << 4 | toByte([strTmp substringWithRange:NSMakeRange(1, 1)]);
-        }
-    }
-    
-    NSData *sign = [NSData dataWithBytes:szSign length:32];
-    return sign;
-}
-
-Byte toByte(NSString* c) {
-    NSString *str = @"0123456789abcdef";
-    Byte b = [str rangeOfString:c].location;
-    return b;
-}
-
-- (void)throwSdkNotInitError:(FlutterResult)result ofMethodName:(NSString *)methodName {
-    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zegoliveroom api is not inited."];
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
-    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
-}
-
-- (void)throwNoRendererError:(FlutterResult)result ofMethodName:(NSString *)methodName {
-    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because zego preview or play renderer is null."];
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
-    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
-}
-
-- (void)throwNoTextureError:(FlutterResult)result ofMethodName:(NSString *)methodName {
-    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is true. make sure you turn off this api before calling \'initSDK\' when you use texture to render."];
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
-    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
-}
-
-- (void)throwNoPlatformViewError:(FlutterResult)result ofMethodName:(NSString *)methodName {
-    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render."];
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
-    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
-}
-
-
-#pragma mark - Handle Flutter CallMethods
-- (void)initSDKWithAppID:(unsigned int)appID appSign: (NSString *)appsign result:(FlutterResult)result {
-    
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] enter init sdk, app id: %u", appID]];
-    
-    NSData *appSign = convertStringToSign(appsign);
-    if(appSign == nil)
-        return;
-    
-    //默认使用外部渲染
-    if(!self.isEnablePlatformView) {
-    
-        [ZegoExternalVideoRender enableExternalVideoRender:YES type:VideoExternalRenderTypeDecodeRgbSeries];
-        self.renderController = [[ZegoRendererController alloc] init];
-    }
-    
-    self.zegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
-        
-        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] on init sdk, errorCode: %d", errorCode]];
-        
-        if(errorCode == 0)
-        {
-            //设置代理
-            [self.zegoApi setRoomDelegate:self];
-            [self.zegoApi setPublisherDelegate:self];
-            [self.zegoApi setPlayerDelegate:self];
-            [self.zegoApi setLiveEventDelegate:self];
-            [self.zegoApi setIMDelegate:self];
-            
-            [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
-            
-            //初始化媒体次要信息模块
-            self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
-            [self.mediaSideInfoApi setMediaSideDelegate:self];
-        }
-        
-        result(@(errorCode));
-        
-    }];
-    
-}
-
-#pragma mark - FlutterStreamHandler methods
-
-- (FlutterError* _Nullable)onCancelWithArguments:(id _Nullable)arguments {
-    
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onCancel sink, object: %@", arguments]];
-    _eventSink = nil;
-    return nil;
-}
-
-- (FlutterError* _Nullable)onListenWithArguments:(id _Nullable)arguments
-                                       eventSink:(nonnull FlutterEventSink)sink {
- 
-    _eventSink = sink;
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onListen sink: %p, object: %@", _eventSink, arguments]];
-    return nil;
-}
-
-
-#pragma mark - ZegoRoomDelegate
-
-- (void)onStreamUpdated:(int)type streams:(NSArray<ZegoStream*> *)streamList roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onStreamUpdated enter, sink: %p", sink]];
-    if(sink) {
-        
-        NSMutableArray *streamArray = [NSMutableArray array];
-        for (ZegoStream *stream in streamList)
-        {
-            [streamArray addObject:@{@"userID": stream.userID, @"userName": stream.userName, @"streamID": stream.streamID, @"extraInfo": stream.extraInfo}];
-        }
-        
-        NSDictionary *dic = @{@"type": @(TYPE_ROOM_EVENT),
-                              @"method": @{@"name": @"onStreamUpdated",
-                                           @"updateType": @(type),
-                                           @"roomID": roomID,
-                                           @"streamList": streamArray}
-                              };
-        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onStreamUpdated, return map: %@", dic]];
-        sink(dic);
-    }
-}
-
-
-- (void)onStreamExtraInfoUpdated:(NSArray<ZegoStream *> *)streamList roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        
-        NSMutableArray *streamArray = [NSMutableArray array];
-        for (ZegoStream *stream in streamList)
-        {
-            [streamArray addObject:@{@"userID": stream.userID, @"userName": stream.userName, @"streamID": stream.streamID, @"extraInfo": stream.extraInfo}];
-        }
-        
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onStreamExtraInfoUpdated",
-                            @"roomID": roomID,
-                            @"streamList": streamArray}
-               });
-    }
-    
-}
-
-//房间连接失败
-- (void)onDisconnect:(int)errorCode roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onDisconnect",
-                            @"errorCode": @(errorCode),
-                            @"roomID": roomID}
-               });
-    }
-}
-
-//房间重连成功
-- (void)onReconnect:(int)errorCode roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onReconnect",
-                            @"errorCode": @(errorCode),
-                            @"roomID": roomID}
-               });
-    }
-}
-
-//房间连接暂时断开，SDK内部尝试重新连接
-- (void)onTempBroken:(int)errorCode roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onTempBroken",
-                            @"errorCode": @(errorCode),
-                            @"roomID": roomID}
-               });
-    }
-}
-
-//用户被踢出房间
-- (void)onKickOut:(int)reason roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onKickOut",
-                            @"reason": @(reason),
-                            @"roomID": roomID}
-               });
-    }
-}
-
-- (void)onReceiveCustomCommand:(NSString *)fromUserID userName:(NSString *)fromUserName content:(NSString*)content roomID:(NSString *)roomID {
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onReceiveCustomCommand",
-                            @"userID": fromUserID,
-                            @"userName": fromUserName,
-                            @"content": content,
-                            @"roomID": roomID}
-               });
-    }
-}
-
-- (void)onUserUpdate:(NSArray<ZegoUserState *> *)userList updateType:(ZegoUserUpdateType)type {
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        
-        NSMutableArray *userArray = [NSMutableArray array];
-        for (ZegoUserState *user in userList)
-        {
-            [userArray addObject:@{@"userID": user.userID, @"userName": user.userName, @"updateFlag": @(user.updateFlag), @"role": @(user.role)}];
-        }
-        
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onUserUpdate",
-                            @"updateType": @(type),
-                            @"userList": userArray}
-               });
-    }
-}
-
-//音视频引擎开始时回调
-- (void)onAVEngineStart
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onAVEngineStart"}
-               });
-    }
-}
-
-//音视频引擎停止时回调
-- (void)onAVEngineStop
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onAVEngineStop"}
-               });
-    }
-}
-
-#pragma mark - ZegoLiveEventDelegate
-
-- (void)zego_onLiveEvent:(ZegoLiveEvent)event info:(NSDictionary<NSString*, NSString*>*)info
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_ROOM_EVENT),
-               @"method": @{@"name": @"onLiveEvent",
-                            @"event": @(event),
-                            @"info": info}
-               });
-    }
-}
-
-#pragma mark - ZegoLivePublisherDelegate
-
-- (void)onPublishStateUpdate:(int)stateCode streamID:(NSString *)streamID streamInfo:(NSDictionary *)info{
-
-    FlutterEventSink sink = _eventSink;
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPublishStateUpdate enter, sink: %p", sink]];
-    if(sink) {
-        NSDictionary *dic = @{@"type": @(TYPE_PUBLISH_EVENT),
-                              @"method": @{@"name": @"onPublishStateUpdate",
-                                           @"stateCode": @(stateCode),
-                                           @"streamID": streamID,
-                                           @"streamInfo": info}
-                              };
-        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPublishStateUpdate, return map: %@", dic]];
-        sink(dic);
-    }
-}
-
-- (void)onPublishQualityUpdate:(NSString *)streamID quality:(ZegoApiPublishQuality)quality
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
-               @"method": @{@"name": @"onPublishQualityUpdate",
-                            @"streamID": streamID,
-                            
-                            @"acapFps": @(quality.acapFps),
-                            @"anetFps": @(quality.afps),
-                            @"akbps" : @(quality.akbps),
-                            
-                            @"vcapFps" : @(quality.cfps),
-                            @"vencFps": @(quality.vencFps),
-                            @"vnetFps" : @(quality.fps),
-                            @"vkbps" : @(quality.kbps),
-                            
-                            @"rtt" : @(quality.rtt),
-                            @"pktLostRate" : @(quality.pktLostRate),
-                            
-                            @"isHardwareVenc": @(quality.isHardwareVenc),
-                            
-                            @"width": @(quality.width),
-                            @"height": @(quality.height),
-                            
-                            @"quality" : @(quality.quality)}
-               });
-    }
-}
-
-- (void)onCaptureAudioFirstFrame {
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
-               @"method": @{@"name": @"onCaptureAudioFirstFrame"}
-               });
-    }
-}
-
-- (void)onCaptureVideoFirstFrame {
-    
-    if(!self.isEnablePlatformView) {
-        
-        BOOL isUseFrontCam = [self.renderController isUseFrontCam];
-        ZegoViewRenderer *preview = [self.renderController getRenderer:kZegoVideoDataMainPublishingStream];
-        if(preview) {
-        
-            [preview setUseMirrorEffect:isUseFrontCam];
-        }
-    }
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
-               @"method": @{@"name": @"onCaptureVideoFirstFrame"}
-               });
-    }
-}
-
-- (void)onCaptureVideoSizeChangedTo:(CGSize)size
-{
-    int width = size.width;
-    int height = size.height;
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
-               @"method": @{@"name": @"onCaptureVideoSizeChangedTo",
-                            @"width": @(width),
-                            @"height": @(height)}
-               });
-    }
-}
-
-/**
- 收到连麦请求
- */
-- (void)onJoinLiveRequest:(int)seq fromUserID:(NSString *)userId fromUserName:(NSString *)userName roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
-               @"method": @{@"name": @"onJoinLiveRequest",
-                            @"seq": @(seq),
-                            @"fromUserID": userId,
-                            @"fromUserName": userName,
-                            @"roomID": roomID}
-               });
-    }
-}
-
-#pragma mark - ZegoLivePlayerDelegate
-
-- (void)onPlayStateUpdate:(int)stateCode streamID:(NSString *)streamID
-{
-    FlutterEventSink sink = _eventSink;
-    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPlayStateUpdate enter, sink: %p", sink]];
-    if(sink) {
-        NSDictionary *dic = @{@"type": @(TYPE_PLAY_EVENT),
-                              @"method": @{@"name": @"onPlayStateUpdate",
-                                           @"stateCode": @(stateCode),
-                                           @"streamID": streamID}
-                              };
-        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onPlayStateUpdate, return map: %@", dic]];
-        sink(dic);
-    }
-}
-
-- (void)onPlayQualityUpate:(NSString *)streamID quality:(ZegoApiPlayQuality)quality
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type" : @(TYPE_PLAY_EVENT),
-               @"method": @{@"name" : @"onPlayQualityUpdate",
-                            @"streamID" : streamID,
-                            
-                            @"vnetFps" : @(quality.fps),
-                            @"vdjFps": @(quality.vdjFps),
-                            @"vdecFps": @(quality.vdecFps),
-                            @"vrndFps": @(quality.vrndFps),
-                            @"vkbps" : @(quality.kbps),
-                            
-                            @"anetFps": @(quality.afps),
-                            @"adjFps":@(quality.adjFps),
-                            @"adecFps":@(quality.adecFps),
-                            @"arndFps":@(quality.arndFps),
-                            @"akbps" : @(quality.akbps),
-                            
-                            @"audioBreakRate" : @(quality.audioBreakRate),
-                            @"videoBreakRate":@(quality.videoBreakRate),
-                            @"rtt" : @(quality.rtt),
-                            @"p2pRtt": @(quality.peerToPeerDelay),
-                            @"pktLostRate" : @(quality.pktLostRate),
-                            @"p2pPktLostRate": @(quality.peerToPeerPktLostRate),
-                            @"quality" : @(quality.quality),
-                            @"delay" : @(quality.delay),
-                            
-                            @"isHardwareVdec": @(quality.isHardwareVdec),
-                            
-                            @"width": @(quality.width),
-                            @"height": @(quality.height)
-                            }
-               });
-    }
-}
-
-- (void)onVideoSizeChangedTo:(CGSize)size ofStream:(NSString *)streamID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT),
-               @"method": @{@"name": @"onVideoSizeChangedTo",
-                            @"streamID": streamID,
-                            @"width": @((int)size.width),
-                            @"height": @((int)size.height)
-                            }
-               });
-    }
-}
-
-/**
- 收到主播端的邀请连麦请求
- */
-- (void)onInviteJoinLiveRequest:(int)seq fromUserID:(NSString *)userId fromUserName:(NSString *)userName roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT),
-               @"method": @{@"name": @"onInviteJoinLiveRequest",
-                            @"seq": @(seq),
-                            @"fromUserID": userId,
-                            @"fromUserName": userName,
-                            @"roomID": roomID
-                            }
-               });
-    }
-}
-
-/**
- 收到结束连麦信令
- */
-- (void)onEndJoinLiveCommad:(NSString *)fromUserId userName:(NSString *)fromUserName roomID:(NSString *)roomID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT),
-               @"method": @{@"name": @"onRecvEndJoinLiveCommand",
-                            @"fromUserID": fromUserId,
-                            @"fromUserName": fromUserName,
-                            @"roomID": roomID
-                            }
-               });
-    }
-}
-
-/**
- 远端摄像头状态通知
- */
-- (void)onRemoteCameraStatusUpdate:(int)status ofStream:(NSString *)streamID {
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT),
-               @"method": @{@"name": @"onRemoteCameraStatusUpdate",
-                            @"status": @(status),
-                            @"streamID": streamID
-                            }
-               });
-    }
-}
-
-/**
- 远端麦克风状态通知
- */
-- (void)onRemoteMicStatusUpdate:(int)status ofStream:(NSString *)streamID {
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT),
-               @"method": @{@"name": @"onRemoteMicStatusUpdate",
-                            @"status": @(status),
-                            @"streamID": streamID
-                            }
-               });
-    }
-}
-
-/**
- 接收到远端音频的首帧通知
- */
-
-- (void)onRecvRemoteAudioFirstFrame:(NSString *)streamID {
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT),
-               @"method": @{@"name": @"onRecvRemoteAudioFirstFrame",
-                            @"streamID": streamID,
-                            }
-               });
-    }
-}
-
-/**
- 接收到远端视频的首帧通知
- */
-- (void)onRecvRemoteVideoFirstFrame:(NSString *)streamID {
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT),
-               @"method": @{@"name": @"onRecvRemoteVideoFirstFrame",
-                            @"streamID": streamID,
-                            }
-               });
-    }
-}
-
-/**
- 远端视频渲染首帧通知
- */
-- (void)onRenderRemoteVideoFirstFrame:(NSString *)streamID {
-    
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_PLAY_EVENT),
-               @"method": @{@"name": @"onRenderRemoteVideoFirstFrame",
-                            @"streamID": streamID,
-                            }
-               });
-    }
-}
-
-#pragma mark - ZegoMediaSideDelegate
-
-- (void)onRecvMediaSideInfo:(NSData *)data ofStream:(NSString *)streamID
-{
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        
-        uint32_t mediaType = ntohl(*(uint32_t*)data.bytes);
-        NSData *mediaInfo;
-        if(mediaType == 1001 || mediaType == 1002) {
-            
-            mediaInfo = [data subdataWithRange:NSMakeRange(4, data.length - 4)];
-        } else {
-            
-            mediaInfo = [data subdataWithRange:NSMakeRange(5, data.length - 5)];
-        }
-        
-        NSString * str_data = [[NSString alloc] initWithData:mediaInfo encoding:NSUTF8StringEncoding];
-        sink(@{@"type": @(TYPE_MEDIA_SIDE_INFO_EVENT),
-               @"method" : @{@"name" : @"onRecvMediaSideInfo",
-                             @"streamID": streamID,
-                             @"data" : str_data == nil ? @"" : str_data}
-               });
-    }
-}
-
-#pragma mark - ZegoSoundLevelDelegate
-
-- (void)onSoundLevelUpdate:(NSArray<ZegoSoundLevelInfo *> *)soundLevels {
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        
-        NSMutableArray *soundLevelList = [NSMutableArray array];
-        for(ZegoSoundLevelInfo *info in soundLevels) {
-            [soundLevelList addObject:@{@"streamID": info.streamID,
-                                        @"soundLevel": @(info.soundLevel)
-                                        }];
-        }
-        
-        sink(@{@"type": @(TYPE_SOUND_LEVEL_EVENT),
-               @"method" : @{@"name" : @"onSoundLevelUpdate",
-                             @"soundLevels" : soundLevelList}
-               });
-    }
-}
-
-- (void)onCaptureSoundLevelUpdate:(ZegoSoundLevelInfo *)captureSoundLevel {
-    FlutterEventSink sink = _eventSink;
-    if(sink) {
-        sink(@{@"type": @(TYPE_SOUND_LEVEL_EVENT),
-               @"method" : @{@"name" : @"onCaptureSoundLevelUpdate",
-                             @"streamID": captureSoundLevel.streamID,
-                             @"soundLevel" : @(captureSoundLevel.soundLevel)}
-               });
-    }
-}
-
-#pragma mark - ZegoLiveApiRenderDelegate
-
-- (CVPixelBufferRef)onCreateInputBufferWithWidth:(int)width height:(int)height cvPixelFormatType:(OSType)cvPixelFormatType streamID:(NSString *)streamID
-{
-    if(![self.renderController isRendering]) {
-        [ZegoLog logNotice:@"[onCreateInputBufferWithWidth] render controller is not rendering, ignore"];
-        return nil;
-    }
-    
-    ZegoPixelBufferPool *pool_ = [self.renderController getPixelBufferPool:streamID];
-    
-    if(pool_ == nil) {
-        [self.renderController createPixelBufferPool:width height:height streamID:streamID];
-        pool_ = [self.renderController getPixelBufferPool:streamID];
-        
-        if(pool_ == nil)
-            return nil;
-    }
-    
-    if(width != [pool_ getWidth] || height != [pool_ getHeight]) {
-        [ZegoLog logNotice:[NSString stringWithFormat:@"[onCreateInputBufferWithWidth] resize pixelbuffer pool, old width: %d, old height: %d, new width: %d, new height: %d", [pool_ getWidth], [pool_ getHeight], width, height]];
-        
-        [self.renderController createPixelBufferPool:width height:height streamID:streamID];
-        pool_ = [self.renderController getPixelBufferPool:streamID];
-    }
-    
-    CVPixelBufferRef pixelBuffer;
-    CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, [pool_ getBufferPool], &pixelBuffer);
-    if (ret != kCVReturnSuccess) {
-        [ZegoLog logNotice:[NSString stringWithFormat:@"[onCreateInputBufferWithWidth] pixelbuffer pool creates pixelbuffer failed, error: %d", ret]];
-        return nil;
-    }
-   
-    return pixelBuffer;
-    
-}
-
-- (void)onPixelBufferCopyed:(CVPixelBufferRef)pixelBuffer streamID:(NSString *)streamID
-{
-    ZegoViewRenderer *renderer = [self.renderController getRenderer:streamID];
-    if(renderer == nil) {
-        [ZegoLog logNotice:[NSString stringWithFormat:@"[onPixelBufferCopyed] renderer %@ has been released, delete buffer", streamID]];
-        CVBufferRelease(pixelBuffer);
-        return;
-    }
-    
-    //Notify the Flutter new pixelBufferRef to be ready.
-    [renderer setSrcFrameBuffer:pixelBuffer processBuffer:nil];
-}
-
-- (void)onSetFlipMode:(int)mode streamID:(NSString *)streamID {
-    ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMainPublishingStream];
-    if (renderer == nil) {
-        return;
-    }
-    
-    // Need to manually flip the frame when mode == 1
-    [renderer setUseMirrorEffect:mode == 1];
-}
 
 @end
 

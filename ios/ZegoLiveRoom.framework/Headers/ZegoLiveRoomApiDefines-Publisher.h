@@ -76,13 +76,15 @@ typedef enum {
  */
 + (instancetype)presetConfigOf:(ZegoAVConfigPreset)preset;
 
-/**  视频编码输出分辨率 */
+/**  视频编码输出分辨率，最大值 4096x2160 */
 @property (assign) CGSize videoEncodeResolution;
-/**  视频采集分辨率 */
+/**  视频采集分辨率，最大值 4096x2160
+ 采集分辨率最好与输出分辨率相同，否则 SDK 内部会进行重采样处理，有额外性能消耗
+ */
 @property (assign) CGSize videoCaptureResolution;
-/**  视频帧率 */
+/**  视频帧率(fps)，最大值 30 */
 @property (assign) int fps;
-/**  视频码率 */
+/**  视频码率(bps)，最大值 50,000,000 */
 @property (assign) int bitrate;
 
 @end

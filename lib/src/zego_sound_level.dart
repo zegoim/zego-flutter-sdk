@@ -53,7 +53,6 @@ class ZegoSoundLevel {
 
     await _channel.invokeMethod('unregisterSoundLevelCallback');
 
-    print('unsigner');
     _onCaptureSoundLevelUpdate = null;
     _onSoundLevelUpdate = null;
 

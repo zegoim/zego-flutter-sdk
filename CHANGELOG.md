@@ -1,4 +1,10 @@
 
+## 1.0.10
+
+1. add relay CDN methods: 'setPublishConfig', 'addPublishTarget', 'deletePublishTarget', and callback: 'onRelayCDNStateUpdate'
+2. fix bug that xcode11 can't run in debug mode
+3. update iOS/Android native sdk
+
 ## 1.0.9
 Fix the problem that Android can't receive media sideinfo callback
 
@@ -38,12 +44,10 @@ Add Platform View API
 2. fix crash
 3. refactor api structure
 
-
 ## 1.0.1
 
 format接口
- 
+
 ## 1.0.0
 
 初次发布正式版1.0
-

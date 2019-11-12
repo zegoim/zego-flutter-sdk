@@ -683,6 +683,73 @@ class ZegoPlayStreamQuality {
       );
 }
 
+/// 转推CDN状态
+class ZegoStreamRelayCDNState {
+  /// 转推停止
+  static const int ZEGO_STREAM_RELAY_STATE_STOP = 0;
+  /// 正在转推
+  static const int ZEGO_STREAM_RELAY_STATE_START = 1;
+  /// 正在重试
+  static const int ZEGO_STREAM_RELAY_STATE_RETRY = 2;
+}
+
+/// 转推停止或转推重试时的详细原因
+class ZegoStreamRelayCDNDetail {
+  /// 无
+  static const int ZEGO_STREAM_RELAY_DETAIL_NONE = 0;
+  /// 服务器错误
+  static const int ZEGO_STREAM_RELAY_DETAIL_SERVER_ERROR = 8;
+  /// 握手失败
+  static const int ZEGO_STREAM_RELAY_DETAIL_HAND_SHAKE_FAILED = 9;
+  /// 接入点错误
+  static const int ZEGO_STREAM_RELAY_DETAIL_ACCESS_POINT_ERROR = 10;
+  /// 创建流失败
+  static const int ZEGO_STREAM_RELAY_DETAIL_CREATE_STREAM_FAILED = 11;
+  /// BAD NAME
+  static const int ZEGO_STREAM_RELAY_DETAIL_BAD_NAME = 12;
+  /// CDN服务器主动断开
+  static const int ZEGO_STREAM_RELAY_DETAIL_CDN_SERVER_DISCONNECTED = 13;
+  /// 主动断开
+  static const int ZEGO_STREAM_RELAY_DETAIL_DISCONNECTED = 14;
+  /// 混流输入流会话关闭, 混流转推CDN时有效
+  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_ALL_INPUT_STREAM_CLOSED = 1214;
+  /// 混流输入流全部没有数据, 混流转推CDN时有效
+  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_ALL_INPUT_STREAM_NODATA = 1215;
+  /// 混流服务器内部错误，混流转推CDN时有效
+  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_SERVER_INTERNAL_ERROR = 1230;
+}
+
+
+/// 转推CDN状态信息
+class ZegoStreamRelayCDNInfo {
+  
+  /// 转推CDN的rtmp地址
+  final String rtmpURL;
+
+  /// 当前转推状态
+  final ZegoStreamRelayCDNState state;
+
+  /// 转推停止或转推重试时的详细原因
+  final ZegoStreamRelayCDNDetail detail;
+
+  /// 状态改变时的时间
+  final int stateTime;
+
+  const ZegoStreamRelayCDNInfo(this.rtmpURL, this.state, this.detail, this.stateTime);
+}
+
+/// 添加/删除转推 CDN 结果
+class ZegoStreamRelayCDNResult {
+
+  /// 错误码，0为无错误
+  final int errorCode;
+
+  /// 转推的流 ID
+  final String streamID;
+
+  const ZegoStreamRelayCDNResult(this.errorCode, this.streamID);
+}
+
 /// 登录房间结果
 class ZegoLoginRoomResult {
 

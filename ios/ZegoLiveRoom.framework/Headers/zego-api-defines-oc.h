@@ -35,6 +35,9 @@ ZEGO_EXTERN NSString *const kZegoFlvUrlListKey;
 ZEGO_EXTERN NSString *const kZegoDeviceCameraName;
 /** 麦克风设备 */
 ZEGO_EXTERN NSString *const kZegoDeviceMicrophoneName;
+/** 音频设备*/
+ZEGO_EXTERN NSString *const kZegoDeviceAudioName;
+
 /** 混流输出格式，值为 NSNumber，可选 {0, 1} */
 ZEGO_EXTERN NSString *const kMixStreamAudioOutputFormat;
 
@@ -346,13 +349,13 @@ typedef enum
 /** 发布直播的模式 */
 enum ZegoAPIPublishFlag
 {
-    /**  连麦模式 */
+    /**  连麦模式，直播流会推到即构服务器，然后转推到CDN，默认连麦者之间从即构服务器拉流，观众从 CDN 拉流 */
     ZEGOAPI_JOIN_PUBLISH    = 0,
     ZEGO_JOIN_PUBLISH       = ZEGOAPI_JOIN_PUBLISH,
-    /**  混流模式 */
+    /**  混流模式，同连麦模式，有混流需求时使用 */
     ZEGOAPI_MIX_STREAM      = 1 << 1,
     ZEGO_MIX_STREAM         = ZEGOAPI_MIX_STREAM,
-    /**  单主播模式 */
+    /**  单主播模式，直播流会直接推到CDN，不经过即构服务器 */
     ZEGOAPI_SINGLE_ANCHOR   = 1 << 2,
     ZEGO_SINGLE_ANCHOR      = ZEGOAPI_SINGLE_ANCHOR,
 };
@@ -366,32 +369,33 @@ enum ZegoAPIModuleType
     ZEGOAPI_MODULE_AUDIO            = 0x4 | 0x8,
 };
 
+/** 推流质量 */
 typedef struct
 {
-    /** 视频帧率(采集) */
+    /** 视频采集帧率(fps) */
     double cfps;
-    /** 视频帧率(编码) */
+    /** 视频编码帧率(fps) */
     double vencFps;
-    /** 视频帧率(网络发送) */
+    /** 视频网络发送帧率(fps) */
     double fps;
-    /** 视频码率(kb/s) */
+    /** 视频码率(kbps) */
     double kbps;
     
-    /** 音频帧率(采集) */
+    /** 音频采集帧率(fps) */
     double acapFps;
-    /** 音频帧率(网络发送) */
+    /** 音频网络发送帧率(fps) */
     double afps;
-    /** 音频码率(kb/s) */
+    /** 音频码率(kbps) */
     double akbps;
     
-    /** 延时(ms) */
+    /** 本机到即构服务器的往返时延(ms) */
     int rtt;
-    /** 丢包率(0~255) */
+    /** 发送丢包(0~255)，数值越大丢包越高，丢包率 = pktLostRate/255 */
     int pktLostRate;
-    /** 质量(0~3) */
+    /** 本机综合网络质量(0~3)，分别对应优、良、中、差 */
     int quality;
     
-    /** 是否硬编 */
+    /** 是否开启硬件编码 */
     bool isHardwareVenc;
     /** 视频宽度 */
     int width;
@@ -491,10 +495,11 @@ typedef enum : NSUInteger {
     
 } ZegoAPITrafficControlProperty;
 
+/** 开启流量控制视频码率低于设置的视频最低码率时 SDK 推流策略 */
 typedef enum : NSUInteger {
-    /** 低于设置的最低码率时，停止视频发送 */
+    /** 低于设置的最低码率时，停止视频发送，默认 */
     ZEGOAPI_TRAFFIC_CONTROL_MIN_VIDEO_BITRATE_NO_VIDEO = 0,
-    /** 低于设置的最低码率时，视频以极低的频率发送 （不超过2FPS) */
+    /** 低于设置的最低码率时，视频以极低的帧率发送 （不超过2fps) */
     ZEGOAPI_TRAFFIC_CONTROL_MIN_VIDEO_BITRATE_ULTRA_LOW_FPS
     
 } ZegoAPITrafficControlMinVideoBitrateMode;
@@ -693,10 +698,52 @@ typedef enum : NSInteger
 {
     /** 一般性错误 */
     ZEGOAPI_DEVICE_ERROR_GENERIC = -1,
+    /** 无效设备 ID */
+    ZEGOAPI_DEVICE_ERROR_INVALID_ID = -2,
     /** 没有权限 */
     ZEGOAPI_DEVICE_ERROR_NO_AUTHORIZATION = -3,
     /** 采集帧率为0 */
     ZEGOAPI_DEVICE_ERROR_ZERO_FPS = -4,
+    /** 设备被占用 */
+    ZEGOAPI_DEVICE_ERROR_IN_USE_BY_OTHER = -5,
+    /** 设备未插入 */
+    ZEGOAPI_DEVICE_ERROR_UNPLUGGED = -6,
+    /** 媒体服务无法恢复 */
+    ZEGOAPI_DEVICE_ERROR_MEDIA_SERVICES_LOST = -8,
+
 } ZegoAPIDeviceErrorCode;
+
+typedef enum : NSInteger
+{
+    /** 一般性错误 */
+    ZEGOAPI_DEVICE_ERROR_REASON_GENERIC = -1,
+    /** 无效设备 ID */
+    ZEGOAPI_DEVICE_ERROR_REASON_INVALID_ID = -2,
+    /** 没有权限 */
+    ZEGOAPI_DEVICE_ERROR_REASON_NO_AUTHORIZATION = -3,
+    /** 采集帧率为0 */
+    ZEGOAPI_DEVICE_ERROR_REASON_ZERO_FPS = -4,
+    /** 设备被占用 */
+    ZEGOAPI_DEVICE_ERROR_REASON_IN_USE_BY_OTHER = -5,
+    /** 设备未插入 */
+    ZEGOAPI_DEVICE_ERROR_REASON_UNPLUGGED = -6,
+    /** 媒体服务无法恢复 */
+    ZEGOAPI_DEVICE_ERROR_REASON_MEDIA_SERVICES_LOST = -8,
+    /** 没有错误 */
+    ZEGOAPI_DEVICE_ERROR_REASON_NONE = 0,
+    /** 禁用 */
+    ZEGOAPI_DEVICE_ERROR_REASON_DISABLED = 2,
+    /** 屏蔽采集 */
+    ZEGOAPI_DEVICE_ERROR_REASON_MUTE = 3,
+    /** 中断 */
+    ZEGOAPI_DEVICE_ERROR_REASON_INTERRUPTION = 4,
+    /** 在后台 */
+    ZEGOAPI_DEVICE_ERROR_REASON_IN_BACKGROUND = 5,
+    /** 前台有多个 APP 运行 */
+    ZEGOAPI_DEVICE_ERROR_REASON_MULTI_FOREGROUND_APP = 6,
+    /** 系统压力过大 */
+    ZEGOAPI_DEVICE_ERROR_REASON_SYSTEM_PRESSURE = 7,
+
+}ZegoAPIDeviceErrorReason;
 
 #endif /* zego_api_defines_oc_h */
