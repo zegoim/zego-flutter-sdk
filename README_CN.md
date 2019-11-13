@@ -1,6 +1,6 @@
 # zegoliveroom_plugin [![pub package](https://img.shields.io/pub/v/zegoliveroom_plugin.svg)](https://pub.dartlang.org/packages/zegoliveroom_plugin)
 
-[English Version](README.md)
+[English Version](https://github.com/zegoim/zego-flutter-sdk/blob/master/README.md)
 
 即构科技（Zego）音视频Flutter SDK，提供视频直播以及实时音视频服务。
 
@@ -12,19 +12,19 @@
 
 ## 二、配置开发环境
 
-1. Android Studio：`Preferences`->`Plugins`，搜索`Flutter`插件进行下载，在插件中配置第一步下载好的Flutter SDK路径
+1. Android Studio：`Preferences`->`Plugins`，搜索 `Flutter` 插件进行下载，在插件中配置第一步下载好的Flutter SDK路径
 
-2. Visual Code: 在应用商店中搜索`Flutter`扩展并下载
+2. Visual Code: 在应用商店中搜索 `Flutter` 扩展并下载
 
-以上任一开发环境配置好flutter环境之后，命令行执行`flutter doctor`，根据提示内容补全相关未下载的依赖项。
+以上任一开发环境配置好flutter环境之后，命令行执行 `flutter doctor`，根据提示内容补全相关未下载的依赖项。
 
 ## 三、申请Zego App ID
 
-登录[官网](https://www.zego.im)注册账号，根据自身实际业务需求选择场景，获取AppID与App Sign，用于初始化SDK。
+登录[ZEGO 官网](https://www.zego.im)注册账号，根据自身实际业务需求选择场景，获取AppID与App Sign，用于初始化 SDK。
 
 ## 四、导入 zegoliveroom_plugin
 
-打开待导入工程中的`pubspec.yaml`，添加`zegoliveroom_plugin`依赖：
+打开待导入工程中的 `pubspec.yaml`，添加 `zegoliveroom_plugin` 依赖：
 
 * 以pub形式依赖：
 
@@ -137,3 +137,7 @@ class _MyAppState extends State<MyApp> {
 #### 3. iOS 使用 Platform View 时报错：`[VERBOSE-2:platform_view_layer.cc(28)] Trying to embed a platform view but the PaintContext does not support embedding`
 
 打开需要使用 Platform View 的 iOS 工程，在`Info.plist`中添加字段`io.flutter.embedded_views_preview`，其值为`YES`。
+
+#### 4. fatal error: lipo: -extract armv7 specified but fat file: [...] does not contain that architecture
+
+通常在切换 iOS 设备时出现，可通过删除 "flutter-project-path/build/" 和 "flutter-project-path/ios/DerivedData/" 目录解决。

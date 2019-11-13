@@ -1,6 +1,6 @@
 # zegoliveroom_plugin [![pub package](https://img.shields.io/pub/v/zegoliveroom_plugin.svg)](https://pub.dartlang.org/packages/zegoliveroom_plugin)
 
-[Chinese Version](README_CN.md)
+[Chinese Version](https://github.com/zegoim/zego-flutter-sdk/blob/master/README_CN.md)
 
 Zego's audio and video Flutter SDK provides live video and real-time audio and video services.
 
@@ -20,7 +20,7 @@ After configuring the flutter environment in any of the above development enviro
 
 ## III. Apply for Zego App ID
 
-Log in to [Official Website](https://www.zego.im) to register an account, select a scenario according to your actual business needs, and obtain AppID and App Sign for initializing the SDK.
+Log in to [ZEGO Official Website](https://www.zego.im) to register an account, select a scenario according to your actual business needs, and obtain AppID and App Sign for initializing the SDK.
 
 ## IV. Import zegoliveroom_plugin
 
@@ -137,3 +137,7 @@ Compilation with the simulator is not supported, please use real device debuggin
 #### 3. iOS uses Platform View error: `[VERBOSE-2:platform_view_layer.cc(28)] Trying to embed a platform view but the PaintContext does not support embedding`
 
 Open the iOS project that requires Platform View and add the field `io.flutter.embedded_views_preview` to `Info.plist` with a value of `YES`.
+
+#### 4. fatal error: lipo: -extract armv7 specified but fat file: [...] does not contain that architecture
+
+Usually occurs when switching iOS devices, which can be resolved by deleting the "flutter-project-path/build/" and "flutter-project-path/ios/DerivedData/" directories.
