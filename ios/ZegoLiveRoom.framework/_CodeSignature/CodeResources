@@ -42,7 +42,7 @@
 		</data>
 		<key>Headers/ZegoLiveRoomApi.h</key>
 		<data>
-		kt+UmNqGoM3LN+WVn6xGISgcv7U=
+		rpzsvukZbbm8B9AR1nBq8N2ESMw=
 		</data>
 		<key>Headers/ZegoLiveRoomApiDefines-IM.h</key>
 		<data>
@@ -123,6 +123,14 @@
 		<key>Headers/zego-api-media-side-info-oc.h</key>
 		<data>
 		LVN7vJoCULl86D++vVUV2eeLzDk=
+		</data>
+		<key>Headers/zego-api-mediaplayer-defines-oc.h</key>
+		<data>
+		6PpTUWfFMYmwpSZQ3IsaOkt2KLo=
+		</data>
+		<key>Headers/zego-api-mediaplayer-oc.h</key>
+		<data>
+		J+FqrXHfjIFT4JXfCialmVP/G1c=
 		</data>
 		<key>Headers/zego-api-mix-engine-playout-oc.h</key>
 		<data>
@@ -254,11 +262,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			kt+UmNqGoM3LN+WVn6xGISgcv7U=
+			rpzsvukZbbm8B9AR1nBq8N2ESMw=
 			</data>
 			<key>hash2</key>
 			<data>
-			IQilv/k83ePQ/QXJFG6ZriAgo4dKv9PHYhyJJux3WqM=
+			m62EEuslR5/mUPDESOpSjpLAjsZPw2DKwzl9xZ3Nssw=
 			</data>
 		</dict>
 		<key>Headers/ZegoLiveRoomApiDefines-IM.h</key>
@@ -479,6 +487,28 @@
 			<key>hash2</key>
 			<data>
 			0AfQpBy86F+tiVraaqLsJk312N3Z9N9YAUtNPXcDML4=
+			</data>
+		</dict>
+		<key>Headers/zego-api-mediaplayer-defines-oc.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			6PpTUWfFMYmwpSZQ3IsaOkt2KLo=
+			</data>
+			<key>hash2</key>
+			<data>
+			tH72kn/LbxEtzDWXrLRIiYPpfan8bgcN8IpMXCQCdb8=
+			</data>
+		</dict>
+		<key>Headers/zego-api-mediaplayer-oc.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			J+FqrXHfjIFT4JXfCialmVP/G1c=
+			</data>
+			<key>hash2</key>
+			<data>
+			+PvW6Mt49fTBZkIVz9oN8ZPF5GBAJtTvl+WG3og8kBY=
 			</data>
 		</dict>
 		<key>Headers/zego-api-mix-engine-playout-oc.h</key>

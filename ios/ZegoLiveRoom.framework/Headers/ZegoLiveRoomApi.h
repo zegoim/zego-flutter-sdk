@@ -492,6 +492,15 @@ typedef void(^ZegoCustomCommandBlock)(int errorCode, NSString *roomID);
 @optional
 
 /**
+用户被踢出房间
+
+@param reason 被踢出原因
+@param roomID 房间 ID
+@warning Deprecated, 请使用onKickOut:roomID:customReason
+ */
+- (void)onKickOut:(int)reason roomID:(NSString *)roomID;
+
+/**
  用户被踢出房间
  
  @param reason 被踢出原因

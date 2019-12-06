@@ -251,7 +251,8 @@ class ZegoLiveRoomPlugin {
     Function(List<ZegoUserInfo> userList, int updateType) onUserUpdate,
     Function(int event, Map<String, String> info) onLiveEvent,
     Function() onAVEngineStart,
-    Function() onAVEngineStop
+    Function() onAVEngineStop,
+    Function(String message) onInnerError
 }) {
 
     _addRoomNoticeLog('[Flutter-Dart] registerRoomCallback, enter');
@@ -267,6 +268,7 @@ class ZegoLiveRoomPlugin {
     _onLiveEvent = onLiveEvent;
     _onAVEngineStart = onAVEngineStart;
     _onAVEngineStop = onAVEngineStop;
+    _onInnerError = onInnerError;
 
     _addRoomNoticeLog('[Flutter-Dart] registerRoomCallback, init room stream subscription');
     _streamSubscription = ZegoLiveRoomEventChannel.listenRoomEvent().listen(_eventListener, onError: (error) {
@@ -294,6 +296,7 @@ class ZegoLiveRoomPlugin {
     _onLiveEvent = null;
     _onAVEngineStart = null;
     _onAVEngineStop = null;
+    _onInnerError = null;
 
     _streamSubscription.cancel().then((_) {
       _streamSubscription = null;
@@ -391,6 +394,12 @@ class ZegoLiveRoomPlugin {
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onAVEngineStop 对象参数之后才能收到该回调
   static void Function() _onAVEngineStop;
 
+  ///SDK检测到内部异常会抛出
+  ///
+  ///@param message 错误详情
+  ///@discussion 开发者监听此回调后可以用于统计SDK内部错误情况
+  ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onInnerError 对象参数之后才能收到该回调
+  static void Function(String message) _onInnerError;
 
   /// SDK内置日志，开发者无需关注
   static void _addRoomNoticeLog(String content) {
@@ -537,6 +546,13 @@ class ZegoLiveRoomPlugin {
           _onAVEngineStop();
 
         }
+        break;
+      case 'onInnerError':
+      if(_onInnerError != null) {
+          
+        String message = args['message'];
+        _onInnerError(message);
+      }
         break;
       default:
         break;

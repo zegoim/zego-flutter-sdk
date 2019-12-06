@@ -33,7 +33,7 @@ class _InitPageState extends State<InitPage> {
     }
 
     ZegoLiveRoomPlugin.setUseTestEnv(ZegoConfig.getInstance().isUseTestEnv);
-
+    print('[SDK Version] ${ZegoLiveRoomPlugin.getSdkVersion()}');
   }
 
   @override

@@ -1,17 +1,25 @@
 package com.zego.zegoliveroomplugin;
 
 import android.content.Context;
+import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
 import io.flutter.plugin.platform.PlatformView;
 
-public class ZegoPlatformView implements PlatformView {
+public class ZegoPlatformView implements PlatformView, SurfaceHolder.Callback {
 
     private SurfaceView mSurfaceView;
+    private int mViewID;
 
-    public ZegoPlatformView(Context context) {
+    public ZegoPlatformView(Context context, int viewID) {
+        this.mViewID = viewID;
         this.mSurfaceView = new SurfaceView(context);
+        this.mSurfaceView.getHolder().addCallback(this);
+
+        ZegoLogJNI.logNotice("[ZegoPlatformView] new, viewID: " + viewID + ", context: " + context);
+
     }
 
     public SurfaceView getSurfaceView() {
@@ -25,6 +33,29 @@ public class ZegoPlatformView implements PlatformView {
 
     @Override
     public void dispose() {
+        ZegoLogJNI.logNotice("[ZegoPlatformView] dispose, viewID: " + mViewID);
+        if(mSurfaceView != null) {
+            mSurfaceView.getHolder().removeCallback(this);
+            Surface surface = mSurfaceView.getHolder().getSurface();
+            if(surface != null)
+                surface.release();
 
+            mSurfaceView = null;
+        }
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        ZegoLogJNI.logNotice("[ZegoPlatformView] onSurfaceCreated, viewID: " + mViewID);
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        ZegoLogJNI.logNotice("[ZegoPlatformView] onSurfaceChanged, viewID: " + mViewID + ", size: (" + width + ", " + height + ")" + ", format: " + format);
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        ZegoLogJNI.logNotice("[ZegoPlatformView] onSurfaceDestroyed");
     }
 }

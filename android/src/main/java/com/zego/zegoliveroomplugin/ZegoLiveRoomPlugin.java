@@ -96,7 +96,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
 
   public static void registerWith(Registrar registrar) {
-    
+
     ZegoLiveRoomPlugin instance = new ZegoLiveRoomPlugin(registrar);
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.zego.im/zegoliveroom_plugin");
     channel.setMethodCallHandler(instance);
@@ -320,7 +320,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       result.success(null);
 
     } else if (call.method.equals("setVideoMirrorMode")) {
-      
+
       if(mZegoLiveRoom == null) {
         throwSdkNotInitError(result, call.method);
         return;
@@ -679,6 +679,16 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       int viewID = numberToIntValue((Number) call.argument("viewID"));
       ZegoPlatformView view = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
+      if(view != null) {
+        int width = view.getSurfaceView().getHolder().getSurfaceFrame().width();
+        int height = view.getSurfaceView().getHolder().getSurfaceFrame().height();
+        if(width == 0 && height == 0) {
+          reportInnerError("[setPreviewView UnexpectedException] view size is zero");
+        }
+        ZegoLogJNI.logNotice("[SetPreviewView - ZegoPlatformView] view size: " + "(" + width + ", " + height + ")" + "viewID:" + viewID);
+      }else {
+        ZegoLogJNI.logNotice("[SetPreviewView - ZegoPlatformView] no such view");
+      }
       if(view == null) {
         result.success(false);
         return;
@@ -956,15 +966,25 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       ZegoPlatformView view = null;
 
       if(mIsEnablePlatformView) {
-        
+
         // 只有音视频场景下严格检查viewID的合法性，纯音频场景下允许不填viewID（viewID为空）
         if(call.argument("viewID") != null) {
           int viewID = numberToIntValue((Number) call.argument("viewID"));
           view = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
+          if(view != null) {
+            int width = view.getSurfaceView().getHolder().getSurfaceFrame().width();
+            int height = view.getSurfaceView().getHolder().getSurfaceFrame().height();
+            if(width == 0 && height == 0) {
+                reportInnerError("[startPlayingStream UnexpectedException] view size is zero");
+            }
+            ZegoLogJNI.logNotice("[StartPlayingStream - ZegoPlatformView] view size: " + "(" + width + ", " + height + ")" + "viewID: " + viewID);
+          } else {
+            ZegoLogJNI.logNotice("[StartPlayingStream - ZegoPlatformView] no such view");
+          }
           //传入错误的view id
           if(view == null) {
-              result.success(false);
-              return;
+            result.success(false);
+            return;
           }
         }
 
@@ -1181,6 +1201,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         ZegoPlatformView view = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
         if(view == null) {
+          ZegoLogJNI.logNotice("[UpdatePlayView - ZegoPlatformView] no such view");
           result.success(false);
           return;
         }
@@ -1587,6 +1608,20 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     String errorMessage = String.format("[ERROR]: %s %s", methodName, "error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render.");
     ZegoLogJNI.logNotice("[Flutter-Native] " + errorMessage);
     result.error(String.format("%s_ERROR", methodName).toUpperCase(), errorMessage, null);
+  }
+
+  public void reportInnerError(String message) {
+    if(mEventSink != null) {
+      HashMap<String, Object> returnMap = new HashMap<>();
+      returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+
+      HashMap<String, Object> method = new HashMap<>();
+      method.put("name", "onInnerError");
+      method.put("message", message);
+
+      returnMap.put("method", method);
+      mEventSink.success(returnMap);
+    }
   }
 
   //Handle Flutter CallMethods
