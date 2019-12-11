@@ -119,7 +119,7 @@
  @param bOn true 打开，false 关闭。默认 true
  @return true 成功，false 失败
  @discussion 设置为关闭后，扬声器无声音，耳机仍有声音输出
- @discussion 在推流之前设置, 且 setAudioDeviceMode 设置为 ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION 或 ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION2 时有效
+ @discussion 在推流之前设置, 且 setAudioDeviceMode 设置为 ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION 或 ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION2 或 ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION3 时有效
  */
 - (bool)setBuiltInSpeakerOn:(bool)bOn;
 
@@ -136,7 +136,7 @@
  设置指定拉流的播放音量
  
  @param volume 音量取值范围为(0, 100)，数值越大，音量越大。默认 100
- @streamID  流ID. ID为空时, 统一设置所有拉流的播放音量
+ @param streamID  流ID. ID为空时, 统一设置所有拉流的播放音量
  @return true 成功, false 失败
  @discussion 直播时通过此 API 软件调整音量
  */
@@ -229,26 +229,6 @@
  @discussion 该设置会影响 [ZegoLivePlayerDelegate -onPlayQualityUpdate:stream:videoFPS:videoBitrate:] 的回调频率
  */
 + (void)setPlayQualityMonitorCycle:(unsigned int)timeInMS;
-
-/**
- 设置外部渲染
- 
- @warning Deprecated，请使用 zego-api-external-video-render-oc.h 中的 [ZegoExternalVideoRender enableExternalVideoRender:type:]
- 
- @param bEnable 是否外部渲染，true 是，false 不是。默认 false
- @discussion 必须在初始化 SDK 前调用。启用外部渲染后，需要设置外部渲染回调代理对象。SDK 提供给用户外部渲染的源数据格式为 BGRA32
- */
-+ (void)enableExternalRender:(BOOL)bEnable;
-
-/**
- 设置外部渲染回调对象
- 
- @warning Deprecated，请使用 zego-api-external-video-render-oc.h 中的 [ZegoExternalVideoRender setExternalVideoRenderDelegate:]
- 
- @param renderDelegate 遵循 ZegoLiveApiRenderDelegate 协议的代理对象
- @discussion 使用外部渲染功能，需要设置代理对象。未设置代理对象，或对象设置错误，可能导致无法正常收到相关回调
- */
-- (void)setRenderDelegate:(id<ZegoLiveApiRenderDelegate>)renderDelegate;
 
 /**
  音频录制开关

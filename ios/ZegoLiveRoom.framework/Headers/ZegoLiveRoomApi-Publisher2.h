@@ -423,24 +423,6 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (void)setPreviewWaterMarkRect:(CGRect)waterMarkRect channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
- 设置外部采集模块
- 
- @param factory 工厂对象，遵循 ZegoVideoCaptureFactory 协议的对象
- @param index 推流 channel Index
- @discussion 必须在 InitSDK 前调用，并且不能置空
- */
-+ (void)setVideoCaptureFactory:(id<ZegoVideoCaptureFactory>)factory channelIndex:(ZegoAPIPublishChannelIndex)index;
-
-/**
- 设置外部滤镜模块
- 
- @param factory 工厂对象，遵循 ZegoVideoFilterFactory 协议的对象
- @param index 推流 channel Index
- @discussion 必须在 Init 前调用，并且不能置空
- */
-+ (void)setVideoFilterFactory:(id<ZegoVideoFilterFactory>)factory channelIndex:(ZegoAPIPublishChannelIndex)index;
-
-/**
  发送媒体次要信息开关
  
  @param start true 开启, false 关闭

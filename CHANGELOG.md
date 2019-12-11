@@ -1,3 +1,6 @@
+## 1.0.12
+1. update iOS/Android native sdk (12.9)
+
 ## 1.0.11
 1. add onInnerError
 2. update iOS/Android native sdk

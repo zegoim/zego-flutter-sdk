@@ -399,7 +399,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       }
 
       int codecID = numberToIntValue((Number) call.argument("codecID"));
-      boolean success = mZegoLiveRoom.setVideoCodecId(codecID, ZegoConstants.PublishChannelIndex.MAIN);
+      boolean success = mZegoLiveRoom.setVideoCodecId(codecID, 0);
       result.success(success);
 
     } else if (call.method.equals("updateStreamExtraInfo")) {
@@ -1312,7 +1312,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean start = numberToBoolValue((Boolean) call.argument("start"));
       boolean onlyAudioPublish = numberToBoolValue((Boolean) call.argument("onlyAudioPublish"));
 
-      mZegoMediaSideInfo.setMediaSideFlags(start, onlyAudioPublish, ZegoConstants.PublishChannelIndex.MAIN);
+      mZegoMediaSideInfo.setMediaSideFlags(start, onlyAudioPublish, 0);
       result.success(null);
 
     } else if (call.method.equals("sendMediaSideInfo")) {
@@ -1330,7 +1330,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       for(int i = 0; i < inData.capacity(); i++)
         inData.put(i, tmpData.get(i));
 
-      mZegoMediaSideInfo.sendMediaSideInfo(inData, inData.capacity(), false, ZegoConstants.PublishChannelIndex.MAIN);
+      mZegoMediaSideInfo.sendMediaSideInfo(inData, inData.capacity(), false, 0);
       result.success(null);
 
     }

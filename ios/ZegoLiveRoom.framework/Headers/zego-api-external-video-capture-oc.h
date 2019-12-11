@@ -55,6 +55,8 @@ typedef struct {
     int height;
     /** 编码格式 */
     ZegoVideoCodecType codecType;
+    /** 逆时间旋转角度（注意：仅支持 udp 流，对 rtmp 流无效） */
+    int rotation;
 } ZegoVideoCodecConfig;
 
 /** 翻转模式 */

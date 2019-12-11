@@ -512,8 +512,10 @@ typedef enum : NSUInteger {
     ZEGOAPI_AUDIO_DEVICE_MODE_GENERAL = 2,
     /** 自动模式, 根据场景选择是否开启系统回声消除 */
     ZEGOAPI_AUDIO_DEVICE_MODE_AUTO = 3,
-    /** 通话模式, 开启系统回声消除，与communication相比，communication2会始终占用麦克风设备 */
+    /** 通话模式, 开启系统回声消除，与 ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION 相比，该模式会始终占用麦克风设备 */
     ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION2 = 4,
+    /** 通话模式, 开启系统回声消除，与 ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION 相比，该模式会下麦后释放麦克风，切回媒体音量 */
+    ZEGOAPI_AUDIO_DEVICE_MODE_COMMUNICATION3 = 5,
 } ZegoAPIAudioDeviceMode;
 
 /** 音频录制时，指定音源类型 */

@@ -106,6 +106,14 @@ typedef NS_ENUM(NSInteger, VideoPixelFormat) {
  */
 - (void)onSetFlipMode:(int)mode streamID:(NSString *)streamID;
 
+/**
+ SDK 通知下一帧数据需要旋转的角度
+
+ @param rotation 逆时针旋转角度
+ @param streamID 流名
+ */
+- (void)onSetRotation:(int)rotation streamID:(NSString *)streamID;
+
 @end
 
 /**

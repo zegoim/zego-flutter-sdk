@@ -872,7 +872,8 @@ Byte toByte(NSString* c) {
             self.mediaSideInfoApi = nil;
             
             [self.zegoApi setRoomDelegate:nil];
-            [self.zegoApi setRenderDelegate:nil];
+            //[self.zegoApi setRenderDelegate:nil];
+            [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:nil];
             [self.zegoApi setPublisherDelegate:nil];
             [self.zegoApi setPlayerDelegate:nil];
             [self.zegoApi setLiveEventDelegate:nil];
