@@ -1,3 +1,7 @@
+## 1.1.1
+1. Add audio player module
+2. Update texture's API comment
+
 ## 1.0.12
 1. update iOS/Android native sdk (12.9)
 
