@@ -1,6 +1,7 @@
 #import "ZegoLiveRoomPlugin.h"
 #import "ZegoRendererController.h"
 #import "ZegoPlatformViewFactory.h"
+#import "ZegoAudioPlayerController.h"
 #import "ZegoLog.h"
 
 typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
@@ -8,11 +9,12 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     TYPE_PUBLISH_EVENT,
     TYPE_PLAY_EVENT,
     TYPE_MEDIA_SIDE_INFO_EVENT,
-    TYPE_SOUND_LEVEL_EVENT
+    TYPE_SOUND_LEVEL_EVENT,
+    TYPE_AUDIO_PLAYER_EVENT = 10
 };
 
 @interface ZegoLiveRoomPlugin()
-<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, FlutterStreamHandler>
+<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, FlutterStreamHandler>
 
 @property (nonatomic, strong) ZegoLiveRoomApi *zegoApi;
 @property (nonatomic, strong) ZegoMediaSideInfo * mediaSideInfoApi;
@@ -131,6 +133,12 @@ Byte toByte(NSString* c) {
 
 - (void)throwNoPlatformViewError:(FlutterResult)result ofMethodName:(NSString *)methodName {
     NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render."];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
+    result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
+}
+
+- (void)throwNoMediaplayerError:(FlutterResult)result ofMethodName:(NSString*)methodName {
+    NSString *errorMessage = [NSString stringWithFormat:@"[ERROR]: %@ %@", methodName, @"error because mediaplayer is null. make sure you turn on this api before calling \'init\' when you use mediaplayer."];
     [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] %@", errorMessage]];
     result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
 }
@@ -727,6 +735,17 @@ Byte toByte(NSString* c) {
                @"method" : @{@"name" : @"onCaptureSoundLevelUpdate",
                              @"streamID": captureSoundLevel.streamID,
                              @"soundLevel" : @(captureSoundLevel.soundLevel)}
+               });
+    }
+}
+
+#pragma mark - ZegoAudioPlayControllerDelegate
+- (void)onAudioPlayEnd:(unsigned int)soundID {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_AUDIO_PLAYER_EVENT),
+               @"method": @{@"name": @"onAudioPlayEnd",
+                            @"soundID": @(soundID)}
                });
     }
 }
@@ -1960,13 +1979,30 @@ Byte toByte(NSString* c) {
     /* SoundLevel */
     else if([@"registerSoundLevelCallback" isEqualToString:call.method]) {
         
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
         [[ZegoSoundLevel sharedInstance] setSoundLevelDelegate:self];
         result(@(YES));
+        
     } else if([@"unregisterSoundLevelCallback" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
         
         [[ZegoSoundLevel sharedInstance] setSoundLevelDelegate:nil];
         result(@(YES));
+        
     } else if([@"setSoundLevelMonitorCycle" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
         
         unsigned int ms = [self numberToUintValue:args[@"ms"]];
         bool success = [[ZegoSoundLevel sharedInstance] setSoundLevelMonitorCycle:ms];
@@ -1974,13 +2010,132 @@ Byte toByte(NSString* c) {
         
     } else if([@"startSoundLevelMonitor" isEqualToString:call.method]) {
         
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
         bool success = [[ZegoSoundLevel sharedInstance] startSoundLevelMonitor];
         result(@(success));
         
     } else if([@"stopSoundLevelMonitor" isEqualToString:call.method]) {
         
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
         bool success = [[ZegoSoundLevel sharedInstance] stopSoundLevelMonitor];
         result(@(success));
+    }
+    /* Audio Player */
+    else if([@"playAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] playAudioEffect:args register:self.registrar result:result];
+    }
+    else if([@"stopAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] stopAudioEffect:args result:result];
+    }
+    else if([@"pauseAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] pauseAudioEffect:args result:result];
+    }
+    else if([@"resumeAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] resumeAudioEffect:args result:result];
+    }
+    else if([@"setAudioEffectVolume" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] setAudioEffectVolume:args result:result];
+    }
+    else if([@"preloadAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] preloadAudioEffect:args register:self.registrar result:result];
+    }
+    else if([@"unloadAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] unloadAudioEffect:args result:result];
+    }
+    else if([@"setAllAudioEffectVolume" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] setAllEffectVolume:args result:result];
+    }
+    else if([@"pauseAllAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] pauseAllEffect:result];
+    }
+    else if([@"resumeAllAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] resumeAllEffect:result];
+    }
+    else if([@"stopAllAudioEffect" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] stopAllEffect:result];
+    }
+    else if([@"registerAudioPlayerCallback" isEqualToString:call.method]) {
+        
+        [[ZegoAudioPlayerController instance] setAudioPlayerEventDelegate:self];
+        result(nil);
+    }
+    else if([@"unregisterAudioPlayerCallback" isEqualToString:call.method]) {
+        [[ZegoAudioPlayerController instance] setAudioPlayerEventDelegate:nil];
+        result(nil);
     }
     /* Error Code */
     else if([@"isInitSDKError" isEqualToString:call.method]) {

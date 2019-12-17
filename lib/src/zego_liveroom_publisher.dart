@@ -14,10 +14,11 @@ class ZegoLiveRoomPublisherPlugin {
 
   ///创建预览渲染器
   ///
-  ///@param width，渲染宽度，单位 px
-  ///@param height，渲染高度，单位 px
+  ///@param width，渲染宽度，单位 px (px = viewWidth * devicePixelRatio)
+  ///@param height，渲染高度，单位 px (px = viewHeight * devicePixelRatio)
   ///@return textureID, flutter 渲染的纹理ID，非负数。当返回负数代表创建渲染器失败
   ///@discussion 当接口返回 TextureID 后，可通过 [Texture] 控件展示
+  ///@discussion 当看到画面带有明显锯齿感时，请检查是否传入的宽高乘上了 devicePixelRatio, 参考[MediaQuery.of(context).devicePixelRatio]
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<int> createPreviewRenderer(int width, int height) async {
     final int textureID = await _channel.invokeMethod('createPreviewRenderer', {
@@ -44,10 +45,11 @@ class ZegoLiveRoomPublisherPlugin {
 
   ///更新预览渲染器的渲染大小
   ///
-  ///@param width，渲染宽度，单位 px
-  ///@param height，渲染高度，单位 px
+  ///@param width，渲染宽度，单位 px (px = viewWidth * devicePixelRatio)
+  ///@param height，渲染高度，单位 px (px = viewHeight * devicePixelRatio)
   ///@return true 成功，false 失败
   ///@discussion 当需要更新 Texture 渲染控件的大小时，调用本API同步更新渲染器的渲染大小，否则可能会导致图像变形等问题
+  ///@discussion 当看到画面带有明显锯齿感时，请检查是否传入的宽高乘上了 devicePixelRatio, 参考[MediaQuery.of(context).devicePixelRatio]
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<void> updatePreviewRenderSize(int width, int height) async {
     return await _channel.invokeMethod('updatePreviewRenderSize', {

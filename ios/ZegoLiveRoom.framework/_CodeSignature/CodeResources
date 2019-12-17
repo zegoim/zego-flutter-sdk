@@ -84,6 +84,10 @@
 		<data>
 		OmCe9JiuOOAf10uBniqatwGlji8=
 		</data>
+		<key>Headers/zego-api-audio-player-oc.h</key>
+		<data>
+		8GO35At75BVT1EHRZzRzMgzYmAs=
+		</data>
 		<key>Headers/zego-api-audio-processing-oc.h</key>
 		<data>
 		w1wDAm3OVv8Ox7NfHXvBS4alCvM=
@@ -369,6 +373,17 @@
 			<key>hash2</key>
 			<data>
 			PDYCMnZ2S0wzYgh0w3wKc3GzyHCNfZ0XIDhl9o1cHXU=
+			</data>
+		</dict>
+		<key>Headers/zego-api-audio-player-oc.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			8GO35At75BVT1EHRZzRzMgzYmAs=
+			</data>
+			<key>hash2</key>
+			<data>
+			fISs/K4QY5Y1QE1i5EU+fSfcGGGDedXE0CTv2R1Ywl0=
 			</data>
 		</dict>
 		<key>Headers/zego-api-audio-processing-oc.h</key>

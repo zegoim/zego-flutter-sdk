@@ -55,18 +55,12 @@ import com.zego.zegoliveroom.entity.ZegoPublishStreamQuality;
 import com.zego.zegoliveroom.entity.ZegoPlayStreamQuality;
 import com.zego.zegoliveroom.entity.ZegoUser;
 import com.zego.zegoliveroom.entity.ZegoUserState;
-
-
-enum EVENT_TYPE {
-  TYPE_ROOM_EVENT,
-  TYPE_PUBLISH_EVENT,
-  TYPE_PLAY_EVENT,
-  TYPE_MEDIA_SIDE_INFO_EVENT,
-  TYPE_SOUND_LEVEL_EVENT
-}
+import com.zego.zegoliveroomplugin.constants.ZegoEventType;
+import com.zego.zegoliveroomplugin.module.audioplayer.IZegoAudioPlayerControllerCallback;
+import com.zego.zegoliveroomplugin.module.audioplayer.ZegoAudioPlayerController;
 
 /** ZegoLiveRoomPlugin */
-public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler {
+public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler, IZegoAudioPlayerControllerCallback {
 
   /** Plugin registration. */
 
@@ -1352,7 +1346,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             HashMap<String, Object> returnMap = new HashMap<>();
-            returnMap.put("type", EVENT_TYPE.TYPE_SOUND_LEVEL_EVENT.ordinal());
+            returnMap.put("type", ZegoEventType.TYPE_SOUND_LEVEL_EVENT);
 
             HashMap<String, Object> method = new HashMap<>();
             method.put("name", "onSoundLevelUpdate");
@@ -1368,7 +1362,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           if(mEventSink != null) {
 
             HashMap<String, Object> returnMap = new HashMap<>();
-            returnMap.put("type", EVENT_TYPE.TYPE_SOUND_LEVEL_EVENT.ordinal());
+            returnMap.put("type", ZegoEventType.TYPE_SOUND_LEVEL_EVENT);
 
             HashMap<String, Object> method = new HashMap<>();
             method.put("name", "onCaptureSoundLevelUpdate");
@@ -1404,6 +1398,116 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean success = ZegoSoundLevelMonitor.getInstance().stop();
       result.success(success);
 
+    }
+    /* LiveRoom-AudioPlayer */
+    else if(call.method.equals("playAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().playAudioEffect(call, this.registrar, result);
+
+    } else if(call.method.equals("stopAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().stopAudioEffect(call, result);
+
+    } else if(call.method.equals("pauseAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().pauseAudioEffect(call, result);
+
+    } else if(call.method.equals("resumeAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().resumeAudioEffect(call, result);
+
+    } else if(call.method.equals("setAudioEffectVolume")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().setAudioEffectVolume(call, result);
+
+    } else if(call.method.equals("preloadAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().preloadAudioEffect(call, this.registrar, result);
+
+    } else if(call.method.equals("unloadAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().unloadAudioEffect(call, result);
+
+    } else if(call.method.equals("setAllAudioEffectVolume")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().setAllEffectVolume(call, result);
+
+    } else if(call.method.equals("pauseAllAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().pauseAllEffect(result);
+
+    } else if(call.method.equals("resumeAllAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().resumeAllEffect(result);
+
+    } else if(call.method.equals("stopAllAudioEffect")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().stopAllEffect(result);
+
+    } else if(call.method.equals("registerAudioPlayerCallback")) {
+
+      ZegoAudioPlayerController.getInstance().setAudioPlayerEventCallback(this);
+      result.success(null);
+
+    } else if(call.method.equals("unregisterAudioPlayerCallback")) {
+
+      ZegoAudioPlayerController.getInstance().setAudioPlayerEventCallback(null);
+      result.success(null);
     }
     /* LiveRoom-AudioIO*/
     else if(call.method.equals("enableAECWhenHeadsetDetected")) {
@@ -1613,7 +1717,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
   public void reportInnerError(String message) {
     if(mEventSink != null) {
       HashMap<String, Object> returnMap = new HashMap<>();
-      returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+      returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
       HashMap<String, Object> method = new HashMap<>();
       method.put("name", "onInnerError");
@@ -1669,7 +1773,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   }
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onStreamUpdated");
@@ -1698,7 +1802,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   }
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onStreamExtraInfoUpdated");
@@ -1715,7 +1819,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onTempBroken");
@@ -1732,7 +1836,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onReconnect");
@@ -1749,7 +1853,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onDisconnect");
@@ -1766,7 +1870,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onKickOut");
@@ -1784,7 +1888,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onReceiveCustomCommand");
@@ -1815,7 +1919,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   }
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onUserUpdate");
@@ -1850,7 +1954,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onPublishStateUpdate");
@@ -1875,7 +1979,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onJoinLiveRequest");
@@ -1895,7 +1999,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onPublishQualityUpdate");
@@ -1936,7 +2040,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onCaptureVideoSizeChangedTo");
@@ -1958,7 +2062,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           public void onCaptureVideoFirstFrame() {
               if(mEventSink != null) {
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onCaptureVideoFirstFrame");
@@ -1973,7 +2077,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           public void onCaptureAudioFirstFrame() {
               if(mEventSink != null) {
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onCaptureAudioFirstFrame");
@@ -2000,7 +2104,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             HashMap<String, Object> returnMap = new HashMap<>();
-            returnMap.put("type", EVENT_TYPE.TYPE_PUBLISH_EVENT.ordinal());
+            returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
 
             HashMap<String, Object> method = new HashMap<>();
             method.put("name", "onRelayCDNStateUpdate");
@@ -2021,7 +2125,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onPlayStateUpdate");
@@ -2040,7 +2144,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onPlayQualityUpdate");
@@ -2082,7 +2186,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onInviteJoinLiveRequest");
@@ -2101,7 +2205,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onRecvEndJoinLiveCommand");
@@ -2119,7 +2223,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
               if(mEventSink != null) {
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onVideoSizeChangedTo");
@@ -2138,7 +2242,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
               if(mEventSink != null) {
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onRemoteCameraStatusUpdate");
@@ -2156,7 +2260,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
               if(mEventSink != null) {
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onRemoteMicStatusUpdate");
@@ -2174,7 +2278,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
               if(mEventSink != null) {
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onRecvRemoteAudioFirstFrame");
@@ -2190,7 +2294,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
               if(mEventSink != null) {
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onRecvRemoteVideoFirstFrame");
@@ -2206,7 +2310,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
               if(mEventSink != null) {
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_PLAY_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onRenderRemoteVideoFirstFrame");
@@ -2224,7 +2328,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onLiveEvent");
@@ -2243,7 +2347,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onAVEngineStart");
@@ -2258,7 +2362,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_ROOM_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onAVEngineStop");
@@ -2317,7 +2421,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   String strData = new String(tempBuffer);
 
                   final HashMap<String, Object> returnMap = new HashMap<>();
-                  returnMap.put("type", EVENT_TYPE.TYPE_MEDIA_SIDE_INFO_EVENT.ordinal());
+                  returnMap.put("type", ZegoEventType.TYPE_MEDIA_SIDE_INFO_EVENT);
 
                   HashMap<String, Object> method = new HashMap<>();
                   method.put("name", "onRecvMediaSideInfo");
@@ -2336,6 +2440,22 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           }
       });
 
+  }
+
+  @Override
+  public void onAudioPlayEnd(int soundID) {
+    if(mEventSink != null) {
+
+      HashMap<String, Object> returnMap = new HashMap<>();
+      returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+
+      HashMap<String, Object> method = new HashMap<>();
+      method.put("name", "onAudioPlayEnd");
+      method.put("soundID", soundID);
+
+      returnMap.put("method", method);
+      mEventSink.success(returnMap);
+    }
   }
 
   private boolean numberToBoolValue(Boolean number) {
@@ -2357,5 +2477,4 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     return number != null ? number.floatValue() : .0f;
   }
-
 }
