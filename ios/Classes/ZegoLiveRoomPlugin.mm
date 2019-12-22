@@ -163,26 +163,22 @@ Byte toByte(NSString* c) {
     self.zegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
         
         [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] on init sdk, errorCode: %d", errorCode]];
-        
-        if(errorCode == 0)
-        {
-            //设置代理
-            [self.zegoApi setRoomDelegate:self];
-            [self.zegoApi setPublisherDelegate:self];
-            [self.zegoApi setPlayerDelegate:self];
-            [self.zegoApi setLiveEventDelegate:self];
-            [self.zegoApi setIMDelegate:self];
-            
-            [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
-            
-            //初始化媒体次要信息模块
-            self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
-            [self.mediaSideInfoApi setMediaSideDelegate:self];
-        }
-        
         result(@(errorCode));
         
     }];
+
+    //设置代理
+    [self.zegoApi setRoomDelegate:self];
+    [self.zegoApi setPublisherDelegate:self];
+    [self.zegoApi setPlayerDelegate:self];
+    [self.zegoApi setLiveEventDelegate:self];
+    [self.zegoApi setIMDelegate:self];
+            
+    [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
+            
+    //初始化媒体次要信息模块
+    self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
+    [self.mediaSideInfoApi setMediaSideDelegate:self];
     
 }
 

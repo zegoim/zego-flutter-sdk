@@ -1,3 +1,8 @@
+## 1.1.2
+1. fix iOS callback doesn’t work when call 'initSDK' failed
+2. iOS native framework uses cocoapods dependency instead
+
+
 ## 1.1.1
 1. Add audio player module
 2. Update texture's API comment
