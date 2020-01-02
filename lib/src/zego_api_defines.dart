@@ -801,3 +801,39 @@ class ZegoEndJoinLiveResult {
   const ZegoEndJoinLiveResult(this.errorCode, this.roomID);
 }
 
+class ZegoAudioReverbMode {
+
+  static const int ZEGO_AUDIO_REVERB_MODE_SOFT_ROOM = 0;
+
+  static const int ZEGO_AUDIO_REVERB_MODE_WARM_CLUB = 1;
+
+  static const int ZEGO_AUDIO_REVERB_MODE_CONCERT_HALL = 2;
+
+  static const int ZEGO_AUDIO_REVERB_MODE_LARGE_AUDITORIUM = 3;
+}
+
+class ZegoAudioReverbParam {
+
+  /// 房间大小，取值范围[0.0, 1.0]，用于控制产生混响"房间"的大小，房间越大，混响越强
+  double roomSize;
+  
+  /// 余响，取值范围[0.0, 0.5]，用于控制混响的拖尾长度
+  double reverberance;
+
+  /// 混响阻尼， 取值范围[0.0， 2.0]，控制混响的衰减程度，阻尼越大，衰减越大
+  double damping;
+
+  /// 干湿比，取值范围 >= 0.0。 控制混响与直达声和早期反射声之间的比例，干(dry)的部分默认定为1，当干湿比设为较小时，湿(wet)的比例较大，此时混响较强
+  double dryWetRatio;
+
+  ZegoAudioReverbParam(this.roomSize, this.reverberance, this.damping, this.dryWetRatio);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'roomSize': roomSize,
+      'reverberance': reverberance,
+      'damping': damping,
+      'dryWetRatio': dryWetRatio
+    };
+  }
+}

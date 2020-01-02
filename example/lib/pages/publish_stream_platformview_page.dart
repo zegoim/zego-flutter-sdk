@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
 import 'package:example/config/zego_config.dart';
+import 'package:example/pages/publish_settings_page.dart';
 
 class PublishStreamPlatformViewPage extends StatefulWidget {
 
@@ -301,53 +302,18 @@ class _PublishStreamPlatformViewPageState extends State<PublishStreamPlatformVie
                       : AssetImage('resources/images/bottom_microphone_off_icon.png'),
                 ),
                 onPressed: onMicStateChanged,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 10.0),
-              ),
-              PopupMenuButton(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Color(0x45000000),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  padding: EdgeInsets.all(10.5),
-                  child: Text(
-                    '设置镜像模式', 
-                    style: TextStyle(color: Colors.white),
-                    ),
-                ),
-                padding: EdgeInsets.all(0.0),
-                itemBuilder: (BuildContext context) {
-                  return <PopupMenuItem<String>>[
-                    PopupMenuItem<String>(child: Text('预览镜像|推流不镜像'), value: 'PreviewMirrorPublishNoMirror',),
-                    PopupMenuItem<String>(child: Text('预览镜像|推流镜像'), value: 'PreviewCaptureBothMirror',),
-                    PopupMenuItem<String>(child: Text('预览不镜像|推流不镜像'), value: 'PreviewCaptureBothNoMirror',),
-                    PopupMenuItem<String>(child: Text('预览不镜像|推流镜像'), value: 'PreviewNoMirrorPublishMirror',),
-                  ];
-                },
-                onSelected: (String action) {
-                  switch (action) {
-                    case 'PreviewMirrorPublishNoMirror':
-                      onVideoMirroModeChanged(ZegoVideoMirrorMode.ZegoVideoMirrorModePreviewMirrorPublishNoMirror);
-                      break;
-                    case 'PreviewCaptureBothMirror':
-                      onVideoMirroModeChanged(ZegoVideoMirrorMode.ZegoVideoMirrorModePreviewCaptureBothMirror);
-                      break;
-                    case 'PreviewCaptureBothNoMirror':
-                      onVideoMirroModeChanged(ZegoVideoMirrorMode.ZegoVideoMirrorModePreviewCaptureBothNoMirror);
-                      break;
-                    case 'PreviewNoMirrorPublishMirror':
-                      onVideoMirroModeChanged(ZegoVideoMirrorMode.ZegoVideoMirrorModePreviewNoMirrorPublishMirror);
-                      break;
-                  }
-                },
-              ),
+              )
             ],
           ),
         ],
       ),
     );
+  }
+
+  void onSettingsButtonClicked() {
+    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
+      return PublishSettingsPage();
+    },fullscreenDialog: true));
   }
 
   @override
@@ -357,6 +323,15 @@ class _PublishStreamPlatformViewPageState extends State<PublishStreamPlatformVie
         resizeToAvoidBottomPadding: false,
         appBar: AppBar(
           title: Text(_title),
+        ),
+        floatingActionButton: CupertinoButton(
+            child: Text(
+              '设置',
+              style: TextStyle(
+                  color: Colors.white
+              ),
+            ),
+            onPressed: onSettingsButtonClicked
         ),
         body: Stack(
           children: <Widget>[

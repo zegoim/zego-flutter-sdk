@@ -28,6 +28,15 @@ class ZegoConfig {
   String roomID;
   String streamID;
 
+  bool isPreviewMirror;
+  bool isPublishMirror;
+
+  bool enableVirtualStereo;
+  double virtualStereoAngle;
+  bool enableReverb;
+  int reverbMode;
+  double voiceChangerValue;
+
   ZegoConfig._internal() {
 
     SharedPreferences.getInstance().then((config) {
@@ -40,6 +49,15 @@ class ZegoConfig {
       this.roomID = config.getString('roomID') ?? '';
       this.streamID = config.getString('streamID') ?? '';
       this.enablePlatformView = config.getBool('enablePlatformView') ?? false;
+
+      this.isPreviewMirror = true;
+      this.isPublishMirror = false;
+
+      this.enableVirtualStereo = false;
+      this.virtualStereoAngle = 90.0;
+      this.enableReverb = false;
+      this.reverbMode = 0;
+      this.voiceChangerValue = 0.0;
     });
   }
 

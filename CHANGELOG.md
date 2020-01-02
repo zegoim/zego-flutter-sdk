@@ -1,3 +1,6 @@
+## 1.1.3
+1. add Audio Precessing API: 'VirtualStereo', 'Reverb', 'VoiceChanger'
+
 ## 1.1.2
 1. fix iOS callback doesn’t work when call 'initSDK' failed
 2. iOS native framework uses cocoapods dependency instead

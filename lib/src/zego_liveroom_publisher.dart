@@ -459,7 +459,7 @@ class ZegoLiveRoomPublisherPlugin {
   }
 
   ///设置音频码率
-
+  ///
   ///@param bitrate 码率
   ///@return true 成功 false 失败
   static Future<bool> setAudioBitrate(int bitrate) async {
@@ -468,6 +468,15 @@ class ZegoLiveRoomPublisherPlugin {
     });
 
     return success;
+  }
+
+  ///设置音频双声道编码
+  ///
+  ///@param channels 声道数
+  static Future<bool> setAudioChannelCount(int channels) async {
+    final bool success = await _channel.invokeMethod('setAudioChannelCount', {
+      'channels': channels
+    });
   }
 
   ///回声消除开关

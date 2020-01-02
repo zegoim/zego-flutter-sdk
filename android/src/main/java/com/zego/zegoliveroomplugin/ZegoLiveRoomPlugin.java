@@ -22,6 +22,9 @@ import java.util.*;
 import java.lang.*;
 
 import com.zego.zegoavkit2.ZegoStreamExtraPlayInfo;
+import com.zego.zegoavkit2.audioprocessing.ZegoAudioProcessing;
+import com.zego.zegoavkit2.audioprocessing.ZegoAudioReverbMode;
+import com.zego.zegoavkit2.audioprocessing.ZegoAudioReverbParam;
 import com.zego.zegoavkit2.entities.ZegoStreamRelayCDNInfo;
 import com.zego.zegoavkit2.error.ZegoError;
 import com.zego.zegoavkit2.mediaside.IZegoMediaSideCallback;
@@ -858,6 +861,17 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean success = mZegoLiveRoom.setAudioBitrate(bitrate);
       result.success(success);
 
+    } else if(call.method.equals("setAudioChannelCount")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      int channels = numberToIntValue((Number) call.argument("channels"));
+      mZegoLiveRoom.setAudioChannelCount(channels);
+      result.success(true);
+
     } else if(call.method.equals("enableAEC")) {
 
       if(mZegoLiveRoom == null) {
@@ -1521,6 +1535,78 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       mZegoLiveRoom.enableAECWhenHeadsetDetected(enable);
       result.success(null);
 
+    } else if(call.method.equals("enableVirtualStereo")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+      int angle = numberToIntValue((Number) call.argument("angle"));
+
+      ZegoAudioProcessing.enableVirtualStereo(enable, angle);
+      result.success(null);
+
+    } else if(call.method.equals("enableReverb")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+      int mode = numberToIntValue((Number) call.argument("mode"));
+
+      ZegoAudioReverbMode md;
+      switch (mode) {
+        case 0:
+          md = ZegoAudioReverbMode.SOFT_ROOM;
+          break;
+        case 1:
+          md = ZegoAudioReverbMode.WARM_CLUB;
+          break;
+        case 2:
+          md = ZegoAudioReverbMode.CONCERT_HALL;
+          break;
+        case 3:
+          md = ZegoAudioReverbMode.LARGE_AUDITORIUM;
+          break;
+          default:
+            md = ZegoAudioReverbMode.SOFT_ROOM;
+            break;
+      }
+
+      ZegoAudioProcessing.enableReverb(enable, md);
+      result.success(null);
+
+    } else if(call.method.equals("setReverbParam")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      HashMap<String, Object> param = call.argument("param");
+      ZegoAudioReverbParam objParam = new ZegoAudioReverbParam();
+      objParam.roomSize = numberToFloatValue((Number) param.get("roomSize"));
+      objParam.reverberance = numberToFloatValue((Number) param.get("reverberance"));
+      objParam.damping = numberToFloatValue((Number) param.get("damping"));
+      objParam.dryWetRatio = numberToFloatValue((Number) param.get("dryWetRatio"));
+
+      ZegoAudioProcessing.setReverbParam(objParam);
+      result.success(null);
+
+    } else if(call.method.equals("setVoiceChangerParam")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      float param = numberToFloatValue((Number) call.argument("param"));
+      ZegoAudioProcessing.setVoiceChangerParam(param);
+      result.success(null);
     }
     /* Error Code */
     else if(call.method.equals("isInitSDKError")) {

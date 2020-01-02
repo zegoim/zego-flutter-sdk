@@ -1559,6 +1559,16 @@ Byte toByte(NSString* c) {
         BOOL success = [self.zegoApi setAudioBitrate:bitrate];
         result(@(success));
         
+    } else if([@"setAudioChannelCount" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int channels = [self numberToIntValue:args[@"channels"]];
+        [self.zegoApi setAudioChannelCount:channels];
+        result(@(YES));
     } else if([@"enableAEC" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
@@ -1971,6 +1981,65 @@ Byte toByte(NSString* c) {
         [self.zegoApi enableAECWhenHeadsetDetected:enable];
         result(nil);
         
+    }
+    else if([@"enableVirtualStereo" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        bool enable = [self numberToBoolValue:args[@"enable"]];
+        int angle = [self numberToIntValue:args[@"angle"]];
+        
+        [ZegoAudioProcessing enableVirtualStereo:enable angle:angle];
+        result(nil);
+        
+    } else if([@"enableReverb" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        bool enable = [self numberToBoolValue:args[@"enable"]];
+        int mode = [self numberToIntValue:args[@"mode"]];
+        
+        [ZegoAudioProcessing enableReverb:enable mode:(ZegoAPIAudioReverbMode)mode];
+        result(nil);
+        
+    } else if([@"setReverbParam" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        NSDictionary *param = args[@"info"];
+        float roomSize = [self numberToFolatValue:param[@"roomSize"]];
+        float reverberance = [self numberToFolatValue:param[@"reverberance"]];
+        float damping = [self numberToFolatValue:param[@"damping"]];
+        float dryWetRatio = [self numberToFolatValue:param[@"dryWetRatio"]];
+        
+        ZegoAudioReverbParam reverbParam;
+        reverbParam.roomSize = roomSize;
+        reverbParam.reverberance = reverberance;
+        reverbParam.damping = damping;
+        reverbParam.dryWetRatio = dryWetRatio;
+        
+        [ZegoAudioProcessing setReverbParam:reverbParam];
+        result(nil);
+        
+    } else if([@"setVoiceChangerParam" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        float param = [self numberToFolatValue:args[@"param"]];
+        [ZegoAudioProcessing setVoiceChangerParam:param];
+        result(nil);
     }
     /* SoundLevel */
     else if([@"registerSoundLevelCallback" isEqualToString:call.method]) {

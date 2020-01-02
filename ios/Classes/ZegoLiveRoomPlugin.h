@@ -6,6 +6,7 @@
 #import <ZegoLiveRoom/zego-api-external-video-render-oc.h>
 #import <ZegoLiveRoom/zego-api-sound-level-oc.h>
 #import <ZegoLiveRoom/zego-api-error-oc.h>
+#import <ZegoLiveRoom/zego-api-audio-processing-oc.h>
 #import <OpenGLES/EAGL.h>
 #include <OpenGLES/ES2/gl.h>
 #import "ZegoViewRenderer.h"
