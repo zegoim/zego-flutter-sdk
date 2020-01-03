@@ -23,6 +23,9 @@
 
 + (instancetype)instance;
 
+- (void)initObject;
+- (void)uninitObject;
+
 - (void)playAudioEffect:(NSDictionary *)args register:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result;
 - (void)stopAudioEffect:(NSDictionary *)args result:(FlutterResult)result;
 - (void)pauseAudioEffect:(NSDictionary *)args result:(FlutterResult)result;

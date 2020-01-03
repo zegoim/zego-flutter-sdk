@@ -28,11 +28,18 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
     private IZegoAudioPlayerControllerCallback mCallback = null;
 
     public ZegoAudioPlayerController() {
-        mPlayer = new ZegoAudioPlayer();
-        mPlayer.setCallback(this);
-
         mStartResultList = new HashMap<>();
         mLoadResultList = new HashMap<>();
+    }
+
+    public void init() {
+        mPlayer = new ZegoAudioPlayer();
+        mPlayer.setCallback(this);
+    }
+
+    public void uninit() {
+        mPlayer.setCallback(null);
+        mPlayer = null;
     }
 
     public static ZegoAudioPlayerController getInstance() {

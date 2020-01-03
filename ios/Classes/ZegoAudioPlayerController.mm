@@ -37,9 +37,6 @@
 - (instancetype)init {
     self = [super init];
     if(self) {
-        _audioPlayer = [[ZegoAudioPlayer alloc] init];
-        [_audioPlayer setDelegate:self];
-        //[_audioPlayer setAudioPlayerEventDelegate:self];
         _startResultList = [[NSMutableDictionary alloc] init];
         _loadResultList = [[NSMutableDictionary alloc] init];
     }
@@ -47,6 +44,15 @@
     return self;
 }
 
+- (void)initObject {
+    _audioPlayer = [[ZegoAudioPlayer alloc] init];
+    [_audioPlayer setDelegate:self];
+}
+
+- (void)uninitObject {
+    [_audioPlayer setDelegate:nil];
+    _audioPlayer = nil;
+}
 
 - (void)playAudioEffect:(NSDictionary *)args register:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result {
     

@@ -152,6 +152,8 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           mZegoMediaSideInfo = null;
         }
 
+        ZegoAudioPlayerController.getInstance().uninit();
+
         ZegoLogJNI.logNotice("[Flutter-Native] unInitSDK");
         //反初始化SDK里面会做回调的销毁处理
         result.success(mZegoLiveRoom.unInitSDK());
@@ -2473,6 +2475,8 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     if(!success)
       result.success(false);
 
+    ZegoAudioPlayerController.getInstance().init();
+
     mZegoMediaSideInfo = new ZegoMediaSideInfo();
       mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
           @Override
@@ -2525,6 +2529,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               }
           }
       });
+
 
   }
 

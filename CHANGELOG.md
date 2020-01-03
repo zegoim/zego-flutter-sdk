@@ -1,3 +1,6 @@
+## 1.1.4
+1. fix AudioPlayer bug.
+
 ## 1.1.3
 1. add Audio Precessing API: 'VirtualStereo', 'Reverb', 'VoiceChanger'
 

@@ -180,6 +180,8 @@ Byte toByte(NSString* c) {
     self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
     [self.mediaSideInfoApi setMediaSideDelegate:self];
     
+    [[ZegoAudioPlayerController instance] initObject];
+    
 }
 
 #pragma mark - FlutterStreamHandler methods
@@ -885,6 +887,8 @@ Byte toByte(NSString* c) {
             
             [self.mediaSideInfoApi setMediaSideDelegate:nil];
             self.mediaSideInfoApi = nil;
+            
+            [[ZegoAudioPlayerController instance] uninitObject];
             
             [self.zegoApi setRoomDelegate:nil];
             //[self.zegoApi setRenderDelegate:nil];
