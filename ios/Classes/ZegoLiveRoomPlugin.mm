@@ -158,6 +158,8 @@ Byte toByte(NSString* c) {
     
         [ZegoExternalVideoRender enableExternalVideoRender:YES type:VideoExternalRenderTypeDecodeRgbSeries];
         self.renderController = [[ZegoRendererController alloc] init];
+        
+        [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
     }
     
     self.zegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
@@ -173,8 +175,6 @@ Byte toByte(NSString* c) {
     [self.zegoApi setPlayerDelegate:self];
     [self.zegoApi setLiveEventDelegate:self];
     [self.zegoApi setIMDelegate:self];
-            
-    [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
             
     //初始化媒体次要信息模块
     self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
@@ -880,10 +880,9 @@ Byte toByte(NSString* c) {
             if(!self.isEnablePlatformView) {
                 
                 [ZegoExternalVideoRender enableExternalVideoRender:NO type:VideoExternalRenderTypeDecodeRgbSeries];
+                [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:nil];
                 self.renderController = nil;
             }
-            
-            [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:nil];
             
             [self.mediaSideInfoApi setMediaSideDelegate:nil];
             self.mediaSideInfoApi = nil;
@@ -891,8 +890,6 @@ Byte toByte(NSString* c) {
             [[ZegoAudioPlayerController instance] uninitObject];
             
             [self.zegoApi setRoomDelegate:nil];
-            //[self.zegoApi setRenderDelegate:nil];
-            [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:nil];
             [self.zegoApi setPublisherDelegate:nil];
             [self.zegoApi setPlayerDelegate:nil];
             [self.zegoApi setLiveEventDelegate:nil];
