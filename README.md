@@ -33,7 +33,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  zegoliveroom_plugin: ^1.1.5
+  zegoliveroom_plugin: ^1.1.6
 ```
 
 * Dependent in git form:
@@ -141,3 +141,11 @@ Open the iOS project that requires Platform View and add the field `io.flutter.e
 #### 4. fatal error: lipo: -extract armv7 specified but fat file: [...] does not contain that architecture
 
 Usually occurs when switching iOS devices, which can be resolved by deleting the "flutter-project-path/build/" and "flutter-project-path/ios/DerivedData/" directories.
+
+#### 5. Android building release crashes with `NoClassDefFoundError` when flutter is upgraded to 1.10 or above
+
+Flutter is enabled obfuscation by default in version 1.10 or above. Please add the following line in `app/proguard-rules.pro` to prevent the Zego SDK obfuscation.
+
+```java
+-keep class com.zego.**{*;}
+```

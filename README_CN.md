@@ -33,7 +33,7 @@ dependencies:
   flutter:
   sdk: flutter
 
-  zegoliveroom_plugin: ^1.1.5
+  zegoliveroom_plugin: ^1.1.6
 ```
 
 * 以git形式依赖：
@@ -141,3 +141,11 @@ class _MyAppState extends State<MyApp> {
 #### 4. fatal error: lipo: -extract armv7 specified but fat file: [...] does not contain that architecture
 
 通常在切换 iOS 设备时出现，可通过删除 "flutter-project-path/build/" 和 "flutter-project-path/ios/DerivedData/" 目录解决。
+
+#### 5. flutter 升级至 1.10 或以上时，Android release 下出现 `NoClassDefFoundError` 导致 Crash
+
+flutter 在 1.10 或以上版本默认开启了混淆，请在项目中 `app/proguard-rules.pro` 为 Zego SDK 添加 -keep类的配置防止混淆
+
+```java
+-keep class com.zego.**{*;}
+```

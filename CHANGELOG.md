@@ -1,3 +1,7 @@
+## 1.1.6
+1. this new version is compatible with AndroidX.
+2. fix the Android example crash in release mode because of the obfuscation.
+
 ## 1.1.5
 1. fix iOS: use platform view render failed.
 
