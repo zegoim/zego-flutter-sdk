@@ -219,6 +219,8 @@ class _InitPageState extends State<InitPage> {
 
                             ZegoConfig.getInstance().isUseTestEnv = value;
                             ZegoConfig.getInstance().saveConfig();
+
+                            ZegoLiveRoomPlugin.setUseTestEnv(ZegoConfig.getInstance().isUseTestEnv);
                           });
                         },
                       ),
@@ -231,6 +233,8 @@ class _InitPageState extends State<InitPage> {
 
                             ZegoConfig.getInstance().isUseTestEnv = !value;
                             ZegoConfig.getInstance().saveConfig();
+
+                            ZegoLiveRoomPlugin.setUseTestEnv(ZegoConfig.getInstance().isUseTestEnv);
                           });
                         },
                       ),
