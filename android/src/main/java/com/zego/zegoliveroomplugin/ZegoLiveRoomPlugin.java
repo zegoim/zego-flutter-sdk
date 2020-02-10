@@ -2117,12 +2117,6 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               }
           }
 
-          @Deprecated
-          @Override
-          public AuxData onAuxCallback(int i) {
-              return null;
-          }
-
           @Override
           public void onCaptureVideoSizeChangedTo(int width, int height) {
               if(mEventSink != null) {
@@ -2138,12 +2132,6 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   returnMap.put("method", method);
                   mEventSink.success(returnMap);
               }
-          }
-
-          @Deprecated
-          @Override
-          public void onMixStreamConfigUpdate(int i, String s, HashMap<String, Object> hashMap) {
-
           }
 
           @Override

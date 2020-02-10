@@ -33,7 +33,7 @@ dependencies:
   flutter:
   sdk: flutter
 
-  zegoliveroom_plugin: ^1.1.7
+  zegoliveroom_plugin: ^1.1.8
 ```
 
 * 以git形式依赖：

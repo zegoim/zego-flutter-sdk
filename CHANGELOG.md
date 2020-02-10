@@ -1,3 +1,7 @@
+## 1.1.8
+
+1. update iOS/Android native sdk (2020.2.9)
+
 ## 1.1.7
 
 1. fix bug of init page in example.

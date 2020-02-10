@@ -1,0 +1,53 @@
+PODS:
+  - Flutter (1.0.0)
+  - shared_preferences (0.0.1):
+    - Flutter
+  - shared_preferences_macos (0.0.1):
+    - Flutter
+  - shared_preferences_web (0.0.1):
+    - Flutter
+  - zego_permission (0.0.1):
+    - Flutter
+  - "ZegoLiveRoom/AudioPlayer (1.20.2.9+hotfix.1)"
+  - zegoliveroom_plugin (1.0.0):
+    - Flutter
+    - "ZegoLiveRoom/AudioPlayer (= 1.20.2.9+hotfix.1)"
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
+  - shared_preferences_macos (from `.symlinks/plugins/shared_preferences_macos/ios`)
+  - shared_preferences_web (from `.symlinks/plugins/shared_preferences_web/ios`)
+  - zego_permission (from `.symlinks/plugins/zego_permission/ios`)
+  - zegoliveroom_plugin (from `.symlinks/plugins/zegoliveroom_plugin/ios`)
+
+SPEC REPOS:
+  trunk:
+    - ZegoLiveRoom
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  shared_preferences:
+    :path: ".symlinks/plugins/shared_preferences/ios"
+  shared_preferences_macos:
+    :path: ".symlinks/plugins/shared_preferences_macos/ios"
+  shared_preferences_web:
+    :path: ".symlinks/plugins/shared_preferences_web/ios"
+  zego_permission:
+    :path: ".symlinks/plugins/zego_permission/ios"
+  zegoliveroom_plugin:
+    :path: ".symlinks/plugins/zegoliveroom_plugin/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  shared_preferences: 430726339841afefe5142b9c1f50cb6bd7793e01
+  shared_preferences_macos: f3f29b71ccbb56bf40c9dd6396c9acf15e214087
+  shared_preferences_web: 141cce0c3ed1a1c5bf2a0e44f52d31eeb66e5ea9
+  zego_permission: 0a12f978f018fa7a5becc3fce76d04a790897879
+  ZegoLiveRoom: b6194866bdd52dd65b00085164e6a601c9868f50
+  zegoliveroom_plugin: 56a4b1396884e9393d285bdd804c924b05db82e6
+
+PODFILE CHECKSUM: 3dbe063e9c90a5d7c9e4e76e70a821b9e2c1d271
+
+COCOAPODS: 1.8.4
