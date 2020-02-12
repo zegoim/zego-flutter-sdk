@@ -1,3 +1,7 @@
+## 1.1.9
+
+1. update iOS/Android native sdk (2020.2.9 hotfix)
+
 ## 1.1.8
 
 1. update iOS/Android native sdk (2020.2.9)
