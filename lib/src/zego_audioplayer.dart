@@ -133,6 +133,46 @@ class ZegoAudioplayer {
     return await _channel.invokeMethod('stopAllAudioEffect');
   }
 
+  ///设置音效播放进度
+  ///
+  ///@param soundID 音效ID，标识当前播放的是哪个音频。取值为非负数
+  ///@param timestamp 需要跳转的进度，单位毫秒
+  ///@return 是否设置成功，0 为成功，-1 为失败
+  static Future<int> seekTo(int soundID, int timestamp) async {
+    final int error = await _channel.invokeMethod('seekToAudio', {
+      'soundID': soundID,
+      'timestamp': timestamp
+    });
+
+    return error;
+  }
+
+  ///获取音效文件总时长
+  ///
+  ///@param soundID 音效ID，标识当前播放的是哪个音频。取值为非负数
+  ///@return timestamp 总时长，单位毫秒；获取失败则返回 0
+  static Future<int> getTotalDuration(int soundID) async {
+    final int timestamp = await _channel.invokeMethod('getTotalDurationAudio', {
+      'soundID': soundID
+    });
+
+    return timestamp;
+  }
+
+  ///获取音效文件当前播放进度
+  ///
+  ///@param soundID 音效ID，标识当前播放的是哪个音频。取值为非负数
+  ///@return timestamp 当前播放进度，单位毫秒；获取失败则返回 -1
+  static Future<int> getCurrentDuration(int soundID) async {
+    final int timestamp = await _channel.invokeMethod('getCurrentDurationAudio', {
+      'soundID': soundID
+    });
+
+    return timestamp;
+  }
+
+
+
   ///设置回调对象
   ///
   ///@param onAudioPlayEnd 设置接收 音效播放完成 回调，参考 [_onAudioPlayEnd] 定义

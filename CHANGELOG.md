@@ -1,3 +1,7 @@
+## 1.2.0
+1. add `seekTo` `getTotalDuration` `getCurrentDuration` in AudioPlayer
+2. add `enableLoopback` `setLoopbackVolume` to listen captured voice
+
 ## 1.1.9
 
 1. update iOS/Android native sdk (2020.2.9 hotfix)

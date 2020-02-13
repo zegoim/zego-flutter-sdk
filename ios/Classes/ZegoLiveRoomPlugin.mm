@@ -1983,6 +1983,27 @@ Byte toByte(NSString* c) {
         result(nil);
         
     }
+    else if([@"enableLoopback" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        bool enable = [self numberToBoolValue:args[@"enable"]];
+        [self.zegoApi enableLoopback:enable];
+        result(nil);
+    } else if([@"setLoopbackVolume" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int volume = [self numberToIntValue:args[@"volume"]];
+        [self.zegoApi setLoopbackVolume:volume];
+        result(nil);
+    }
     else if([@"enableVirtualStereo" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
@@ -2202,6 +2223,33 @@ Byte toByte(NSString* c) {
     else if([@"unregisterAudioPlayerCallback" isEqualToString:call.method]) {
         [[ZegoAudioPlayerController instance] setAudioPlayerEventDelegate:nil];
         result(nil);
+    }
+    else if([@"seekToAudio" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] seekTo:args result:result];
+        
+    } else if([@"getTotalDurationAudio" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] getTotalDuration:args result:result];
+        
+    } else if([@"getCurrentDurationAudio" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoAudioPlayerController instance] getCurrentDuration:args result:result];
     }
     /* Error Code */
     else if([@"isInitSDKError" isEqualToString:call.method]) {

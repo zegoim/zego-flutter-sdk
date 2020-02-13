@@ -39,6 +39,10 @@
 - (void)stopAllEffect:(FlutterResult)result;
 - (void)resumeAllEffect:(FlutterResult)result;
 
+- (void)seekTo:(NSDictionary *)args result:(FlutterResult)result;
+- (void)getTotalDuration:(NSDictionary *)args result:(FlutterResult)result;
+- (void)getCurrentDuration:(NSDictionary *)args result:(FlutterResult)result;
+
 
 - (void)setAudioPlayerEventDelegate:(id<ZegoAudioPlayerControllerDelegate>)delegate;
 

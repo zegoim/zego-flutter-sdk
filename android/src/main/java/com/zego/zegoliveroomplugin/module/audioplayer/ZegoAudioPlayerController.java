@@ -156,6 +156,22 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
         mCallback = callback;
     }
 
+    public void seekTo(MethodCall call, Result result) {
+        int soundID = numberToIntValue((Number) call.argument("soundID"));
+        long timestamp = numberToLongValue((Number) call.argument("timestamp"));
+        result.success(mPlayer.seekTo(soundID, timestamp));
+    }
+
+    public void getTotalDuration(MethodCall call, Result result) {
+        int soundID = numberToIntValue((Number) call.argument("soundID"));
+        result.success(mPlayer.getDuration(soundID));
+    }
+
+    public void getCurrentDuration(MethodCall call, Result result) {
+        int soundID = numberToIntValue((Number) call.argument("soundID"));
+        result.success(mPlayer.getCurrentDuration(soundID));
+    }
+
     private void playEffectAsync(final Context context, final String fileName, final int soundID, final int loopCount, final boolean isPublish) {
         new Thread() {
             @Override
@@ -179,7 +195,6 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
             }
         }.start();
     }
-
 
     @Override
     public void onPlayEffect(int soundID, int errorCode) {
@@ -229,5 +244,10 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
     private int numberToIntValue(Number number) {
 
         return number != null ? number.intValue() : 0;
+    }
+
+    private long numberToLongValue(Number number) {
+
+        return number != null ? number.longValue() : 0;
     }
 }

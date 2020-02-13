@@ -17,6 +17,25 @@ class ZegoLiveRoomAudioPlugin {
     });
   }
 
+  /// 开启耳返监听
+  ///
+  ///@param enable true 使用，false 不使用。默认 false
+  ///@discussion InitSDK 之后，在推流之前调用
+  static Future<void> enableLoopback(bool enable) async {
+    return await _channel.invokeMethod('enableLoopback', {
+      'enable': enable
+    });
+  }
+
+  /// 设置耳返音量
+  ///
+  ///@param volume 音量，取值为 [0, 100]，默认为 80
+  static Future<void> setLoopbackVolume(int volume) async {
+    return await _channel.invokeMethod('setLoopbackVolume', {
+      'volume': volume
+    });
+  }
+
   ///设置虚拟立体声
   ///
   ///@param enable true 开启，false 关闭。默认 false

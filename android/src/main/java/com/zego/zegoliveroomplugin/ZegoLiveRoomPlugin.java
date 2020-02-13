@@ -1524,6 +1524,33 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       ZegoAudioPlayerController.getInstance().setAudioPlayerEventCallback(null);
       result.success(null);
+    } else if(call.method.equals("seekToAudio")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().seekTo(call, result);
+
+    } else if(call.method.equals("getTotalDurationAudio")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().getTotalDuration(call, result);
+
+    } else if(call.method.equals("getCurrentDurationAudio")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoAudioPlayerController.getInstance().getCurrentDuration(call, result);
+
     }
     /* LiveRoom-AudioIO*/
     else if(call.method.equals("enableAECWhenHeadsetDetected")) {
@@ -1535,6 +1562,28 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       mZegoLiveRoom.enableAECWhenHeadsetDetected(enable);
+      result.success(null);
+
+    } else if(call.method.equals("enableLoopback")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+      mZegoLiveRoom.enableLoopback(enable);
+      result.success(null);
+
+    } else if(call.method.equals("setLoopbackVolume")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      int volume = numberToIntValue((Number) call.argument("volume"));
+      mZegoLiveRoom.setLoopbackVolume(volume);
       result.success(null);
 
     } else if(call.method.equals("enableVirtualStereo")) {

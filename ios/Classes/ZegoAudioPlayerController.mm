@@ -155,6 +155,22 @@
     result(nil);
 }
 
+- (void)seekTo:(NSDictionary *)args result:(FlutterResult)result {
+    unsigned int soundID = [self numberToUintValue:args[@"soundID"]];
+    long timestamp = [self numberToLongValue:args[@"timestamp"]];
+    result(@([_audioPlayer seekTo:soundID timestamp:timestamp]));
+}
+
+- (void)getTotalDuration:(NSDictionary *)args result:(FlutterResult)result {
+    unsigned int soundID = [self numberToUintValue:args[@"soundID"]];
+    result(@([_audioPlayer getDuration:soundID]));
+}
+
+- (void)getCurrentDuration:(NSDictionary *)args result:(FlutterResult)result {
+    unsigned int soundID = [self numberToUintValue:args[@"soundID"]];
+    result(@([_audioPlayer getCurrentDuration:soundID]));
+}
+
 - (void)setAudioPlayerEventDelegate:(id<ZegoAudioPlayerControllerDelegate>)delegate {
     _delegate = delegate;
 }
@@ -225,6 +241,11 @@
 - (int)numberToIntValue:(NSNumber *)number {
     
     return [number isKindOfClass:[NSNull class]] ? 0 : [number intValue];
+}
+
+- (long)numberToLongValue:(NSNumber *)number {
+    
+    return [number isKindOfClass:[NSNull class]] ? 0 : [number longValue];
 }
 
 @end
