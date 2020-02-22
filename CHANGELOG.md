@@ -1,3 +1,6 @@
+## 1.2.1
+1. update android native sdk.
+
 ## 1.2.0
 1. add `seekTo` `getTotalDuration` `getCurrentDuration` in AudioPlayer
 2. add `enableLoopback` `setLoopbackVolume` to listen captured voice
