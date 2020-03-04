@@ -170,12 +170,27 @@ class ZegoLiveRoomPlugin {
     return success;
   }
 
+  ///发送房间消息
+  ///
+  ///@param content 房间消息内容，不超过 512 字节
+  ///@return 房间消息发送结果
+  ///@discussion 在登录房间后调用该 API 才有效。调用该 API 后，房间的其他用户可以通过回调 [_onRecvRoomMessage] 收到该条消息。
+  static Future<ZegoSendRoomMessageResult> sendRoomMessage(String content) async {
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('sendRoomMessage', {
+      'content': content
+    });
+
+    ZegoSendRoomMessageResult result = new ZegoSendRoomMessageResult(mapResult['errorCode'], mapResult['roomID'], mapResult['messageID']);
+
+    return result;
+  }
+
   ///发送自定义信令
   ///
   ///@param memberList 发送对象列表
   ///@param content 消息内容。长度不超过 2048 字节
   ///@return 自定义信令发送结果，参考 [ZegoCustomCommandResult] 定义
-  ///@discussion 信令内容由用户自定义
+  ///@discussion 信令内容由用户自定义。用户可通过 [_onReceiveCustomCommand] 收到信令
   static Future<ZegoCustomCommandResult> sendCustomCommand(List<ZegoUser> userList, String content) async {
     List<Map<String, String>> objUserList = [];
     for(var user in userList) {
@@ -234,6 +249,7 @@ class ZegoLiveRoomPlugin {
   ///@param onTempBroken 设置接收 server 连接中断 回调，参考 [_onTempBroken] 定义
   ///@param onReconnect 设置接收 server 重连成功 回调，参考 [_onReconnect] 定义
   ///@param onDisconnect 设置接收 server 断开 回调，参考 [_onDisconnect] 定义
+  ///@param onRecvRoomMessage 设置接收 收到房间消息 回调，参考 [_onRecvRoomMessage] 定义
   ///@param onReceiveCustomCommand 设置接收 收到自定义消息 回调，参考 [_onReceiveCustomCommand] 定义
   ///@param onUserUpdate 设置接收 房间成员更新 回调，参考 [_onUserUpdate] 定义
   ///@param onLiveEvent 设置接收 直播事件 回调，参考 [_onLiveEvent] 定义
@@ -247,6 +263,7 @@ class ZegoLiveRoomPlugin {
     Function(int errorCode, String roomID) onReconnect,
     Function(int errorCode, String roomID) onDisconnect,
     Function(int reason, String roomID, String customReason) onKickOut,
+    Function(String roomID, List<ZegoRoomMessage> messageList) onRecvRoomMessage,
     Function(String fromUserID, String fromUserName, String content, String roomID) onReceiveCustomCommand,
     Function(List<ZegoUserInfo> userList, int updateType) onUserUpdate,
     Function(int event, Map<String, String> info) onLiveEvent,
@@ -263,6 +280,7 @@ class ZegoLiveRoomPlugin {
     _onReconnect = onReconnect;
     _onDisconnect = onDisconnect;
     _onKickOut = onKickOut;
+    _onRecvRoomMessage = onRecvRoomMessage;
     _onReceiveCustomCommand = onReceiveCustomCommand;
     _onUserUpdate = onUserUpdate;
     _onLiveEvent = onLiveEvent;
@@ -291,6 +309,7 @@ class ZegoLiveRoomPlugin {
     _onReconnect = null;
     _onDisconnect = null;
     _onKickOut = null;
+    _onRecvRoomMessage = null;
     _onReceiveCustomCommand = null;
     _onUserUpdate = null;
     _onLiveEvent = null;
@@ -355,6 +374,14 @@ class ZegoLiveRoomPlugin {
   ///@discussion 可在该回调中处理用户被踢出房间后的下一步处理（例如报错、重新登录提示等）
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onKickOut 对象参数之后才能收到该回调
   static void Function(int reason, String roomID, String customReason) _onKickOut;
+
+  ///收到房间消息
+  ///
+  ///@param roomID 房间 ID
+  ///@param messageList 房间消息列表
+  ///@discussion 调用 [sendRoomMessage] 发送房间消息后，会触发房间内其他用户收到该回调
+  ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onRecvRoomMessage 对象参数之后才能收到该回调
+  static void Function(String roomID, List<ZegoRoomMessage> messageList) _onRecvRoomMessage;
 
   ///收到自定义消息
   ///
@@ -520,6 +547,19 @@ class ZegoLiveRoomPlugin {
 
           _onLiveEvent(event, info);
 
+        }
+        break;
+      case 'onRecvRoomMessage':
+        if(_onRecvRoomMessage != null) {
+          String roomID = args['roomID'];
+          List<ZegoRoomMessage> messageList = [];
+          List<dynamic> objList = args['messageList'];
+          for (Map<dynamic, dynamic> obj in objList) {
+            ZegoRoomMessage message = new ZegoRoomMessage(obj['content'], obj['fromUserID'], obj['fromUserName'], obj['messageID']);
+            messageList.add(message);
+          }
+
+          _onRecvRoomMessage(roomID, messageList);
         }
         break;
       case 'onReceiveCustomCommand':

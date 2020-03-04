@@ -762,6 +762,30 @@ class ZegoLoginRoomResult {
   const ZegoLoginRoomResult(this.errorCode, this.streamList);
 }
 
+/// 房间消息
+class ZegoRoomMessage {
+  final String content;
+
+  final String fromUserID;
+
+  final String fromUserName;
+
+  final int messageID;
+
+  const ZegoRoomMessage(this.content, this.fromUserID, this.fromUserName, this.messageID);
+}
+
+/// 房间消息发送结果
+class ZegoSendRoomMessageResult {
+  final int errorCode;
+
+  final String roomID;
+
+  final int messageID;
+
+  const ZegoSendRoomMessageResult(this.errorCode, this.roomID, this.messageID);
+}
+
 /// 自定义信令发送结果
 class ZegoCustomCommandResult {
 

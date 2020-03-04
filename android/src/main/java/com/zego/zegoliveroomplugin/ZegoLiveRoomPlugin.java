@@ -47,8 +47,10 @@ import com.zego.zegoliveroom.callback.IZegoLoginCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoResponseCallback;
 import com.zego.zegoliveroom.callback.IZegoRoomCallback;
 import com.zego.zegoliveroom.callback.im.IZegoIMCallback;
+import com.zego.zegoliveroom.callback.im.IZegoRoomMessageCallback;
 import com.zego.zegoliveroom.constants.ZegoAvConfig;
 import com.zego.zegoliveroom.constants.ZegoConstants;
+import com.zego.zegoliveroom.constants.ZegoIM;
 import com.zego.zegoliveroom.entity.AuxData;
 import com.zego.zegoliveroom.entity.ZegoBigRoomMessage;
 import com.zego.zegoliveroom.entity.ZegoConversationMessage;
@@ -261,6 +263,27 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       boolean success = mZegoLiveRoom.enableMicDevice(enable);
       result.success(success);
+
+    } else if(call.method.equals("sendRoomMessage")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      String content = call.argument("content");
+
+      mZegoLiveRoom.sendRoomMessage(ZegoIM.MessageType.File, ZegoIM.MessageCategory.Chat, content, new IZegoRoomMessageCallback() {
+        @Override
+        public void onSendRoomMessage(int errorCode, java.lang.String roomID, long messageID) {
+          HashMap<String, Object> mapResult = new HashMap<>();
+          mapResult.put("errorCode", errorCode);
+          mapResult.put("roomID", roomID);
+          mapResult.put("messageID", messageID);
+
+          result.success(mapResult);
+        }
+      });
 
     } else if(call.method.equals("sendCustomCommand")) {
 
@@ -2069,8 +2092,30 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           }
 
           @Override
-          public void onRecvRoomMessage(String s, ZegoRoomMessage[] zegoRoomMessages) {
+          public void onRecvRoomMessage(String roomID, ZegoRoomMessage[] messageList) {
+            if(mEventSink != null) {
 
+              ArrayList<HashMap<String, Object>> messageArray = new ArrayList<>();
+              for (ZegoRoomMessage message : messageList) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("content", message.content);
+                map.put("fromUserID", message.fromUserID);
+                map.put("fromUserName", message.fromUserName);
+                map.put("messageID", message.messageID);
+                messageArray.add(map);
+              }
+
+              HashMap<String, Object> returnMap = new HashMap<>();
+              returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
+
+              HashMap<String, Object> method = new HashMap<>();
+              method.put("name", "onRecvRoomMessage");
+              method.put("roomID", roomID);
+              method.put("messageList", messageArray);
+
+              returnMap.put("method", method);
+              mEventSink.success(returnMap);
+            }
           }
 
           @Override

@@ -301,6 +301,28 @@ Byte toByte(NSString* c) {
     }
 }
 
+- (void)onRecvRoomMessage:(NSString *)roomId messageList:(NSArray<ZegoRoomMessage*> *)messageList {
+
+    FlutterEventSink sink = _eventSink;
+    if (sink) {
+        NSMutableArray *messageArray = [NSMutableArray array];
+        for (ZegoRoomMessage *message in messageList) {
+            [messageArray addObject:@{
+                @"content": message.content,
+                @"fromUserID": message.fromUserId,
+                @"fromUserName": message.fromUserName,
+                @"messageID": @(message.messageId)
+            }];
+        }
+
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onRecvRoomMessage",
+                            @"roomID": roomId,
+                            @"messageList": messageArray}
+        });
+    }
+}
+
 - (void)onReceiveCustomCommand:(NSString *)fromUserID userName:(NSString *)fromUserName content:(NSString*)content roomID:(NSString *)roomID {
     
     FlutterEventSink sink = _eventSink;
@@ -992,6 +1014,24 @@ Byte toByte(NSString* c) {
         BOOL success = [self.zegoApi enableMicDevice: enable];
         result(@(success));
         
+    } else if([@"sendRoomMessage" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        NSString *content = args[@"content"];
+
+        [self.zegoApi sendRoomMessage:content type:ZEGO_TEXT category:ZEGO_CHAT completion:^(int errorCode, NSString *roomId, unsigned long long messageId) {
+            
+            result(@{
+                @"errorCode": @(errorCode),
+                @"roomID": roomId,
+                @"messageID": @(messageId)
+            });
+        }];
+
     } else if([@"sendCustomCommand" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
@@ -1012,9 +1052,10 @@ Byte toByte(NSString* c) {
         
         [self.zegoApi sendCustomCommand:zegoUserList content:content completion:^(int errorCode, NSString *roomID) {
                 
-            result(@{@"errorCode": @(errorCode),
-                         @"roomID": roomID
-                    });
+            result(@{
+                @"errorCode": @(errorCode),
+                @"roomID": roomID
+            });
         }];
         
     } else if([@"setRoomConfig" isEqualToString:call.method]) {
