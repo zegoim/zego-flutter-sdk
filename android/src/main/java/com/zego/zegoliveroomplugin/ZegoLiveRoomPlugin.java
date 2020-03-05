@@ -542,6 +542,17 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean success = mZegoLiveRoom.setWhitenFactor(factor);
       result.success(success);
 
+    } else if (call.method.equals("setSharpenFactor")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      float factor = numberToFloatValue((Number) call.argument("factor"));
+      boolean success = mZegoLiveRoom.setSharpenFactor(factor);
+      result.success(success);
+
     } else if(call.method.equals("setFilter")) {
 
       if(mZegoLiveRoom == null) {

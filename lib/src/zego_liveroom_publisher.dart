@@ -382,6 +382,19 @@ class ZegoLiveRoomPublisherPlugin {
     return success;
   }
 
+  ///设置锐化参数
+  ///
+  ///@param factor 锐化参数，取值范围[0,2]，值越大锐化越强。默认 0.2
+  ///@return true 成功，false 失败
+  ///@discussion 推流时可调用本 API 进行参数配置。设置时需确保对应美颜特性开启
+  static Future<bool> setSharpenFactor(double factor) async {
+    final bool success = await _channel.invokeMethod('setSharpenFactor', {
+      'factor': factor
+    });
+
+    return success;
+  }
+
   ///设置滤镜
   ///
   ///@param filter 滤镜种类，参考 [ZegoFilter] 定义。默认不使用滤镜

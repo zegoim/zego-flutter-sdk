@@ -1288,6 +1288,17 @@ Byte toByte(NSString* c) {
         BOOL success = [self.zegoApi setWhitenFactor:factor];
         result(@(success));
 
+    } else if([@"setSharpenFactor" isEqualToString:call.method]) {
+
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        float factor = [self numberToFolatValue:args[@"factor"]];
+        bool success = [self.zegoApi setSharpenFactor:factor];
+        result(@(success));
+
     } else if([@"setFilter" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {

@@ -1,5 +1,9 @@
 # Change log
 
+## 1.2.3
+
+- add `setSharpenFactor` to set the sharpening factor for beauty.
+
 ## 1.2.2
 
 - add `sendRoomMessage`, `onRecvRoomMessage` to send and receive room messages.
