@@ -32,6 +32,8 @@ import com.zego.zegoavkit2.mediaside.ZegoMediaSideInfo;
 import com.zego.zegoavkit2.soundlevel.IZegoSoundLevelCallback;
 import com.zego.zegoavkit2.soundlevel.ZegoSoundLevelInfo;
 import com.zego.zegoavkit2.soundlevel.ZegoSoundLevelMonitor;
+import com.zego.zegoavkit2.videofilter.ZegoExternalVideoFilter;
+import com.zego.zegoavkit2.videofilter.ZegoVideoFilterFactory;
 import com.zego.zegoliveroom.ZegoLiveRoom;
 import com.zego.zegoliveroom.callback.IZegoAVEngineCallback;
 import com.zego.zegoliveroom.callback.IZegoCustomCommandCallback;
@@ -71,6 +73,8 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
   private static String mPublishMainChl = com.zego.zegoavkit2.ZegoConstants.ZegoVideoDataMainPublishingStream;
 
+  private static ZegoVideoFilterFactory videoFilterFactory;
+
   private final Registrar registrar;
   private final TextureRegistry textures;
   private final Context mContext;
@@ -93,6 +97,17 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     this.mRenders = new HashMap<>();
   }
 
+  /** 预存外部视频滤镜工厂
+   *
+   * 首先实现一个 ZegoVideoFilterFactory ，调用此接口将工厂预存，
+   * 然后在 dart 层调用 `enableExternalVideoFilterFactory` 接口，
+   * 从而将此预存的工厂设置给 Native ZegoSDK
+   *
+   * @param factory 外部视频滤镜工厂
+   * */
+  public static void setExternalVideoFilterFactory(ZegoVideoFilterFactory factory) {
+    videoFilterFactory = factory;
+  }
 
   public static void registerWith(Registrar registrar) {
 
@@ -1693,6 +1708,13 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       ZegoAudioProcessing.setVoiceChangerParam(param);
       result.success(null);
     }
+
+    /* External Video Filter */
+    else if(call.method.equals("enableExternalVideoFilterFactory")) {
+      boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+      ZegoExternalVideoFilter.setVideoFilterFactory(enable ? videoFilterFactory : null, 0);
+    }
+
     /* Error Code */
     else if(call.method.equals("isInitSDKError")) {
 

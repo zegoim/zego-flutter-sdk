@@ -1,5 +1,9 @@
 # Change log
 
+## 1.2.4
+
+- add external video filter interface and corresponding sample code.
+
 ## 1.2.3
 
 - add `setSharpenFactor` to set the sharpening factor for beauty.

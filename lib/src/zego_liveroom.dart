@@ -242,6 +242,17 @@ class ZegoLiveRoomPlugin {
     return success;
   }
 
+  ///是否设置外部视频滤镜工厂
+  ///
+  ///@discussion 请先调用 Native 层的 `setExternalVideoFilterFactory` 方法预存写好的原生外部视频滤镜工厂对象
+  ///@discussion 然后在 dart 层调用此方法（必须在 initSDK 之前调用）将预存的工厂对象设置给 Native ZegoSDK
+  ///@param enable true 表示将预存的外部视频滤镜工厂设置给 native，false 表示调用 native 接口将工厂设为空（释放)
+  static Future<void> enableExternalVideoFilterFactory(bool enable) async {
+    return await _channel.invokeListMethod('enableExternalVideoFilterFactory', {
+      'enable': enable
+    });
+  }
+
   ///设置回调对象
   ///
   ///@param onStreamUpdated 设置接收 流信息更新 回调，参考 [_onStreamUpdated] 定义

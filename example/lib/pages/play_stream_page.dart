@@ -216,7 +216,7 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
           ),
           Row(
             children: <Widget>[
-              Text('分辨率:  ${_playWidth} x ${_playHeight}',
+              Text('分辨率:  $_playWidth x $_playHeight',
                 style: TextStyle(
                     color: Colors.white
                 ),

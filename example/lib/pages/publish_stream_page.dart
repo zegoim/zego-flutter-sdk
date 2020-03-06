@@ -245,7 +245,7 @@ class _PublishStreamPageState extends State<PublishStreamPage> {
           ),
           Row(
             children: <Widget>[
-              Text('分辨率:  ${_publishWidth} x ${_publishHeight}',
+              Text('分辨率:  $_publishWidth x $_publishHeight',
                 style: TextStyle(
                     color: Colors.white
                 ),

@@ -32,9 +32,8 @@ class _InitPageState extends State<InitPage> {
       _appSignEdController.text = ZegoConfig.getInstance().appSign;
     }
 
-    ZegoLiveRoomPlugin.setUseTestEnv(ZegoConfig.getInstance().isUseTestEnv);
     ZegoLiveRoomPlugin.getSdkVersion().then((version) {
-      print('[SDK Version] ${version}');
+      print('[SDK Version] $version');
     });
 
   }
@@ -43,6 +42,12 @@ class _InitPageState extends State<InitPage> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+
+    if(ZegoConfig.getInstance().enableExternalVideoFilter) {
+      // 释放外部滤镜工厂
+      // 需要在 initSDK 前调用（所以释放外部滤镜工厂也是在 unInitSDK 后调用）
+      ZegoLiveRoomPlugin.enableExternalVideoFilterFactory(false);
+    }
 
   }
 
@@ -65,8 +70,16 @@ class _InitPageState extends State<InitPage> {
       return;
     }
 
+    // 测试环境 or 正式环境
+    ZegoLiveRoomPlugin.setUseTestEnv(ZegoConfig.getInstance().isUseTestEnv);
+
+    // 设置是否开启外部视频滤镜（必须在 initSDK 前调用，并且需要提前在 Native 层调用 `setExternalVideoFilter` 预设保存外部滤镜工厂)
+    ZegoLiveRoomPlugin.enableExternalVideoFilterFactory(ZegoConfig.getInstance().enableExternalVideoFilter);
+
+    // 设置是否使用 PlatformView
     ZegoLiveRoomPlugin.enablePlatformView(ZegoConfig.getInstance().enablePlatformView);
 
+    // 初始化 SDK
     ZegoLiveRoomPlugin.initSDK(appID, strAppSign).then((errorCode) {
 
       if(errorCode == 0) {
@@ -219,8 +232,6 @@ class _InitPageState extends State<InitPage> {
 
                             ZegoConfig.getInstance().isUseTestEnv = value;
                             ZegoConfig.getInstance().saveConfig();
-
-                            ZegoLiveRoomPlugin.setUseTestEnv(ZegoConfig.getInstance().isUseTestEnv);
                           });
                         },
                       ),
@@ -233,8 +244,6 @@ class _InitPageState extends State<InitPage> {
 
                             ZegoConfig.getInstance().isUseTestEnv = !value;
                             ZegoConfig.getInstance().saveConfig();
-
-                            ZegoLiveRoomPlugin.setUseTestEnv(ZegoConfig.getInstance().isUseTestEnv);
                           });
                         },
                       ),
@@ -254,6 +263,21 @@ class _InitPageState extends State<InitPage> {
                         },
                       ),
                       Text('是否使用 Platform View 渲染视图'),
+                    ],
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: ZegoConfig.getInstance().enableExternalVideoFilter,
+                        onChanged: (value) {
+                          setState(() {
+
+                            ZegoConfig.getInstance().enableExternalVideoFilter = value;
+                            ZegoConfig.getInstance().saveConfig();
+                          });
+                        },
+                      ),
+                      Text('是否开启外部视频滤镜'),
                     ],
                   ),
                   Container(

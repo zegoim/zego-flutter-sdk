@@ -13,6 +13,8 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     TYPE_AUDIO_PLAYER_EVENT = 10
 };
 
+static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
+
 @interface ZegoLiveRoomPlugin()
 <ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, FlutterStreamHandler>
 
@@ -143,6 +145,11 @@ Byte toByte(NSString* c) {
     result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", methodName] uppercaseString] message:errorMessage details:nil]);
 }
 
+#pragma mark - External Video Filter Factory
+
++ (void)setExternalVideoFilterFactory:(nullable id<ZegoVideoFilterFactory>)factory {
+    videoFilterFactory = factory;
+}
 
 #pragma mark - Handle Flutter CallMethods
 - (void)initSDKWithAppID:(unsigned int)appID appSign: (NSString *)appsign result:(FlutterResult)result {
@@ -2302,6 +2309,17 @@ Byte toByte(NSString* c) {
         }
         
         [[ZegoAudioPlayerController instance] getCurrentDuration:args result:result];
+    }
+    /* External Video Filter */
+    else if([@"enableExternalVideoFilterFactory" isEqualToString:call.method]) {
+        bool enable = [self numberToBoolValue:args[@"enable"]];
+        // 仅在提前预设过工厂对象时，此接口才有效
+        if (!videoFilterFactory) {
+            result(nil);
+            return;
+        }
+        [ZegoExternalVideoFilter setVideoFilterFactory:enable ? videoFilterFactory : nil channelIndex:ZEGOAPI_CHN_MAIN];
+        result(nil);
     }
     /* Error Code */
     else if([@"isInitSDKError" isEqualToString:call.method]) {

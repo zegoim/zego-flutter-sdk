@@ -25,6 +25,9 @@ class ZegoConfig {
   // 是否使用 Platform View
   bool enablePlatformView;
 
+  // 是否开启外部视频滤镜
+  bool enableExternalVideoFilter;
+
   String roomID;
   String streamID;
 
@@ -49,6 +52,7 @@ class ZegoConfig {
       this.roomID = config.getString('roomID') ?? '';
       this.streamID = config.getString('streamID') ?? '';
       this.enablePlatformView = config.getBool('enablePlatformView') ?? false;
+      this.enableExternalVideoFilter = config.getBool('enableExternalVideoFilter') ?? false;
 
       this.isPreviewMirror = true;
       this.isPublishMirror = false;
@@ -73,6 +77,7 @@ class ZegoConfig {
     config.setString('roomID', this.roomID);
     config.setString('streamID', this.streamID);
     config.setBool('enablePlatformView', this.enablePlatformView);
+    config.setBool('enableExternalVideoFilter', this.enableExternalVideoFilter);
   }
 
 }
