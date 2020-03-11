@@ -20,6 +20,8 @@ class _InitPageState extends State<InitPage> {
   final TextEditingController _appIDEdController = new TextEditingController();
   final TextEditingController _appSignEdController = new TextEditingController();
 
+  String _version;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +36,9 @@ class _InitPageState extends State<InitPage> {
 
     ZegoLiveRoomPlugin.getSdkVersion().then((version) {
       print('[SDK Version] $version');
+      setState(() {
+        _version = version;
+      });
     });
 
   }
@@ -119,6 +124,20 @@ class _InitPageState extends State<InitPage> {
               padding: const EdgeInsets.symmetric(horizontal: 40.0),
               child: Column(
                 children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text('Version: '),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10.0),
+                      ),
+                      Expanded(
+                        child: Text('$_version'),
+                      ),
+                    ],
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(top: 20.0),
                   ),
@@ -265,21 +284,22 @@ class _InitPageState extends State<InitPage> {
                       Text('是否使用 Platform View 渲染视图'),
                     ],
                   ),
-                  Row(
-                    children: <Widget>[
-                      Checkbox(
-                        value: ZegoConfig.getInstance().enableExternalVideoFilter,
-                        onChanged: (value) {
-                          setState(() {
-
-                            ZegoConfig.getInstance().enableExternalVideoFilter = value;
-                            ZegoConfig.getInstance().saveConfig();
-                          });
-                        },
-                      ),
-                      Text('是否开启外部视频滤镜'),
-                    ],
-                  ),
+// External Video Filter Checkbox 外部滤镜开关
+//                  Row(
+//                    children: <Widget>[
+//                      Checkbox(
+//                        value: ZegoConfig.getInstance().enableExternalVideoFilter,
+//                        onChanged: (value) {
+//                          setState(() {
+//
+//                            ZegoConfig.getInstance().enableExternalVideoFilter = value;
+//                            ZegoConfig.getInstance().saveConfig();
+//                          });
+//                        },
+//                      ),
+//                      Text('是否开启外部视频滤镜'),
+//                    ],
+//                  ),
                   Container(
                     padding: const EdgeInsets.all(0.0),
                     decoration: BoxDecoration(

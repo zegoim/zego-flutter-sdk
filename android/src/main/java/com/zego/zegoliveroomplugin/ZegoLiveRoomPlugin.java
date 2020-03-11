@@ -1713,6 +1713,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     else if(call.method.equals("enableExternalVideoFilterFactory")) {
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       ZegoExternalVideoFilter.setVideoFilterFactory(enable ? videoFilterFactory : null, 0);
+      result.success(null);
     }
 
     /* Error Code */

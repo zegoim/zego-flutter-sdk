@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import 'dart:math' show Random;
 
 class ZegoConfig {
@@ -44,7 +45,7 @@ class ZegoConfig {
 
     SharedPreferences.getInstance().then((config) {
 
-      this.userID = config.getString('userID') ?? new Random().nextInt(9999999).toString();
+      this.userID = config.getString('userID') ?? '${Platform.operatingSystem}-${new Random().nextInt(9999999).toString()}';
       this.userName = config.getString('userName') ?? 'user-$userID';
       this.appID = config.getString('appID') ?? '';
       this.appSign = config.getString('appSign') ?? '';

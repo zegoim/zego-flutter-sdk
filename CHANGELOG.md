@@ -1,5 +1,11 @@
 # Change log
 
+## 1.2.5
+
+1. update ios/android native sdk to version `200309_200607_release-new-0-g54f488a0c_video_mediaplayer_bn3549_12`
+
+2. fix bug of external filter module on Android
+
 ## 1.2.4
 
 - add external video filter interface and corresponding sample code.
