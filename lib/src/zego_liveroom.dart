@@ -248,8 +248,28 @@ class ZegoLiveRoomPlugin {
   ///@discussion 然后在 dart 层调用此方法（必须在 initSDK 之前调用）将预存的工厂对象设置给 Native ZegoSDK
   ///@param enable true 表示将预存的外部视频滤镜工厂设置给 native，false 表示调用 native 接口将工厂设为空（释放)
   static Future<void> enableExternalVideoFilterFactory(bool enable) async {
-    return await _channel.invokeListMethod('enableExternalVideoFilterFactory', {
+    return await _channel.invokeMethod('enableExternalVideoFilterFactory', {
       'enable': enable
+    });
+  }
+
+  ///设置配置信息，如果没有特殊说明，必须确保在 InitSDK 前调用
+  ///
+  ///@param config 配置信息，如"keep_audio_session_active=true", 等号后面值的类型要看下面每一项的定义
+  ///
+  ///@discussion "prefer_play_ultra_source", int value(1/0), default: 0. 可在 InitSDK 之后，拉流之前调用
+  ///@discussion "keep_audio_session_active", bool value, default: false. if set true, app need to set the session inactive yourself
+  ///@discussion "enforce_audio_loopback_in_sync", bool value, default: false. enforce audio loopback in synchronous method
+  ///@discussion "audio_session_mix_with_others", bool value, default: true. set AVAudioSessionCategoryOptionMixWithOthers
+  ///@discussion "support_general_mode_below_ios9", bool value, default: false. support general mode below ios 9.0
+  ///@discussion "play_nodata_abort", bool value, default: false，设置拉流时没拉到数据是否终止拉流，设置为false表示不终止，设置为true表示终止，拉流之前调用有效
+  ///@discussion "room_retry_time", uint32 value, default:300S，设置房间异常后自动恢复最大重试时间，SDK尽最大努力恢复，单位为S，SDK默认为300s，设置为0时不重试
+  ///@discussion "av_retry_time", uint32 value, default:300S，设置推拉流异常后自动恢复最大重试时间，SDK尽最大努力恢复，单位为S，SDK默认为300s，设置为0时不重试
+  ///@discussion "play_clear_last_frame", bool value, default false. 停止拉流时，是否清除最后一帧内容
+  ///@discussion "preview_clear_last_frame", bool value, default false. 停止预览时，是否清除最后一帧内容
+  static Future<void> setConfig(String config) async {
+    return await _channel.invokeMethod('setConfig', {
+      'config': config
     });
   }
 

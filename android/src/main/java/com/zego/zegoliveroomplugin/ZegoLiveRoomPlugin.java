@@ -1716,6 +1716,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       result.success(null);
     }
 
+    else if(call.method.equals("setConfig")) {
+      String config = call.argument("config");
+      ZegoLiveRoom.setConfig(config);
+      result.success(null);
+    }
+
     /* Error Code */
     else if(call.method.equals("isInitSDKError")) {
 

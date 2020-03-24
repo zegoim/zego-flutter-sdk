@@ -2321,6 +2321,11 @@ Byte toByte(NSString* c) {
         [ZegoExternalVideoFilter setVideoFilterFactory:enable ? videoFilterFactory : nil channelIndex:ZEGOAPI_CHN_MAIN];
         result(nil);
     }
+    else if([@"setConfig" isEqualToString:call.method]) {
+        NSString *config = args[@"config"];
+        [ZegoLiveRoomApi setConfig:config];
+        result(nil);
+    }
     /* Error Code */
     else if([@"isInitSDKError" isEqualToString:call.method]) {
         

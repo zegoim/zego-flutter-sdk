@@ -1,5 +1,11 @@
 # Change log
 
+## 1.2.6
+
+1. Added `setConfig` for setting additional configuration information
+
+2. Update iOS/Android native SDK to version `200316_163753_release-new-0-gb76c836cd_video_mediaplayer_bn3590_12`
+
 ## 1.2.5
 
 1. update ios/android native sdk to version `200309_200607_release-new-0-g54f488a0c_video_mediaplayer_bn3549_12`
