@@ -1,5 +1,10 @@
 # Change log
 
+## 1.2.7
+
+1. Add log for texture render.
+2. Optimize the code when calling `updatePreviewRenderSize` and `updatePlayRenderSize`
+
 ## 1.2.6
 
 1. Added `setConfig` for setting additional configuration information

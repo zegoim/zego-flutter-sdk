@@ -627,7 +627,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       }
 
       ZegoViewRenderer renderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
-
+      ZegoLogJNI.logNotice("[createPreviewRenderer] view size: " + "(" + width + ", " + height + ")" + "textureID:" + renderer.getTextureID());
       mRenders.put(mPublishMainChl, renderer);
       mZegoLiveRoom.setPreviewView(renderer.getSurface());
       result.success(renderer.getTextureID());
@@ -674,11 +674,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         return;
       }
 
+      mZegoLiveRoom.setPreviewView(null);
       boolean success = renderer.updateRenderSize(width, height);
-      if(success) {
-        mZegoLiveRoom.setPreviewView(null);
-        mZegoLiveRoom.setPreviewView(renderer.getSurface());
-      }
+      //if(success) {
+      mZegoLiveRoom.setPreviewView(renderer.getSurface());
+      //}
+      ZegoLogJNI.logNotice("[updatePreviewRenderSize] width: " + width + " height: " + height + ", textureID: " + renderer.getTextureID());
 
       result.success(success);
 
@@ -701,7 +702,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       ZegoViewRenderer renderer = mRenders.get(mPublishMainChl);
       if(renderer != null) {
-
+        ZegoLogJNI.logNotice("[destroyPreviewRenderer] textrueID: " + renderer.getTextureID());
         mZegoLiveRoom.setPreviewView(null);
         renderer.release();
         result.success(true);
@@ -1168,7 +1169,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       ZegoViewRenderer renderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
       mRenders.put(streamID, renderer);
-
+      ZegoLogJNI.logNotice("[createPlayRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + renderer.getTextureID() + " streamID: " + streamID);
       result.success(renderer.getTextureID());
 
     } else if (call.method.equals("updatePlayViewRenderSize")) {
@@ -1199,13 +1200,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         return;
       }
 
+      mZegoLiveRoom.updatePlayView(streamID, null);
       boolean success = renderer.updateRenderSize(width, height);
-      if (success) {
-
-        mZegoLiveRoom.updatePlayView(streamID, null);
-        mZegoLiveRoom.updatePlayView(streamID, renderer.getSurface());
-      }
-
+      //if (success) {
+      mZegoLiveRoom.updatePlayView(streamID, renderer.getSurface());
+      //}
+      ZegoLogJNI.logNotice("[updatePlayRenderSize] view size: " + "(" + width + ", " + height + ")" + " textureID:" + renderer.getTextureID() + " streamID: " + streamID);
       result.success(success);
 
     } else if (call.method.equals("destroyPlayViewRenderer")) {
@@ -1230,7 +1230,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       ZegoViewRenderer renderer = mRenders.get(streamID);
 
       if(renderer != null) {
-
+        ZegoLogJNI.logNotice("[updatePlayRenderSize] textureID:" + renderer.getTextureID() + " streamID: " + streamID);
         //先停止渲染
         mZegoLiveRoom.updatePlayView(streamID, null);
 
