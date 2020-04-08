@@ -1,7 +1,7 @@
 #import "ZegoLiveRoomPlugin.h"
 #import "ZegoRendererController.h"
 #import "ZegoPlatformViewFactory.h"
-#import "ZegoAudioPlayerController.h"
+//#import "ZegoAudioPlayerController.h"
 #import "ZegoLog.h"
 
 typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
@@ -16,7 +16,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
 
 @interface ZegoLiveRoomPlugin()
-<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, FlutterStreamHandler>
+<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, /*ZegoAudioPlayerControllerDelegate,*/ FlutterStreamHandler>
 
 @property (nonatomic, strong) ZegoLiveRoomApi *zegoApi;
 @property (nonatomic, strong) ZegoMediaSideInfo * mediaSideInfoApi;
@@ -187,7 +187,7 @@ Byte toByte(NSString* c) {
     self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
     [self.mediaSideInfoApi setMediaSideDelegate:self];
     
-    [[ZegoAudioPlayerController instance] initObject];
+    //[[ZegoAudioPlayerController instance] initObject];
     
 }
 
@@ -916,7 +916,7 @@ Byte toByte(NSString* c) {
             [self.mediaSideInfoApi setMediaSideDelegate:nil];
             self.mediaSideInfoApi = nil;
             
-            [[ZegoAudioPlayerController instance] uninitObject];
+            //[[ZegoAudioPlayerController instance] uninitObject];
             
             [self.zegoApi setRoomDelegate:nil];
             [self.zegoApi setPublisherDelegate:nil];
@@ -2175,7 +2175,7 @@ Byte toByte(NSString* c) {
         result(@(success));
     }
     /* Audio Player */
-    else if([@"playAudioEffect" isEqualToString:call.method]) {
+    /*else if([@"playAudioEffect" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
@@ -2309,7 +2309,7 @@ Byte toByte(NSString* c) {
         }
         
         [[ZegoAudioPlayerController instance] getCurrentDuration:args result:result];
-    }
+    }*/
     /* External Video Filter */
     else if([@"enableExternalVideoFilterFactory" isEqualToString:call.method]) {
         bool enable = [self numberToBoolValue:args[@"enable"]];

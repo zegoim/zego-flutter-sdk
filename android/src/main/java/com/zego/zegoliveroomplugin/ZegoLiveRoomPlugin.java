@@ -63,11 +63,11 @@ import com.zego.zegoliveroom.entity.ZegoPlayStreamQuality;
 import com.zego.zegoliveroom.entity.ZegoUser;
 import com.zego.zegoliveroom.entity.ZegoUserState;
 import com.zego.zegoliveroomplugin.constants.ZegoEventType;
-import com.zego.zegoliveroomplugin.module.audioplayer.IZegoAudioPlayerControllerCallback;
-import com.zego.zegoliveroomplugin.module.audioplayer.ZegoAudioPlayerController;
+//import com.zego.zegoliveroomplugin.module.audioplayer.IZegoAudioPlayerControllerCallback;
+//import com.zego.zegoliveroomplugin.module.audioplayer.ZegoAudioPlayerController;
 
 /** ZegoLiveRoomPlugin */
-public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler, IZegoAudioPlayerControllerCallback {
+public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler/*, IZegoAudioPlayerControllerCallback*/ {
 
   /** Plugin registration. */
 
@@ -169,7 +169,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           mZegoMediaSideInfo = null;
         }
 
-        ZegoAudioPlayerController.getInstance().uninit();
+        //ZegoAudioPlayerController.getInstance().uninit();
 
         ZegoLogJNI.logNotice("[Flutter-Native] unInitSDK");
         //反初始化SDK里面会做回调的销毁处理
@@ -1465,7 +1465,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     }
     /* LiveRoom-AudioPlayer */
-    else if(call.method.equals("playAudioEffect")) {
+    /*else if(call.method.equals("playAudioEffect")) {
 
       if(mZegoLiveRoom == null) {
         throwSdkNotInitError(result, call.method);
@@ -1600,7 +1600,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       ZegoAudioPlayerController.getInstance().getCurrentDuration(call, result);
 
-    }
+    }*/
     /* LiveRoom-AudioIO*/
     else if(call.method.equals("enableAECWhenHeadsetDetected")) {
 
@@ -2597,7 +2597,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     if(!success)
       result.success(false);
 
-    ZegoAudioPlayerController.getInstance().init();
+    //ZegoAudioPlayerController.getInstance().init();
 
     mZegoMediaSideInfo = new ZegoMediaSideInfo();
       mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
@@ -2655,7 +2655,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
   }
 
-  @Override
+  /*@Override
   public void onAudioPlayEnd(int soundID) {
     if(mEventSink != null) {
 
@@ -2669,7 +2669,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       returnMap.put("method", method);
       mEventSink.success(returnMap);
     }
-  }
+  }*/
 
   private boolean numberToBoolValue(Boolean number) {
 
