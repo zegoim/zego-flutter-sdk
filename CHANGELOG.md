@@ -1,5 +1,11 @@
 # Change log
 
+## 1.2.9
+
+1. Add `sendBigRoomMessage`, `onRecvBigRoomMessage` to send and receive big room messages.
+
+2. Add `onUpdateOnlineCount` callback to received online user number updates.
+
 ## 1.2.8
 
 1. Update iOS native SDK to version `200415_195052_release-new-0-g18e243156_video_mediaplayer_bn3792_12`
@@ -14,7 +20,7 @@
 
 ## 1.2.6
 
-1. Added `setConfig` for setting additional configuration information
+1. Added `setConfig` for setting additional configuration information.
 
 2. Update iOS/Android native SDK to version `200316_163753_release-new-0-gb76c836cd_video_mediaplayer_bn3590_12`
 
@@ -22,7 +28,7 @@
 
 1. Update ios/android native sdk to version `200309_200607_release-new-0-g54f488a0c_video_mediaplayer_bn3549_12`
 
-2. Fix bug of external filter module on Android
+2. Fix bug of external filter module on Android.
 
 ## 1.2.4
 
@@ -42,9 +48,9 @@
 
 ## 1.2.0
 
-1. Add `seekTo` `getTotalDuration` `getCurrentDuration` in AudioPlayer
+1. Add `seekTo` `getTotalDuration` `getCurrentDuration` in AudioPlayer.
 
-2. Add `enableLoopback` `setLoopbackVolume` to listen captured voice
+2. Add `enableLoopback` `setLoopbackVolume` to listen captured voice.
 
 ## 1.1.9
 

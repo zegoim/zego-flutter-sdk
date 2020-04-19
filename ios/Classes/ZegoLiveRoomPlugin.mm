@@ -363,6 +363,40 @@ Byte toByte(NSString* c) {
     }
 }
 
+/// 用户总人数回调
+- (void)onUpdateOnlineCount:(int)onlineCount room:(NSString *)roomId {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onUpdateOnlineCount",
+                            @"onlineCount": @(onlineCount),
+                            @"roomID": roomId}
+               });
+    }
+}
+
+/// 大房间消息回调
+- (void)onRecvBigRoomMessage:(NSString *)roomId messageList:(NSArray<ZegoBigRoomMessage *> *)messageList {
+    FlutterEventSink sink = _eventSink;
+    if (sink) {
+        NSMutableArray *messageArray = [NSMutableArray array];
+        for (ZegoBigRoomMessage *message in messageList) {
+            [messageArray addObject:@{
+                @"content": message.content,
+                @"fromUserID": message.fromUserId,
+                @"fromUserName": message.fromUserName,
+                @"messageID": message.messageId
+            }];
+        }
+
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onRecvBigRoomMessage",
+                            @"roomID": roomId,
+                            @"messageList": messageArray}
+        });
+    }
+}
+
 //音视频引擎开始时回调
 - (void)onAVEngineStart
 {
@@ -1036,6 +1070,23 @@ Byte toByte(NSString* c) {
                 @"errorCode": @(errorCode),
                 @"roomID": roomId,
                 @"messageID": @(messageId)
+            });
+        }];
+        
+    } else if([@"sendBigRoomMessage" isEqualToString:call.method]) {
+    
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        NSString *content = args[@"content"];
+        
+        [self.zegoApi sendBigRoomMessage:content type:ZEGO_TEXT category:ZEGO_CHAT completion:^(int errorCode, NSString *roomId, NSString *messageId) {
+            result(@{
+                @"errorCode": @(errorCode),
+                @"roomID": roomId,
+                @"messageID": messageId
             });
         }];
 

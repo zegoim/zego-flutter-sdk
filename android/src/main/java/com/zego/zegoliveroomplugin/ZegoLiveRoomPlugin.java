@@ -48,6 +48,7 @@ import com.zego.zegoliveroom.callback.IZegoLivePublisherCallback;
 import com.zego.zegoliveroom.callback.IZegoLoginCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoResponseCallback;
 import com.zego.zegoliveroom.callback.IZegoRoomCallback;
+import com.zego.zegoliveroom.callback.im.IZegoBigRoomMessageCallback;
 import com.zego.zegoliveroom.callback.im.IZegoIMCallback;
 import com.zego.zegoliveroom.callback.im.IZegoRoomMessageCallback;
 import com.zego.zegoliveroom.constants.ZegoAvConfig;
@@ -288,9 +289,30 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       String content = call.argument("content");
 
-      mZegoLiveRoom.sendRoomMessage(ZegoIM.MessageType.File, ZegoIM.MessageCategory.Chat, content, new IZegoRoomMessageCallback() {
+      mZegoLiveRoom.sendRoomMessage(ZegoIM.MessageType.Text, ZegoIM.MessageCategory.Chat, content, new IZegoRoomMessageCallback() {
         @Override
         public void onSendRoomMessage(int errorCode, java.lang.String roomID, long messageID) {
+          HashMap<String, Object> mapResult = new HashMap<>();
+          mapResult.put("errorCode", errorCode);
+          mapResult.put("roomID", roomID);
+          mapResult.put("messageID", messageID);
+
+          result.success(mapResult);
+        }
+      });
+
+    } else if(call.method.equals("sendBigRoomMessage")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      String content = call.argument("content");
+
+      mZegoLiveRoom.sendBigRoomMessage(ZegoIM.MessageType.Text, ZegoIM.MessageCategory.Chat, content, new IZegoBigRoomMessageCallback() {
+        @Override
+        public void onSendBigRoomMessage(int errorCode, java.lang.String roomID, String messageID) {
           HashMap<String, Object> mapResult = new HashMap<>();
           mapResult.put("errorCode", errorCode);
           mapResult.put("roomID", roomID);
@@ -2159,13 +2181,47 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           }
 
           @Override
-          public void onUpdateOnlineCount(String s, int i) {
+          public void onUpdateOnlineCount(String roomID, int onlineCount) {
+            if(mEventSink != null) {
 
+              HashMap<String, Object> returnMap = new HashMap<>();
+              returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
+
+              HashMap<String, Object> method = new HashMap<>();
+              method.put("name", "onUpdateOnlineCount");
+              method.put("onlineCount", onlineCount);
+              method.put("roomID", roomID);
+
+              returnMap.put("method", method);
+              mEventSink.success(returnMap);
+            }
           }
 
           @Override
-          public void onRecvBigRoomMessage(String s, ZegoBigRoomMessage[] zegoBigRoomMessages) {
+          public void onRecvBigRoomMessage(String roomID, ZegoBigRoomMessage[] messageList) {
+            if(mEventSink != null) {
 
+              ArrayList<HashMap<String, Object>> messageArray = new ArrayList<>();
+              for (ZegoBigRoomMessage message : messageList) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("content", message.content);
+                map.put("fromUserID", message.fromUserID);
+                map.put("fromUserName", message.fromUserName);
+                map.put("messageID", message.messageID);
+                messageArray.add(map);
+              }
+
+              HashMap<String, Object> returnMap = new HashMap<>();
+              returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
+
+              HashMap<String, Object> method = new HashMap<>();
+              method.put("name", "onRecvBigRoomMessage");
+              method.put("roomID", roomID);
+              method.put("messageList", messageArray);
+
+              returnMap.put("method", method);
+              mEventSink.success(returnMap);
+            }
           }
       });
 

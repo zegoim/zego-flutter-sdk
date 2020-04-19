@@ -185,6 +185,21 @@ class ZegoLiveRoomPlugin {
     return result;
   }
 
+  ///发送大房间消息（不可靠消息)
+  ///
+  ///@param content 房间消息内容，不超过 512 字节
+  ///@return 房间消息发送结果
+  ///@discussion 用于高并发的场景，消息可能被丢弃，当高并发达到极限时会根据策略丢弃部分消息。在登录房间后调用该 API 才有效。调用该 API 后，房间的其他用户可以通过回调 [_onRecvBigRoomMessage] 收到该条消息。
+  static Future<ZegoSendRoomMessageResult> sendBigRoomMessage(String content) async {
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('sendBigRoomMessage', {
+      'content': content
+    });
+
+    ZegoSendRoomMessageResult result = new ZegoSendRoomMessageResult(mapResult['errorCode'], mapResult['roomID'], mapResult['messageID']);
+
+    return result;
+  }
+
   ///发送自定义信令
   ///
   ///@param memberList 发送对象列表
@@ -280,7 +295,9 @@ class ZegoLiveRoomPlugin {
   ///@param onTempBroken 设置接收 server 连接中断 回调，参考 [_onTempBroken] 定义
   ///@param onReconnect 设置接收 server 重连成功 回调，参考 [_onReconnect] 定义
   ///@param onDisconnect 设置接收 server 断开 回调，参考 [_onDisconnect] 定义
+  ///@param onUpdateOnlineCount 设置接收 收到在线人数更新 回调，参考 [_onUpdateOnlineCount] 定义
   ///@param onRecvRoomMessage 设置接收 收到房间消息 回调，参考 [_onRecvRoomMessage] 定义
+  ///@param onRecvBigRoomMessage 设置接收 收到大房间消息 回调，参考 [_onRecvBigRoomMessage] 定义
   ///@param onReceiveCustomCommand 设置接收 收到自定义消息 回调，参考 [_onReceiveCustomCommand] 定义
   ///@param onUserUpdate 设置接收 房间成员更新 回调，参考 [_onUserUpdate] 定义
   ///@param onLiveEvent 设置接收 直播事件 回调，参考 [_onLiveEvent] 定义
@@ -294,7 +311,9 @@ class ZegoLiveRoomPlugin {
     Function(int errorCode, String roomID) onReconnect,
     Function(int errorCode, String roomID) onDisconnect,
     Function(int reason, String roomID, String customReason) onKickOut,
+    Function(int onlineCount, String roomID) onUpdateOnlineCount,
     Function(String roomID, List<ZegoRoomMessage> messageList) onRecvRoomMessage,
+    Function(String roomID, List<ZegoBigRoomMessage> messageList) onRecvBigRoomMessage,
     Function(String fromUserID, String fromUserName, String content, String roomID) onReceiveCustomCommand,
     Function(List<ZegoUserInfo> userList, int updateType) onUserUpdate,
     Function(int event, Map<String, String> info) onLiveEvent,
@@ -311,7 +330,9 @@ class ZegoLiveRoomPlugin {
     _onReconnect = onReconnect;
     _onDisconnect = onDisconnect;
     _onKickOut = onKickOut;
+    _onUpdateOnlineCount = onUpdateOnlineCount;
     _onRecvRoomMessage = onRecvRoomMessage;
+    _onRecvBigRoomMessage = onRecvBigRoomMessage;
     _onReceiveCustomCommand = onReceiveCustomCommand;
     _onUserUpdate = onUserUpdate;
     _onLiveEvent = onLiveEvent;
@@ -340,7 +361,9 @@ class ZegoLiveRoomPlugin {
     _onReconnect = null;
     _onDisconnect = null;
     _onKickOut = null;
+    _onUpdateOnlineCount = null;
     _onRecvRoomMessage = null;
+    _onRecvBigRoomMessage = null;
     _onReceiveCustomCommand = null;
     _onUserUpdate = null;
     _onLiveEvent = null;
@@ -406,6 +429,14 @@ class ZegoLiveRoomPlugin {
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onKickOut 对象参数之后才能收到该回调
   static void Function(int reason, String roomID, String customReason) _onKickOut;
 
+  ///收到在线人数更新
+  ///
+  ///@param onlineCount 在线人数
+  ///@param roomID 房间 ID
+  ///@discussion 默认为 30s 回调一次，开发者可联系即构技术支持，自定义回调频率。
+  ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 _onUpdateOnlineCount 对象参数之后才能收到该回调
+  static void Function(int onlineCount, String roomID) _onUpdateOnlineCount;
+
   ///收到房间消息
   ///
   ///@param roomID 房间 ID
@@ -413,6 +444,14 @@ class ZegoLiveRoomPlugin {
   ///@discussion 调用 [sendRoomMessage] 发送房间消息后，会触发房间内其他用户收到该回调
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onRecvRoomMessage 对象参数之后才能收到该回调
   static void Function(String roomID, List<ZegoRoomMessage> messageList) _onRecvRoomMessage;
+
+  ///收到大房间消息
+  ///
+  ///@param roomID 房间 ID
+  ///@param messageList 大房间消息列表
+  ///@discussion 调用 [sendBigRoomMessage] 发送大房间消息后，会触发房间内其他用户收到该回调
+  ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 _onRecvBigRoomMessage 对象参数之后才能收到该回调
+  static void Function(String roomID, List<ZegoBigRoomMessage> messageList) _onRecvBigRoomMessage;
 
   ///收到自定义消息
   ///
@@ -580,6 +619,15 @@ class ZegoLiveRoomPlugin {
 
         }
         break;
+      case 'onUpdateOnlineCount':
+        if(_onUpdateOnlineCount != null) {
+
+          int onlineCount = args['onlineCount'];
+          String roomID = args['roomID'];
+
+          _onUpdateOnlineCount(onlineCount, roomID);
+        }
+        break;
       case 'onRecvRoomMessage':
         if(_onRecvRoomMessage != null) {
           String roomID = args['roomID'];
@@ -591,6 +639,19 @@ class ZegoLiveRoomPlugin {
           }
 
           _onRecvRoomMessage(roomID, messageList);
+        }
+        break;
+      case 'onRecvBigRoomMessage':
+        if(_onRecvBigRoomMessage != null) {
+          String roomID = args['roomID'];
+          List<ZegoBigRoomMessage> messageList = [];
+          List<dynamic> objList = args['messageList'];
+          for (Map<dynamic, dynamic> obj in objList) {
+            ZegoBigRoomMessage message = new ZegoBigRoomMessage(obj['content'], obj['fromUserID'], obj['fromUserName'], obj['messageID']);
+            messageList.add(message);
+          }
+
+          _onRecvBigRoomMessage(roomID, messageList);
         }
         break;
       case 'onReceiveCustomCommand':
