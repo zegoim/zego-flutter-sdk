@@ -33,7 +33,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  zegoliveroom_plugin: ^1.2.9
+  zegoliveroom_plugin: ^1.2.10
 ```
 
 - ### Depends on git
@@ -112,7 +112,7 @@ After adding permissions, it will be as shown:
 
 ![Add iOS Privacy Done](https://storage.zego.im/sdk-doc/Pics/iOS/ZegoExpressEngine/Common/privacy-description-done.png)
 
-> If you use Platform View, you need to add an additional description for iOS, refer to [FAQ-3](#8️⃣-FAQ)
+> If you use Platform View, you need to add an additional description for iOS, refer to [FAQ-3](#3-ios-uses-platform-view-error-verbose-2platform_view_layercc28-trying-to-embed-a-platform-view-but-the-paintcontext-does-not-support-embedding)
 
 ## 6️⃣ Init SDK
 

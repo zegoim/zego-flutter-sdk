@@ -33,7 +33,7 @@ dependencies:
   flutter:
   sdk: flutter
 
-  zegoliveroom_plugin: ^1.2.9
+  zegoliveroom_plugin: ^1.2.10
 ```
 
 - ### 以 git 形式依赖
@@ -112,7 +112,7 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
 ![Add iOS Privacy Done](https://storage.zego.im/sdk-doc/Pics/iOS/ZegoExpressEngine/Common/privacy-description-done.png)
 
-> 如果需要使用 Platform View，iOS 端还需额外添加一行描述，参考 [常见问题-3](#8️⃣-常见问题)
+> 如果需要使用 Platform View，iOS 端还需额外添加一行描述，参考 [常见问题-3](#3-ios-使用-platform-view-时报错verbose-2platform_view_layercc28-trying-to-embed-a-platform-view-but-the-paintcontext-does-not-support-embedding)
 
 ## 6️⃣ 初始化 SDK
 

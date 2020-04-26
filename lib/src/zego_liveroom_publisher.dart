@@ -490,6 +490,8 @@ class ZegoLiveRoomPublisherPlugin {
     final bool success = await _channel.invokeMethod('setAudioChannelCount', {
       'channels': channels
     });
+
+    return success;
   }
 
   ///回声消除开关
@@ -617,6 +619,28 @@ class ZegoLiveRoomPublisherPlugin {
 
     ZegoStreamRelayCDNResult result = new ZegoStreamRelayCDNResult(mapResult['errorCode'], mapResult['streamID']);
     return result;
+  }
+
+  ///设置摄像头变焦倍数
+  ///
+  ///@param factor 变焦倍数，最小值为1.0，最大值不能超过 getCamMaxZoomFactor 的返回值
+  ///@return true 成功，false 失败
+  ///@discussion 每次摄像头重新启动采集，设置都会失效，需要重新设置.
+  static Future<bool> setCamZoomFactor(double factor) async {
+    final success = await _channel.invokeMethod('setCamZoomFactor', {
+      'factor': factor
+    });
+
+    return success;
+  }
+
+  ///获取摄像头最大变焦倍数
+  ///
+  ///@return 返回最大变焦倍数，1.0为不支持变焦
+  static Future<double> getCamMaxZoomFactor(double factor) async {
+    final double factor = await _channel.invokeMethod('getCamMaxZoomFactor');
+
+    return factor;
   }
 
   ///设置回调对象

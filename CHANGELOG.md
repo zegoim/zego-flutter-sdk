@@ -1,5 +1,9 @@
 # Change log
 
+## 1.2.10
+
+- Add `setCamZoomFactor`, `getCamMaxZoomFactor` to adjust the camera zoom factor.
+
 ## 1.2.9
 
 1. Add `sendBigRoomMessage`, `onRecvBigRoomMessage` to send and receive big room messages.

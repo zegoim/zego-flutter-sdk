@@ -533,8 +533,6 @@ class ZegoDeviceStatus {
 
 }
 
-
-
 class ZegoPublishStreamQuality {
 
   /// 视频帧率(采集)

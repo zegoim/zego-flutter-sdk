@@ -25,6 +25,9 @@ import com.zego.zegoavkit2.ZegoStreamExtraPlayInfo;
 import com.zego.zegoavkit2.audioprocessing.ZegoAudioProcessing;
 import com.zego.zegoavkit2.audioprocessing.ZegoAudioReverbMode;
 import com.zego.zegoavkit2.audioprocessing.ZegoAudioReverbParam;
+import com.zego.zegoavkit2.camera.ZegoCamera;
+import com.zego.zegoavkit2.camera.ZegoCameraExposureMode;
+import com.zego.zegoavkit2.camera.ZegoCameraFocusMode;
 import com.zego.zegoavkit2.entities.ZegoStreamRelayCDNInfo;
 import com.zego.zegoavkit2.error.ZegoError;
 import com.zego.zegoavkit2.mediaside.IZegoMediaSideCallback;
@@ -34,6 +37,7 @@ import com.zego.zegoavkit2.soundlevel.ZegoSoundLevelInfo;
 import com.zego.zegoavkit2.soundlevel.ZegoSoundLevelMonitor;
 import com.zego.zegoavkit2.videofilter.ZegoExternalVideoFilter;
 import com.zego.zegoavkit2.videofilter.ZegoVideoFilterFactory;
+import com.zego.zegoavkit2.ZegoConstants.PublishChannelIndex;
 import com.zego.zegoliveroom.ZegoLiveRoom;
 import com.zego.zegoliveroom.callback.IZegoAVEngineCallback;
 import com.zego.zegoliveroom.callback.IZegoCustomCommandCallback;
@@ -1014,6 +1018,31 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
       mZegoLiveRoom.enableDTX(enable);
       result.success(null);
+
+    } else if(call.method.equals("setCamZoomFactor")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      float factor = numberToFloatValue((Number) call.argument("factor"));
+
+      boolean success = ZegoCamera.setCamZoomFactor(factor, PublishChannelIndex.MAIN);
+
+      result.success(success);
+
+    } else if(call.method.equals("getCamMaxZoomFactor")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      float factor = ZegoCamera.getCamMaxZoomFactor(PublishChannelIndex.MAIN);
+
+      result.success(factor);
+
     }
     /* LiveRoom-Player */
     else if(call.method.equals("setViewMode")) {

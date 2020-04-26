@@ -896,6 +896,7 @@ Byte toByte(NSString* c) {
     NSDictionary *args = call.arguments;
     
     /* LiveRoom */
+#pragma mark LiveRoom
     if ([@"getSdkVersion" isEqualToString:call.method]) {
         
         result([ZegoLiveRoomApi version]);
@@ -1130,6 +1131,7 @@ Byte toByte(NSString* c) {
        
     }
     /* LiveRoom-Publisher */
+#pragma mark LiveRoom-Publisher
     else if([@"setLatencyMode" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
@@ -1746,9 +1748,33 @@ Byte toByte(NSString* c) {
         [self.zegoApi enableDTX:enable];
         result(nil);
 
-    }
+    } else if ([@"setCamZoomFactor" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+    
+        NSNumber *factor = args[@"factor"];
+
+        BOOL success = [ZegoCamera setCamZoomFactor:factor.floatValue channelIndex:ZEGOAPI_CHN_MAIN];
+
+        result(@(success));
+        
+    } else if ([@"getCamMaxZoomFactor" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        float factor = [ZegoCamera getCamMaxZoomFactor:ZEGOAPI_CHN_MAIN];
+
+        result(@(factor));
+
     /* LiveRoom-Player */
-    else if([@"startPlayingStream" isEqualToString:call.method]) {
+#pragma mark LiveRoom-Player
+    } else if([@"startPlayingStream" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
@@ -2053,6 +2079,7 @@ Byte toByte(NSString* c) {
         
     }
     /* Media Side Info */
+#pragma mark LiveRoom-MediaSideInfo
     else if([@"setMediaSideFlags" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil || self.mediaSideInfoApi == nil) {
@@ -2081,6 +2108,7 @@ Byte toByte(NSString* c) {
 
     }
     /* LiveRoom-AudioIO*/
+#pragma mark LiveRoom-AudioIO
     else if([@"enableAECWhenHeadsetDetected" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
@@ -2174,6 +2202,7 @@ Byte toByte(NSString* c) {
         result(nil);
     }
     /* SoundLevel */
+#pragma mark LiveRoom-SoundLevel
     else if([@"registerSoundLevelCallback" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
@@ -2226,6 +2255,7 @@ Byte toByte(NSString* c) {
         result(@(success));
     }
     /* Audio Player */
+#pragma mark LiveRoom-AudioPlayer
     else if([@"playAudioEffect" isEqualToString:call.method]) {
         
         if(self.zegoApi == nil) {
@@ -2362,6 +2392,7 @@ Byte toByte(NSString* c) {
         [[ZegoAudioPlayerController instance] getCurrentDuration:args result:result];
     }
     /* External Video Filter */
+#pragma mark LiveRoom-ExternalVideoFilter
     else if([@"enableExternalVideoFilterFactory" isEqualToString:call.method]) {
         bool enable = [self numberToBoolValue:args[@"enable"]];
         // 仅在提前预设过工厂对象时，此接口才有效
@@ -2378,6 +2409,7 @@ Byte toByte(NSString* c) {
         result(nil);
     }
     /* Error Code */
+#pragma mark Error Code
     else if([@"isInitSDKError" isEqualToString:call.method]) {
         
         int error = [self numberToIntValue:args[@"error"]];
