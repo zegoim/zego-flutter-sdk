@@ -1,5 +1,11 @@
 # Change log
 
+## 1.2.11
+
+1. Update iOS native SDK to version `200424_175024_release-new-0-gb8ff47533_video_mediaplayer_bn3845_12`
+
+2. Update Android native SDK to version `200424_175024_release-new-0-gb8ff47533_video_mediaplayer_bn3845_12`
+
 ## 1.2.10
 
 - Add `setCamZoomFactor`, `getCamMaxZoomFactor` to adjust the camera zoom factor.
