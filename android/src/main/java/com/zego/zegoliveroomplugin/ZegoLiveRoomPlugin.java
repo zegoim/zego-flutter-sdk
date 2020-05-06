@@ -70,9 +70,11 @@ import com.zego.zegoliveroom.entity.ZegoUserState;
 import com.zego.zegoliveroomplugin.constants.ZegoEventType;
 import com.zego.zegoliveroomplugin.module.audioplayer.IZegoAudioPlayerControllerCallback;
 import com.zego.zegoliveroomplugin.module.audioplayer.ZegoAudioPlayerController;
+import com.zego.zegoliveroomplugin.module.mediaplayer.IZegoMediaPlayerControllerCallback;
+import com.zego.zegoliveroomplugin.module.mediaplayer.ZegoMediaPlayerController;
 
 /** ZegoLiveRoomPlugin */
-public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler, IZegoAudioPlayerControllerCallback {
+public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler, IZegoAudioPlayerControllerCallback, IZegoMediaPlayerControllerCallback {
 
   /** Plugin registration. */
 
@@ -175,6 +177,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         }
 
         ZegoAudioPlayerController.getInstance().uninit();
+        ZegoMediaPlayerController.getInstance().uninit();
 
         ZegoLogJNI.logNotice("[Flutter-Native] unInitSDK");
         //反初始化SDK里面会做回调的销毁处理
@@ -1652,6 +1655,134 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       ZegoAudioPlayerController.getInstance().getCurrentDuration(call, result);
 
     }
+    /* LiveRoom-MediaPlayer */
+    else if(call.method.equals("mpStart")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        String path = call.argument("path");
+        boolean isRepeat = numberToBoolValue((Boolean) call.argument("repeat"));
+        boolean isAsset = numberToBoolValue((Boolean) call.argument("asset"));
+        ZegoMediaPlayerController.getInstance().start(path, isRepeat, isAsset, this.registrar, result);
+
+    } else if(call.method.equals("mpStop")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        ZegoMediaPlayerController.getInstance().stop(result);
+
+    } else if(call.method.equals("mpPause")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        ZegoMediaPlayerController.getInstance().pause(result);
+
+    } else if(call.method.equals("mpResume")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        ZegoMediaPlayerController.getInstance().resume(result);
+
+    } else if(call.method.equals("mpSeekTo")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        long timestamp = numberToLongValue((Number) call.argument("timestamp"));
+        ZegoMediaPlayerController.getInstance().seekTo(timestamp, result);
+
+    } else if(call.method.equals("mpGetDuration")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        ZegoMediaPlayerController.getInstance().getTotalDuration(result);
+
+    } else if(call.method.equals("mpGetCurrentDuration")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        ZegoMediaPlayerController.getInstance().getCurrentDuration(result);
+
+    } else if(call.method.equals("mpMuteLocal")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        boolean mute = numberToBoolValue((Boolean) call.argument("mute"));
+        ZegoMediaPlayerController.getInstance().muteLocal(mute, result);
+
+    } else if(call.method.equals("mpLoad")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        String path = call.argument("path");
+        boolean isAsset = numberToBoolValue((Boolean) call.argument("asset"));
+        ZegoMediaPlayerController.getInstance().preload(path, isAsset, registrar, result);
+
+    } else if(call.method.equals("mpSetVolume")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        int vol = numberToIntValue((Number) call.argument("volume"));
+        ZegoMediaPlayerController.getInstance().setVolume(vol, result);
+
+    } else if(call.method.equals("mpSetPlayerType")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        int type = numberToIntValue((Number) call.argument("type"));
+        ZegoMediaPlayerController.getInstance().setPlayerType(type, result);
+
+    } else if(call.method.equals("mpEnableRepeatMode")) {
+
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+        ZegoMediaPlayerController.getInstance().enableRepeatMode(enable, result);
+
+    } else if(call.method.equals("mpSetProcessInterval")) {
+        if(mZegoLiveRoom == null) {
+          throwSdkNotInitError(result, call.method);
+          return;
+        }
+
+        long interval = numberToLongValue((Number) call.argument("interval"));
+        ZegoMediaPlayerController.getInstance().setProcessInterval(interval, result);
+
+    } else if(call.method.equals("registerMediaPlayerCallback")) {
+
+        ZegoMediaPlayerController.getInstance().setMediaPlayerEventCallback(this);
+        result.success(null);
+
+    } else if(call.method.equals("unregisterMediaPlayerCallback")) {
+
+        ZegoMediaPlayerController.getInstance().setMediaPlayerEventCallback(null);
+        result.success(null);
+    }
+
     /* LiveRoom-AudioIO*/
     else if(call.method.equals("enableAECWhenHeadsetDetected")) {
 
@@ -2683,6 +2814,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       result.success(false);
 
     ZegoAudioPlayerController.getInstance().init();
+    ZegoMediaPlayerController.getInstance().init();
 
     mZegoMediaSideInfo = new ZegoMediaSideInfo();
       mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
@@ -2753,6 +2885,90 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       returnMap.put("method", method);
       mEventSink.success(returnMap);
+    }
+  }
+
+  @Override
+  public void onPlayEnd() {
+    if(mEventSink != null) {
+
+      HashMap<String, Object> returnMap = new HashMap<>();
+      returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+      HashMap<String, Object> method = new HashMap<>();
+      method.put("name", "onPlayEnd");
+
+      returnMap.put("method", method);
+      mEventSink.success(returnMap);
+    }
+  }
+
+  @Override
+  public void onPlayError(int errorCode) {
+    if(mEventSink != null) {
+
+      HashMap<String, Object> returnMap = new HashMap<>();
+      returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+      HashMap<String, Object> method = new HashMap<>();
+      method.put("name", "onPlayError");
+      method.put("errorCode", errorCode);
+
+      returnMap.put("method", method);
+      mEventSink.success(returnMap);
+    }
+  }
+
+  @Override
+  public void onBufferBegin() {
+    if(mEventSink != null) {
+
+      HashMap<String, Object> returnMap = new HashMap<>();
+      returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+      HashMap<String, Object> method = new HashMap<>();
+      method.put("name", "onBufferBegin");
+
+      returnMap.put("method", method);
+      mEventSink.success(returnMap);
+    }
+  }
+
+  @Override
+  public void onBufferEnd() {
+    if(mEventSink != null) {
+
+      HashMap<String, Object> returnMap = new HashMap<>();
+      returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+      HashMap<String, Object> method = new HashMap<>();
+      method.put("name", "onBufferEnd");
+
+      returnMap.put("method", method);
+      mEventSink.success(returnMap);
+    }
+  }
+
+  @Override
+  public void onProcessInterval(long timestamp) {
+    if(mEventSink != null) {
+
+      final HashMap<String, Object> returnMap = new HashMap<>();
+      returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+      HashMap<String, Object> method = new HashMap<>();
+      method.put("name", "onProcessInterval");
+      method.put("timestamp", timestamp);
+
+      returnMap.put("method", method);
+      Handler mainHandler = new Handler(Looper.getMainLooper());
+      mainHandler.post(new Runnable() {
+        @Override
+        public void run() {
+          mEventSink.success(returnMap);
+        }
+      });
+
     }
   }
 

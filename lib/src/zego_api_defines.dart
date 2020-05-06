@@ -883,3 +883,17 @@ class ZegoAudioReverbParam {
     };
   }
 }
+
+class ZegoMediaPlayerType {
+  static const int ZEGO_MEDIA_PLAYER_TYPE_ONLY_PLAY = 0;
+  static const int ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM = 1;
+}
+
+class ZegoMediaplayerSeekResult {
+  // Seek 错误码
+  final int errorCode;
+  // 实际 Seek 的时间戳
+  final int timestamp;
+
+  const ZegoMediaplayerSeekResult(this.errorCode, this.timestamp);
+}

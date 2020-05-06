@@ -9,3 +9,4 @@ export 'src/zego_liveroom_player.dart';
 export 'src/zego_media_side_info.dart';
 export 'src/zego_sound_level.dart';
 export 'src/zego_audioplayer.dart';
+export 'src/zego_mediaplayer.dart';

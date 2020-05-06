@@ -2,6 +2,7 @@
 #import "ZegoRendererController.h"
 #import "ZegoPlatformViewFactory.h"
 #import "ZegoAudioPlayerController.h"
+#import "ZegoMediaplayerController.h"
 #import "ZegoLog.h"
 
 typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
@@ -10,13 +11,14 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     TYPE_PLAY_EVENT,
     TYPE_MEDIA_SIDE_INFO_EVENT,
     TYPE_SOUND_LEVEL_EVENT,
+    TYPE_MEDIA_PLAYER_EVENT,
     TYPE_AUDIO_PLAYER_EVENT = 10
 };
 
 static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
 
 @interface ZegoLiveRoomPlugin()
-<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, FlutterStreamHandler>
+<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, ZegoMediaPlayerControllerDelegate, FlutterStreamHandler>
 
 @property (nonatomic, strong) ZegoLiveRoomApi *zegoApi;
 @property (nonatomic, strong) ZegoMediaSideInfo * mediaSideInfoApi;
@@ -70,6 +72,11 @@ static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
 - (unsigned int)numberToUintValue:(NSNumber *)number {
 
     return [number isKindOfClass:[NSNull class]] ? 0 : [number unsignedIntValue];
+}
+
+- (long)numberToLongValue:(NSNumber *)number {
+    
+    return [number isKindOfClass:[NSNull class]] ? 0 : [number longValue];
 }
 
 - (unsigned long)numberToULongValue:(NSNumber *)number {
@@ -188,6 +195,7 @@ Byte toByte(NSString* c) {
     [self.mediaSideInfoApi setMediaSideDelegate:self];
 
     [[ZegoAudioPlayerController instance] initObject];
+    [[ZegoMediaPlayerController instance] initObject];
 
 }
 
@@ -811,6 +819,54 @@ Byte toByte(NSString* c) {
     }
 }
 
+#pragma mark - ZegoMediaPlayerControllerDelegate
+- (void)onPlayEnd {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onPlayEnd"}
+             });
+    }
+}
+
+- (void)onPlayError:(int)errorCode {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onPlayError",
+                            @"errorCode": @(errorCode)}
+             });
+    }
+}
+
+- (void)onBufferBegin {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onBufferBegin"}
+             });
+    }
+}
+
+- (void)onBufferEnd {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onBufferEnd"}
+             });
+    }
+}
+
+- (void)onProcessInterval:(long)timestamp {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onProcessInterval",
+                            @"timestamp": @(timestamp)}
+             });
+    }
+}
+
 #pragma mark - ZegoLiveApiRenderDelegate
 
 - (CVPixelBufferRef)onCreateInputBufferWithWidth:(int)width height:(int)height cvPixelFormatType:(OSType)cvPixelFormatType streamID:(NSString *)streamID
@@ -952,6 +1008,7 @@ Byte toByte(NSString* c) {
             self.mediaSideInfoApi = nil;
 
             [[ZegoAudioPlayerController instance] uninitObject];
+            [[ZegoMediaPlayerController instance] uninitObject];
 
             [self.zegoApi setRoomDelegate:nil];
             [self.zegoApi setPublisherDelegate:nil];
@@ -2390,6 +2447,158 @@ Byte toByte(NSString* c) {
         }
 
         [[ZegoAudioPlayerController instance] getCurrentDuration:args result:result];
+    }
+    /* MediaPlayer */
+    else if([@"mpStart" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        NSString *path = args[@"path"];
+        BOOL repeat = [self numberToBoolValue:args[@"repeat"]];
+        BOOL isAsset = [self numberToBoolValue:args[@"asset"]];
+        [[ZegoMediaPlayerController instance] start:path repeat:repeat asset:isAsset reg:self.registrar result:result];
+        
+        //result(nil);
+        
+    } else if([@"mpStop" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoMediaPlayerController instance] stop:result];
+        //result(nil);
+        
+    } else if([@"mpPause" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoMediaPlayerController instance] pause:result];
+        //result(nil);
+        
+    } else if([@"mpResume" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [[ZegoMediaPlayerController instance] resume:result];
+        //result(nil);
+        
+    } else if([@"mpSeekTo" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        long millsec = [self numberToLongValue:args[@"timestamp"]];
+        [[ZegoMediaPlayerController instance] seekTo:millsec result:result];
+        //result(nil);
+        
+    } else if([@"mpGetDuration" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        result(@([[ZegoMediaPlayerController instance] getDuration]));
+        
+    } else if([@"mpGetCurrentDuration" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        result(@([[ZegoMediaPlayerController instance] getCurrentDuration]));
+        
+    } else if([@"mpMuteLocal" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        BOOL mute = [self numberToBoolValue:args[@"mute"]];
+        [[ZegoMediaPlayerController instance] muteLocal:mute];
+        result(nil);
+        
+    } else if([@"mpLoad" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        NSString *path = args[@"path"];
+        BOOL isAsset = [self numberToBoolValue:args[@"asset"]];
+        [[ZegoMediaPlayerController instance] load:path asset: isAsset reg:self.registrar result:result];
+        //result(nil);
+        
+        
+    } else if([@"mpSetVolume" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int vol = [self numberToIntValue:args[@"volume"]];
+        [[ZegoMediaPlayerController instance] setVolume:vol];
+        result(nil);
+        
+    } else if([@"mpSetPlayerType" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int type = [self numberToIntValue:args[@"type"]];
+        [[ZegoMediaPlayerController instance] setPlayerType:(MediaPlayerType)type];
+        result(nil);
+        
+    } else if([@"mpEnableRepeatMode" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        BOOL enable = [self numberToBoolValue:args[@"enable"]];
+        [[ZegoMediaPlayerController instance] enableRepeatMode:enable];
+        result(nil);
+        
+    } else if([@"mpSetProcessInterval" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        unsigned long interval = [self numberToULongValue:args[@"interval"]];
+        [[ZegoMediaPlayerController instance] setProcessInterval:interval];
+        result(nil);
+        
+    } else if([@"registerMediaPlayerCallback" isEqualToString:call.method]) {
+
+        [[ZegoMediaPlayerController instance] setDelegate:self];
+        result(nil);
+    }
+    else if([@"unregisterMediaPlayerCallback" isEqualToString:call.method]) {
+        
+        [[ZegoMediaPlayerController instance] setDelegate:nil];
+        result(nil);
     }
     /* External Video Filter */
 #pragma mark LiveRoom-ExternalVideoFilter

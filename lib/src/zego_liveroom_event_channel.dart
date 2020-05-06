@@ -8,6 +8,7 @@ class ZegoEventType {
   static const int TYPE_PLAY_EVENT = 2;
   static const int TYPE_MEDIA_SIDE_INFO_EVENT = 3;
   static const int TYPE_SOUND_LEVEL_EVENT = 4;
+  static const int TYPE_MEDIA_PLAYER_EVENT = 5;
   static const int TYPE_AUDIO_PLAYER_EVENT = 10;
 }
 
@@ -67,4 +68,11 @@ class ZegoLiveRoomEventChannel {
         .map<dynamic>((Map event) => event['method']);
   }
 
+  /// 用于接收native层事件流，开发者无需关注
+  static Stream<dynamic> listenMediaPlayerEvent() {
+    return _receivedEvents
+        .map<Map>((dynamic event) => event)
+        .where((Map event) => event['type'] == ZegoEventType.TYPE_MEDIA_PLAYER_EVENT)
+        .map<dynamic>((Map event) => event['method']);
+  }
 }
