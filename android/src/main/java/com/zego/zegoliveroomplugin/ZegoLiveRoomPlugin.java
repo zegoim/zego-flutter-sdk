@@ -41,6 +41,7 @@ import com.zego.zegoavkit2.ZegoConstants.PublishChannelIndex;
 import com.zego.zegoliveroom.ZegoLiveRoom;
 import com.zego.zegoliveroom.callback.IZegoAVEngineCallback;
 import com.zego.zegoliveroom.callback.IZegoCustomCommandCallback;
+import com.zego.zegoliveroom.callback.IZegoDeviceEventCallback;
 import com.zego.zegoliveroom.callback.IZegoEndJoinLiveCallback;
 import com.zego.zegoliveroom.callback.IZegoInitSDKCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoLiveEventCallback;
@@ -60,7 +61,6 @@ import com.zego.zegoliveroom.constants.ZegoConstants;
 import com.zego.zegoliveroom.constants.ZegoIM;
 import com.zego.zegoliveroom.entity.AuxData;
 import com.zego.zegoliveroom.entity.ZegoBigRoomMessage;
-import com.zego.zegoliveroom.entity.ZegoConversationMessage;
 import com.zego.zegoliveroom.entity.ZegoRoomMessage;
 import com.zego.zegoliveroom.entity.ZegoStreamInfo;
 import com.zego.zegoliveroom.entity.ZegoPublishStreamQuality;
@@ -91,6 +91,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
   private ZegoMediaSideInfo mZegoMediaSideInfo;
   private HashMap<String, ZegoViewRenderer> mRenders;
   private boolean mIsEnablePlatformView;
+
+  private int mLogSize = 0;
+  private String mLogPath = null;
 
   private ZegoLiveRoomPlugin(Registrar registrar) {
     this.registrar = registrar;
@@ -156,7 +159,13 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       String path = com.zego.zegoavkit2.utils.ZegoLogUtil.getLogPath(mContext);
       result.success(path);
 
-    } else if (call.method.equals("initSDK")) {
+    } else if (call.method.equals("setLogConfig")) {
+
+      mLogPath = call.argument("logPath");
+      mLogSize = numberToIntValue((Number) call.argument("logSize"));
+      result.success(null);
+
+    }else if (call.method.equals("initSDK")) {
 
       long appID = numberToLongValue((Number) call.argument("appID"));
       String strAppSign = call.argument("appSign");
@@ -1772,6 +1781,45 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         long interval = numberToLongValue((Number) call.argument("interval"));
         ZegoMediaPlayerController.getInstance().setProcessInterval(interval, result);
 
+    } else if(call.method.equals("setOnlineResourceCache")) {
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      int time = numberToIntValue((Number) call.argument("time"));
+      int size = numberToIntValue((Number) call.argument("size"));
+      ZegoMediaPlayerController.getInstance().setOnlineResourceCache(time, size);
+      result.success(null);
+
+    } else if(call.method.equals("getOnlineResourceCache")) {
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      ZegoMediaPlayerController.getInstance().getOnlineResourceCache(result);
+
+    } else if(call.method.equals("setBufferThreshold")) {
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      int threshold = numberToIntValue((Number) call.argument("threshold"));
+      ZegoMediaPlayerController.getInstance().setBufferThreshold(threshold);
+      result.success(null);
+
+    } else if(call.method.equals("setLoadResourceTimeout")) {
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      int timeout = numberToIntValue((Number) call.argument("timeout"));
+      ZegoMediaPlayerController.getInstance().setLoadResourceTimeout(timeout);
+      result.success(null);
+
     } else if(call.method.equals("registerMediaPlayerCallback")) {
 
         ZegoMediaPlayerController.getInstance().setMediaPlayerEventCallback(this);
@@ -2118,7 +2166,22 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       mZegoLiveRoom = new ZegoLiveRoom();
 
     //调用其他API前必须调用该函数
-    ZegoLiveRoom.setSDKContext(new ZegoLiveRoom.SDKContext() {
+    ZegoLiveRoom.setSDKContext(new ZegoLiveRoom.SDKContextEx() {
+
+      @Override
+      public long getLogFileSize() {
+        return mLogSize;
+      }
+
+      @Override
+      public String getSubLogFolder() {
+        return null;
+      }
+
+      @Override
+      public com.zego.zegoliveroom.callback.IZegoLogHookCallback getLogHookCallback() {
+        return null;
+      }
 
       @Override
       public Application getAppContext() {
@@ -2127,13 +2190,15 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       @Override
       public String getLogPath() {
-        return null;
+        return mLogPath;
       }
 
       @Override
       public String getSoFullPath() {
         return null;
       }
+
+
     });
 
     ZegoLogJNI.logNotice("[Flutter-Native] enter init sdk, app id: " + appID);
@@ -2283,6 +2348,24 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   mEventSink.success(returnMap);
               }
           }
+      });
+
+      mZegoLiveRoom.setZegoDeviceEventCallback(new IZegoDeviceEventCallback() {
+        @Override
+        public void onDeviceError(String s, int i) {
+          if(mEventSink != null) {
+            HashMap<String, Object> returnMap = new HashMap<>();
+            returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
+
+            HashMap<String, Object> method = new HashMap<>();
+            method.put("name", "onDeviceError");
+            method.put("deviceName", s);
+            method.put("errorCode", i);
+
+            returnMap.put("method", method);
+            mEventSink.success(returnMap);
+          }
+        }
       });
 
       mZegoLiveRoom.setZegoIMCallback(new IZegoIMCallback() {

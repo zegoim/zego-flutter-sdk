@@ -126,6 +126,32 @@ class ZegoMediaplayer {
     });
   }
 
+  static Future<void> setOnlineResourceCache(int time, int size) async {
+    return await _channel.invokeMethod('setOnlineResourceCache', {
+      'time': time,
+      'size': size
+    });
+  }
+
+  static Future<ZegoMediaplayerCacheResult> getOnlineResourceCache() async {
+    final Map<dynamic, dynamic> map = await _channel.invokeMethod('getOnlineResourceCache');
+
+    ZegoMediaplayerCacheResult result = new ZegoMediaplayerCacheResult(map['time'], map['size']);
+    return result;
+  }
+
+  static Future<void> setBufferThreshold(int threshold) async {
+    return await _channel.invokeMethod('setBufferThreshold', {
+      'threshold': threshold
+    });
+  }
+
+  static Future<void> setLoadResourceTimeout(int timeout) async {
+    return await _channel.invokeMethod('setLoadResourceTimeout', {
+      'timeout': timeout
+    });
+  }
+
 
 
   ///设置回调对象

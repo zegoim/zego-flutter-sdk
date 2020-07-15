@@ -62,6 +62,14 @@
 
 - (void)setPlayerType:(MediaPlayerType)type;
 
+- (void)setOnlineResourceCacheDuration:(int)time andSize:(int)size;
+
+- (void)getOnlineResourceCacheStat:(int*)time andSize:(int*)size;
+
+- (void)setBufferThreshold:(int)threshold;
+
+- (void)setLoadResourceTimeout:(int)timeout;
+
 //- (void)setPublishVolume:(int)volume;
 
 //- (void)setPlayVolume:(int)volume;

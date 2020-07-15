@@ -18,7 +18,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
 
 @interface ZegoLiveRoomPlugin()
-<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoExternalVideoRenderDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, ZegoMediaPlayerControllerDelegate, FlutterStreamHandler>
+<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoDeviceEventDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoVideoRenderCVPixelBufferDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, ZegoMediaPlayerControllerDelegate, FlutterStreamHandler>
 
 @property (nonatomic, strong) ZegoLiveRoomApi *zegoApi;
 @property (nonatomic, strong) ZegoMediaSideInfo * mediaSideInfoApi;
@@ -170,10 +170,12 @@ Byte toByte(NSString* c) {
     //默认使用外部渲染
     if(!self.isEnablePlatformView) {
 
-        [ZegoExternalVideoRender enableExternalVideoRender:YES type:VideoExternalRenderTypeDecodeRgbSeries];
+        //[ZegoExternalVideoRender enableExternalVideoRender:YES type:VideoExternalRenderTypeDecodeRgbSeries];
         self.renderController = [[ZegoRendererController alloc] init];
 
-        [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
+        //[[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:self];
+        [ZegoExternalVideoRender setVideoRenderType:VideoRenderTypeRgb];
+        [[ZegoExternalVideoRender sharedInstance] setZegoVideoRenderCVPixelBufferDelegate:self];
     }
 
     self.zegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
@@ -867,9 +869,21 @@ Byte toByte(NSString* c) {
     }
 }
 
+#pragma mark - ZegoDeviceDelegate
+- (void)zego_onDevice:(NSString *)deviceName error:(int)errorCode {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onDeviceError",
+                            @"errorCode": @(errorCode),
+                            @"deviceName":deviceName}
+             });
+    }
+}
+
 #pragma mark - ZegoLiveApiRenderDelegate
 
-- (CVPixelBufferRef)onCreateInputBufferWithWidth:(int)width height:(int)height cvPixelFormatType:(OSType)cvPixelFormatType streamID:(NSString *)streamID
+/*- (CVPixelBufferRef)onCreateInputBufferWithWidth:(int)width height:(int)height cvPixelFormatType:(OSType)cvPixelFormatType streamID:(NSString *)streamID
 {
     if(![self.renderController isRendering]) {
         [ZegoLog logNotice:@"[onCreateInputBufferWithWidth] render controller is not rendering, ignore"];
@@ -925,6 +939,32 @@ Byte toByte(NSString* c) {
 
     // Need to manually flip the frame when mode == 1
     [renderer setUseMirrorEffect:mode == 1];
+}*/
+
+- (void)onVideoRenderCallback:(CVPixelBufferRef)data streamID:(NSString *)streamID {
+    if(![self.renderController isRendering]) {
+        [ZegoLog logNotice:@"[onCreateInputBufferWithWidth] render controller is not rendering, ignore"];
+        return;
+    }
+    
+    ZegoViewRenderer *renderer = [self.renderController getRenderer:streamID];
+    [renderer setSrcFrameBuffer:data processBuffer:nil];
+}
+
+
+- (void)onSetFlipMode:(int)mode streamID:(NSString *)streamID {
+    ZegoViewRenderer *renderer = [self.renderController getRenderer:streamID];
+    if (renderer == nil) {
+        return;
+    }
+
+    // Need to manually flip the frame when mode == 1
+    [renderer setUseMirrorEffect:mode == 1];
+}
+
+
+- (void)onSetRotation:(int)rotation streamID:(NSString *)streamID {
+    
 }
 
 
@@ -982,6 +1022,20 @@ Byte toByte(NSString* c) {
             result(nil);
         }
 
+    } else if([@"setLogConfig" isEqualToString:call.method]) {
+      
+        NSString *logPath = args[@"logPath"];
+        int logSize = [self numberToIntValue:args[@"logSize"]];
+        
+        if(logPath)
+        {
+            [ZegoLiveRoomApi setLogDir:logPath size:logSize subFolder:nil];
+        }
+        else
+        {
+            [ZegoLiveRoomApi setLogSize:logSize];
+        }
+        
     } else if([@"initSDK" isEqualToString:call.method]) {
 
         unsigned int appID = [self numberToUintValue:args[@"appID"]];
@@ -999,8 +1053,10 @@ Byte toByte(NSString* c) {
 
             if(!self.isEnablePlatformView) {
 
-                [ZegoExternalVideoRender enableExternalVideoRender:NO type:VideoExternalRenderTypeDecodeRgbSeries];
-                [[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:nil];
+                //[ZegoExternalVideoRender enableExternalVideoRender:NO type:VideoExternalRenderTypeDecodeRgbSeries];
+                //[[ZegoExternalVideoRender sharedInstance] setExternalVideoRenderDelegate:nil];
+                [ZegoExternalVideoRender setVideoRenderType:VideoRenderTypeNone];
+                [[ZegoExternalVideoRender sharedInstance] setZegoVideoRenderCVPixelBufferDelegate:nil];
                 self.renderController = nil;
             }
 
@@ -2590,7 +2646,37 @@ Byte toByte(NSString* c) {
         [[ZegoMediaPlayerController instance] setProcessInterval:interval];
         result(nil);
         
-    } else if([@"registerMediaPlayerCallback" isEqualToString:call.method]) {
+    } else if([@"setOnlineResourceCache" isEqualToString:call.method]){
+        
+        int time = [self numberToIntValue:args[@"time"]];
+        int size = [self numberToIntValue:args[@"size"]];
+        
+        [[ZegoMediaPlayerController instance] setOnlineResourceCacheDuration:time andSize:size];
+        result(nil);
+        
+    } else if([@"getOnlineResourceCache" isEqualToString:call.method]) {
+        
+        int time = 0;
+        int size = 0;
+        
+        [[ZegoMediaPlayerController instance] getOnlineResourceCacheStat:&time andSize:&size];
+        result(@{@"time": @(time), @"size": @(size)});
+        
+    } else if([@"setBufferThreshold" isEqualToString:call.method]) {
+        
+        int threshold = [self numberToIntValue:args[@"threshold"]];
+        
+        [[ZegoMediaPlayerController instance] setBufferThreshold:threshold];
+        result(nil);
+        
+    }else if([@"setLoadResourceTimeout" isEqualToString:call.method]) {
+        
+        int timeout = [self numberToIntValue:args[@"timeout"]];
+        
+        [[ZegoMediaPlayerController instance] setLoadResourceTimeout:timeout];
+        result(nil);
+        
+    }else if([@"registerMediaPlayerCallback" isEqualToString:call.method]) {
 
         [[ZegoMediaPlayerController instance] setDelegate:self];
         result(nil);

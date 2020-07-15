@@ -143,6 +143,23 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     [self.mediaPlayer setPlayerType:type];
 }
 
+- (void)setOnlineResourceCacheDuration:(int)time andSize:(int)size {
+    [self.mediaPlayer setOnlineResourceCacheDuration:time andSize:size];
+    
+}
+
+- (void)getOnlineResourceCacheStat:(int*)time andSize:(int*)size {
+    [self.mediaPlayer getOnlineResourceCacheStat:time andSize:size];
+}
+
+- (void)setBufferThreshold:(int)threshold {
+    [self.mediaPlayer setBufferThreshold:threshold];
+}
+
+- (void)setLoadResourceTimeout:(int)timeout {
+    [self.mediaPlayer setLoadResourceTimeout:timeout];
+}
+
 /*- (void)setPublishVolume:(int)volume {
     [self.mediaPlayer setPublishVolume:volume];
 }

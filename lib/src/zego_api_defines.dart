@@ -897,3 +897,10 @@ class ZegoMediaplayerSeekResult {
 
   const ZegoMediaplayerSeekResult(this.errorCode, this.timestamp);
 }
+
+class ZegoMediaplayerCacheResult {
+  final int time;
+  final int size;
+
+  const ZegoMediaplayerCacheResult(this.time, this.size);
+}

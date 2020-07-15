@@ -161,6 +161,27 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         result.success(null);
     }
 
+    public void setOnlineResourceCache(int time, int size) {
+        mPlayer.setOnlineResourceCache(time, size);
+    }
+
+    public void getOnlineResourceCache(Result result) {
+        ZegoMediaPlayer.CacheStat cacheStat = new ZegoMediaPlayer.CacheStat();
+        mPlayer.getOnlineResourceCacheStat(cacheStat);
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("time", cacheStat.time);
+        returnMap.put("size", cacheStat.size);
+        result.success(returnMap);
+    }
+
+    public void setBufferThreshold(int threshold) {
+        mPlayer.setBufferThreshold(threshold);
+    }
+
+    public void setLoadResourceTimeout(int timeout) {
+        mPlayer.setLoadResourceTimeout(timeout);
+    }
+
     private void playEffectAsync(final Context context, final String fileName, final boolean isRepeat) {
         new Thread() {
             @Override

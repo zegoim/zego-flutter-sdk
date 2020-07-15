@@ -102,6 +102,12 @@ class ZegoLiveRoomPlugin {
     });
   }
 
+  static Future<void> setLogConfig(int logSize, {String logPath}) async {
+    return await _channel.invokeMethod('setLogConfig', {
+      'size': logSize,
+      'path': logPath
+    });
+  }
   ///上报日志
   ///
   ///@discussion 上传日志到后台便于分析问题
@@ -319,6 +325,7 @@ class ZegoLiveRoomPlugin {
     Function(int event, Map<String, String> info) onLiveEvent,
     Function() onAVEngineStart,
     Function() onAVEngineStop,
+    Function(int errorCode, String deviceName) onDeviceError,
     Function(String message) onInnerError
 }) {
 
@@ -339,6 +346,7 @@ class ZegoLiveRoomPlugin {
     _onAVEngineStart = onAVEngineStart;
     _onAVEngineStop = onAVEngineStop;
     _onInnerError = onInnerError;
+    _onDeviceError = onDeviceError;
 
     _addRoomNoticeLog('[Flutter-Dart] registerRoomCallback, init room stream subscription');
     _streamSubscription = ZegoLiveRoomEventChannel.listenRoomEvent().listen(_eventListener, onError: (error) {
@@ -370,6 +378,7 @@ class ZegoLiveRoomPlugin {
     _onAVEngineStart = null;
     _onAVEngineStop = null;
     _onInnerError = null;
+    _onDeviceError = null;
 
     _streamSubscription.cancel().then((_) {
       _streamSubscription = null;
@@ -491,6 +500,12 @@ class ZegoLiveRoomPlugin {
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onAVEngineStop 对象参数之后才能收到该回调
   static void Function() _onAVEngineStop;
 
+  ///设备出错回调
+  ///
+  ///@param errorCode 错误码
+  ///@param deviceName 设备名
+  ///@discussion 设置设备出错回调对象后，当设备（麦克风、摄像头）出现问题时，会通知到开发者
+  static void Function(int errorCode, String deviceName) _onDeviceError;
   ///SDK检测到内部异常会抛出
   ///
   ///@param message 错误详情
@@ -677,6 +692,14 @@ class ZegoLiveRoomPlugin {
 
           _onAVEngineStop();
 
+        }
+        break;
+      case 'onDeviceError':
+        if(_onDeviceError != null) {
+
+          String deviceName = args['deviceName'];
+          int errorCode = args['errorCode'];
+          _onDeviceError(errorCode, deviceName);
         }
         break;
       case 'onInnerError':

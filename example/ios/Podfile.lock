@@ -8,10 +8,10 @@ PODS:
     - Flutter
   - zego_permission (0.0.1):
     - Flutter
-  - "ZegoLiveRoom/AudioPlayer (1.20.4.9+hotfix.2)"
+  - ZegoLiveRoom/AudioPlayer (1.20.7.9)
   - zegoliveroom_plugin (1.0.0):
     - Flutter
-    - "ZegoLiveRoom/AudioPlayer (= 1.20.4.9+hotfix.2)"
+    - ZegoLiveRoom/AudioPlayer (= 1.20.7.9)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -45,9 +45,9 @@ SPEC CHECKSUMS:
   shared_preferences_macos: f3f29b71ccbb56bf40c9dd6396c9acf15e214087
   shared_preferences_web: 141cce0c3ed1a1c5bf2a0e44f52d31eeb66e5ea9
   zego_permission: 0a12f978f018fa7a5becc3fce76d04a790897879
-  ZegoLiveRoom: d6c5b98414fe9c49a74c6a32e405f43c1f06fe77
-  zegoliveroom_plugin: 45d52b5ff7a74cce6a16d7bcd6276d93d5d3877c
+  ZegoLiveRoom: 1b3f4ff19f176df8e8f2fb3132853ed7c3db6ad7
+  zegoliveroom_plugin: a64d46d50e0d5d2f98f838c188e46361004f713a
 
 PODFILE CHECKSUM: 3dbe063e9c90a5d7c9e4e76e70a821b9e2c1d271
 
-COCOAPODS: 1.9.1
+COCOAPODS: 1.8.4

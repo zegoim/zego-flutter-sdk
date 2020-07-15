@@ -1,8 +1,12 @@
 # Change log
 
-## 1.2.12
+## 1.2.13
+1. add `setLogConfig` to set log path and log size
+2. add `onDeviceError` for Notifying device abnormalities
+3. add MediaPlayer module new API(for playing network sources): `setOnlineResourceCache`、`getOnlineResourceCache`、`setBufferThreshold`、`setLoadResourceTimeout`
 
-- Add `MediaPlayer` (only audio module)
+## 1.2.12
+1. add `MediaPlayer`(only audio module)
 
 ## 1.2.11
 
