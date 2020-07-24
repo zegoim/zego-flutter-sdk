@@ -432,7 +432,7 @@
             CVBufferRelease(self->m_pInputFrameBuffer);
         }
         self->m_pInputFrameBuffer = srcFrameBuffer;
-        
+        CVBufferRetain(self->m_pInputFrameBuffer);
     });
     
     m_isNewFrameAvailable = YES;

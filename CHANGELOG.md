@@ -1,5 +1,8 @@
 # Change log
 
+## 1.2.14
+1. fix CVPixelBuffer release crash.
+
 ## 1.2.13
 1. add `setLogConfig` to set log path and log size
 2. add `onDeviceError` for Notifying device abnormalities
