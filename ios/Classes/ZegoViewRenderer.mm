@@ -25,6 +25,7 @@
     int m_nFrameUniform;
     CVPixelBufferPoolRef m_buffer_pool;
     CVOpenGLESTextureRef m_output_texture;
+    std::mutex m_input_buffer_mutex;
     std::mutex m_mutex;
     GLint m_position;
     GLint m_texcoord;
@@ -325,13 +326,20 @@
         m_output_texture = NULL;
     }
     
-    CVBufferRetain(m_pInputFrameBuffer);
+    CVPixelBufferRef readInputBuffer = nil;
+    {
+        std::lock_guard<std::mutex> lock(m_input_buffer_mutex);
+        if (m_pInputFrameBuffer) {
+            readInputBuffer = m_pInputFrameBuffer;
+            CVBufferRetain(readInputBuffer);
+        }
+    }
     
-    if(m_pInputFrameBuffer == nil /*|| m_pProcessFrameBuffer == nil*/)
+    if(readInputBuffer == nil /*|| m_pProcessFrameBuffer == nil*/)
         return;
 
-    int width = (int)CVPixelBufferGetWidth(m_pInputFrameBuffer);
-    int height = (int)CVPixelBufferGetHeight(m_pInputFrameBuffer);
+    int width = (int)CVPixelBufferGetWidth(readInputBuffer);
+    int height = (int)CVPixelBufferGetHeight(readInputBuffer);
 
     /* 以image宽高、viewg宽高计算纹理贴图坐标 */
     if(m_config_changed || width != m_img_width || height != m_img_height)
@@ -344,7 +352,7 @@
 
     /* create input frame texture from sdk */
     CVOpenGLESTextureRef texture_input = NULL;
-    [self createTexture:&texture_input FromPixelBuffer:m_pInputFrameBuffer];
+    [self createTexture:&texture_input FromPixelBuffer:readInputBuffer];
 
     //create output frame texture to flutter
     [self createTexture:&m_output_texture FromPixelBuffer:processBuffer];
@@ -391,7 +399,7 @@
         CFRelease(texture_input);
     }
     
-    CVBufferRelease(m_pInputFrameBuffer);
+    CVBufferRelease(readInputBuffer);
 }
 
 - (void)createTexture:(CVOpenGLESTextureRef *)texture FromPixelBuffer:(CVPixelBufferRef)pixelBuffer {
@@ -429,20 +437,13 @@
 //接管sdk回调的数据，该数据从ZegoLiveRoomPlugin生成
 - (void)setSrcFrameBuffer:(CVPixelBufferRef)srcFrameBuffer processBuffer:(CVPixelBufferRef)processBuffer {
     
+    std::lock_guard<std::mutex> lock(m_input_buffer_mutex);
+    
     if(self->m_pInputFrameBuffer) {
         CVBufferRelease(self->m_pInputFrameBuffer);
     }
     self->m_pInputFrameBuffer = srcFrameBuffer;
     CVBufferRetain(self->m_pInputFrameBuffer);
-    
-    /*dispatch_async(m_opengl_queue, ^{
-        
-        if(self->m_pInputFrameBuffer) {
-            CVBufferRelease(self->m_pInputFrameBuffer);
-        }
-        self->m_pInputFrameBuffer = srcFrameBuffer;
-        CVBufferRetain(self->m_pInputFrameBuffer);
-    });*/
     
     m_isNewFrameAvailable = YES;
 }
@@ -536,7 +537,6 @@
     __weak ZegoViewRenderer *weak_ptr = self;
     dispatch_async(m_opengl_queue, ^{
         ZegoViewRenderer *strong_ptr = weak_ptr;
-        //CVBufferRetain(self->m_pInputFrameBuffer);
         [strong_ptr processingData];
     });
     
@@ -544,7 +544,7 @@
     
     std::lock_guard<std::mutex> lock(m_mutex);
     if (m_pRenderFrameBuffer) {
-       temp = m_pRenderFrameBuffer;
+        temp = m_pRenderFrameBuffer;
         CVBufferRetain(temp);
     }
     

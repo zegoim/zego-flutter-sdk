@@ -1,5 +1,8 @@
 # Change log
 
+## 1.2.16
+1. fix crash when multi thread read/write the input CVPixelBuffer
+
 ## 1.2.15
 1. fix the input CVPixelBuffer lifecycle issue.
 
