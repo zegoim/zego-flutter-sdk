@@ -1,5 +1,8 @@
 # Change log
 
+## 1.2.15
+1. fix the input CVPixelBuffer lifecycle issue.
+
 ## 1.2.14
 1. fix CVPixelBuffer release crash.
 

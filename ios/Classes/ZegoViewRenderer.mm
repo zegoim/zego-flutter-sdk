@@ -325,7 +325,8 @@
         m_output_texture = NULL;
     }
     
-  
+    CVBufferRetain(m_pInputFrameBuffer);
+    
     if(m_pInputFrameBuffer == nil /*|| m_pProcessFrameBuffer == nil*/)
         return;
 
@@ -360,7 +361,7 @@
         // 黑色背景用于填充黑边
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(m_hProgram);
+        //glUseProgram(m_hProgram);
         
         
         glBindTexture(CVOpenGLESTextureGetTarget(texture_input), CVOpenGLESTextureGetName(texture_input));
@@ -389,6 +390,8 @@
         
         CFRelease(texture_input);
     }
+    
+    CVBufferRelease(m_pInputFrameBuffer);
 }
 
 - (void)createTexture:(CVOpenGLESTextureRef *)texture FromPixelBuffer:(CVPixelBufferRef)pixelBuffer {
@@ -426,14 +429,20 @@
 //接管sdk回调的数据，该数据从ZegoLiveRoomPlugin生成
 - (void)setSrcFrameBuffer:(CVPixelBufferRef)srcFrameBuffer processBuffer:(CVPixelBufferRef)processBuffer {
     
-    dispatch_async(m_opengl_queue, ^{
+    if(self->m_pInputFrameBuffer) {
+        CVBufferRelease(self->m_pInputFrameBuffer);
+    }
+    self->m_pInputFrameBuffer = srcFrameBuffer;
+    CVBufferRetain(self->m_pInputFrameBuffer);
+    
+    /*dispatch_async(m_opengl_queue, ^{
         
         if(self->m_pInputFrameBuffer) {
             CVBufferRelease(self->m_pInputFrameBuffer);
         }
         self->m_pInputFrameBuffer = srcFrameBuffer;
         CVBufferRetain(self->m_pInputFrameBuffer);
-    });
+    });*/
     
     m_isNewFrameAvailable = YES;
 }
@@ -527,6 +536,7 @@
     __weak ZegoViewRenderer *weak_ptr = self;
     dispatch_async(m_opengl_queue, ^{
         ZegoViewRenderer *strong_ptr = weak_ptr;
+        //CVBufferRetain(self->m_pInputFrameBuffer);
         [strong_ptr processingData];
     });
     
