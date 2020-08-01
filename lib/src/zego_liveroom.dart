@@ -34,7 +34,7 @@ class ZegoLiveRoomPlugin {
   ///@return 错误码，0 代表初始化成功
   ///@discussion 初始化 SDK 时调用。初始化 SDK 失败可能导致 SDK 功能异常
   static Future<int> initSDK(int appID, String appSign) async {
-    _addRoomNoticeLog('[Flutter-dart] initSDK, appid: $appID, appSign: $appSign');
+    _addRoomNoticeLog('[Flutter-Dart] initSDK, appid: $appID, appSign: $appSign');
     final int errorCode = await _channel.invokeMethod('initSDK', {
       'appID': appID,
       'appSign': appSign
@@ -48,7 +48,7 @@ class ZegoLiveRoomPlugin {
   ///@return true 成功，false 失败
   ///@discussion 释放 SDK 资源
   static Future<bool> uninitSDK() async {
-    _addRoomNoticeLog('[Flutter-dart] uninitSDK');
+    _addRoomNoticeLog('[Flutter-Dart] uninitSDK');
     final bool success = await _channel.invokeMethod('uninitSDK');
     return success;
   }
@@ -60,7 +60,7 @@ class ZegoLiveRoomPlugin {
   ///@discussion 参数为 true 时，使用 Platform View 渲染，参数为 false 时，使用 Texture 渲染
   ///@discussion 由于 flutter 团队 对 platform view 仍处于开发阶段，请开发者酌情使用
   static Future<void> enablePlatformView(bool enable) async {
-    _addRoomNoticeLog('[Flutter-dart] enablePlatformView, enable: $enable');
+    _addRoomNoticeLog('[Flutter-Dart] enablePlatformView, enable: $enable');
     return await _channel.invokeMethod('enablePlatformView', {
       'enable': enable
     });
@@ -103,9 +103,10 @@ class ZegoLiveRoomPlugin {
   }
 
   static Future<void> setLogConfig(int logSize, {String logPath}) async {
+    print('logSize: $logSize, logPath: $logPath');
     return await _channel.invokeMethod('setLogConfig', {
-      'size': logSize,
-      'path': logPath
+      'logSize': logSize,
+      'logPath': logPath
     });
   }
   ///上报日志
@@ -146,7 +147,7 @@ class ZegoLiveRoomPlugin {
   ///@return 房间流信息，其中 errorCode 为 0 代表登录房间成功，参考 [ZegoLoginRoomResult] 定义
   ///@discussion 登录房间成功，才能开始直播
   static Future<ZegoLoginRoomResult> loginRoom(String roomID, String roomName, int role) async {
-    _addRoomNoticeLog('[Flutter-dart] loginRoom, roomID: $roomID, roomName: $roomName, role: $role');
+    _addRoomNoticeLog('[Flutter-Dart] loginRoom, roomID: $roomID, roomName: $roomName, role: $role');
     final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('loginRoom', {
       'roomID': roomID,
       'roomName': roomName,
@@ -171,7 +172,7 @@ class ZegoLiveRoomPlugin {
   ///@return true 成功，false 失败
   ///@discussion 连麦情况下，要 stop 所有的 stream 后，才能执行 logoutRoom。
   static Future<bool> logoutRoom() async {
-    _addRoomNoticeLog('[Flutter-dart] logoutRoom');
+    _addRoomNoticeLog('[Flutter-Dart] logoutRoom');
     final bool success = await _channel.invokeMethod('logoutRoom');
     return success;
   }
@@ -704,7 +705,7 @@ class ZegoLiveRoomPlugin {
         break;
       case 'onInnerError':
       if(_onInnerError != null) {
-          
+
         String message = args['message'];
         _onInnerError(message);
       }

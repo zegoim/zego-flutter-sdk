@@ -84,6 +84,8 @@ class _InitPageState extends State<InitPage> {
     // 设置是否使用 PlatformView
     ZegoLiveRoomPlugin.enablePlatformView(ZegoConfig.getInstance().enablePlatformView);
 
+    ZegoLiveRoomPlugin.setLogConfig(5 * 1024 * 1024);
+
     // 初始化 SDK
     ZegoLiveRoomPlugin.initSDK(appID, strAppSign).then((errorCode) {
 

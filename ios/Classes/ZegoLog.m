@@ -11,6 +11,7 @@
 @implementation ZegoLog
 
 + (void)logNotice:(NSString *)content {
+    NSLog(@"%@", content);
     zego_liveroom_custom_log(content.UTF8String);
 }
 

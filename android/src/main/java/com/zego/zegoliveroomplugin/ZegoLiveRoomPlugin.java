@@ -92,7 +92,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
   private HashMap<String, ZegoViewRenderer> mRenders;
   private boolean mIsEnablePlatformView;
 
-  private int mLogSize = 0;
+  private int mLogSize = 5 * 1024 * 1024;
   private String mLogPath = null;
 
   private ZegoLiveRoomPlugin(Registrar registrar) {
@@ -163,6 +163,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       mLogPath = call.argument("logPath");
       mLogSize = numberToIntValue((Number) call.argument("logSize"));
+      ZegoLogJNI.logNotice("[Flutter-Native] setLogConfig, logSize: " + mLogSize + " logPath: " + mLogPath);
       result.success(null);
 
     }else if (call.method.equals("initSDK")) {
@@ -2170,6 +2171,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       @Override
       public long getLogFileSize() {
+        ZegoLogJNI.logNotice("[Flutter-Native] getLogFileSize: " + mLogSize);
         return mLogSize;
       }
 
@@ -2190,6 +2192,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       @Override
       public String getLogPath() {
+        ZegoLogJNI.logNotice("[Flutter-Native] getLogPath: " + mLogPath);
         return mLogPath;
       }
 

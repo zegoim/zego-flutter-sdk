@@ -1,5 +1,8 @@
 # Change log
 
+## 1.2.17
+1. Fix problem with `setLogConfig` not working
+
 ## 1.2.16
 1. fix crash when multi thread read/write the input CVPixelBuffer
 

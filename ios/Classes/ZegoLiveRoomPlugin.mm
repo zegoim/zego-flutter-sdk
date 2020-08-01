@@ -75,7 +75,7 @@ static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
 }
 
 - (long)numberToLongValue:(NSNumber *)number {
-    
+
     return [number isKindOfClass:[NSNull class]] ? 0 : [number longValue];
 }
 
@@ -946,7 +946,7 @@ Byte toByte(NSString* c) {
         [ZegoLog logNotice:@"[onCreateInputBufferWithWidth] render controller is not rendering, ignore"];
         return;
     }
-    
+
     ZegoViewRenderer *renderer = [self.renderController getRenderer:streamID];
     [renderer setSrcFrameBuffer:data processBuffer:nil];
 }
@@ -964,7 +964,7 @@ Byte toByte(NSString* c) {
 
 
 - (void)onSetRotation:(int)rotation streamID:(NSString *)streamID {
-    
+
 }
 
 
@@ -1023,19 +1023,18 @@ Byte toByte(NSString* c) {
         }
 
     } else if([@"setLogConfig" isEqualToString:call.method]) {
-      
+
         NSString *logPath = args[@"logPath"];
         int logSize = [self numberToIntValue:args[@"logSize"]];
-        
-        if(logPath)
-        {
+
+        if (logPath && ![logPath isEqual:[NSNull null]]) {
             [ZegoLiveRoomApi setLogDir:logPath size:logSize subFolder:nil];
-        }
-        else
-        {
+            [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] setLogDirAndSize, path: %@, size: %d", logPath, logSize]];
+        } else {
             [ZegoLiveRoomApi setLogSize:logSize];
+            [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] setLogSize, size: %d", logSize]];
         }
-        
+
     } else if([@"initSDK" isEqualToString:call.method]) {
 
         unsigned int appID = [self numberToUintValue:args[@"appID"]];
@@ -2506,183 +2505,183 @@ Byte toByte(NSString* c) {
     }
     /* MediaPlayer */
     else if([@"mpStart" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         NSString *path = args[@"path"];
         BOOL repeat = [self numberToBoolValue:args[@"repeat"]];
         BOOL isAsset = [self numberToBoolValue:args[@"asset"]];
         [[ZegoMediaPlayerController instance] start:path repeat:repeat asset:isAsset reg:self.registrar result:result];
-        
+
         //result(nil);
-        
+
     } else if([@"mpStop" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         [[ZegoMediaPlayerController instance] stop:result];
         //result(nil);
-        
+
     } else if([@"mpPause" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         [[ZegoMediaPlayerController instance] pause:result];
         //result(nil);
-        
+
     } else if([@"mpResume" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         [[ZegoMediaPlayerController instance] resume:result];
         //result(nil);
-        
+
     } else if([@"mpSeekTo" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         long millsec = [self numberToLongValue:args[@"timestamp"]];
         [[ZegoMediaPlayerController instance] seekTo:millsec result:result];
         //result(nil);
-        
+
     } else if([@"mpGetDuration" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         result(@([[ZegoMediaPlayerController instance] getDuration]));
-        
+
     } else if([@"mpGetCurrentDuration" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         result(@([[ZegoMediaPlayerController instance] getCurrentDuration]));
-        
+
     } else if([@"mpMuteLocal" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         BOOL mute = [self numberToBoolValue:args[@"mute"]];
         [[ZegoMediaPlayerController instance] muteLocal:mute];
         result(nil);
-        
+
     } else if([@"mpLoad" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         NSString *path = args[@"path"];
         BOOL isAsset = [self numberToBoolValue:args[@"asset"]];
         [[ZegoMediaPlayerController instance] load:path asset: isAsset reg:self.registrar result:result];
         //result(nil);
-        
-        
+
+
     } else if([@"mpSetVolume" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         int vol = [self numberToIntValue:args[@"volume"]];
         [[ZegoMediaPlayerController instance] setVolume:vol];
         result(nil);
-        
+
     } else if([@"mpSetPlayerType" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         int type = [self numberToIntValue:args[@"type"]];
         [[ZegoMediaPlayerController instance] setPlayerType:(MediaPlayerType)type];
         result(nil);
-        
+
     } else if([@"mpEnableRepeatMode" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         BOOL enable = [self numberToBoolValue:args[@"enable"]];
         [[ZegoMediaPlayerController instance] enableRepeatMode:enable];
         result(nil);
-        
+
     } else if([@"mpSetProcessInterval" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         unsigned long interval = [self numberToULongValue:args[@"interval"]];
         [[ZegoMediaPlayerController instance] setProcessInterval:interval];
         result(nil);
-        
+
     } else if([@"setOnlineResourceCache" isEqualToString:call.method]){
-        
+
         int time = [self numberToIntValue:args[@"time"]];
         int size = [self numberToIntValue:args[@"size"]];
-        
+
         [[ZegoMediaPlayerController instance] setOnlineResourceCacheDuration:time andSize:size];
         result(nil);
-        
+
     } else if([@"getOnlineResourceCache" isEqualToString:call.method]) {
-        
+
         int time = 0;
         int size = 0;
-        
+
         [[ZegoMediaPlayerController instance] getOnlineResourceCacheStat:&time andSize:&size];
         result(@{@"time": @(time), @"size": @(size)});
-        
+
     } else if([@"setBufferThreshold" isEqualToString:call.method]) {
-        
+
         int threshold = [self numberToIntValue:args[@"threshold"]];
-        
+
         [[ZegoMediaPlayerController instance] setBufferThreshold:threshold];
         result(nil);
-        
+
     }else if([@"setLoadResourceTimeout" isEqualToString:call.method]) {
-        
+
         int timeout = [self numberToIntValue:args[@"timeout"]];
-        
+
         [[ZegoMediaPlayerController instance] setLoadResourceTimeout:timeout];
         result(nil);
-        
+
     }else if([@"registerMediaPlayerCallback" isEqualToString:call.method]) {
 
         [[ZegoMediaPlayerController instance] setDelegate:self];
         result(nil);
     }
     else if([@"unregisterMediaPlayerCallback" isEqualToString:call.method]) {
-        
+
         [[ZegoMediaPlayerController instance] setDelegate:nil];
         result(nil);
     }
