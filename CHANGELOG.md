@@ -1,23 +1,34 @@
 # Change log
 
+## 1.2.18
+
+1. Update project configuration and README
+2. Fix a crash in Android example demo
+
 ## 1.2.17
+
 1. Fix problem with `setLogConfig` not working
 
 ## 1.2.16
+
 1. fix crash when multi thread read/write the input CVPixelBuffer
 
 ## 1.2.15
+
 1. fix the input CVPixelBuffer lifecycle issue.
 
 ## 1.2.14
+
 1. fix CVPixelBuffer release crash.
 
 ## 1.2.13
+
 1. add `setLogConfig` to set log path and log size
 2. add `onDeviceError` for Notifying device abnormalities
 3. add MediaPlayer module new API(for playing network sources): `setOnlineResourceCache`、`getOnlineResourceCache`、`setBufferThreshold`、`setLoadResourceTimeout`
 
 ## 1.2.12
+
 1. add `MediaPlayer`(only audio module)
 
 ## 1.2.11

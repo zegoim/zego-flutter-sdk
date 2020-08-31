@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:example/config/zego_config.dart';
 import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
-import 'package:example/pages/login_room_page.dart';
-import 'package:example/ui/zego_ui_tool.dart';
+import 'package:zegoliveroom_plugin_example/config/zego_config.dart';
+import 'package:zegoliveroom_plugin_example/pages/login_room_page.dart';
+import 'package:zegoliveroom_plugin_example/ui/zego_ui_tool.dart';
 
 class InitPage extends StatefulWidget {
 

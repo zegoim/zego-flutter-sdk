@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
-import 'package:example/config/zego_config.dart';
-import 'package:example/pages/publish_settings_page.dart';
+import 'package:zegoliveroom_plugin_example/config/zego_config.dart';
+import 'package:zegoliveroom_plugin_example/pages/publish_settings_page.dart';
 
 class PublishStreamPlatformViewPage extends StatefulWidget {
 

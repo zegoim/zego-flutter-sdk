@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:example/config/zego_config.dart';
+import 'package:zegoliveroom_plugin_example/config/zego_config.dart';
 import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
 import 'package:zego_permission/zego_permission.dart';
-import 'package:example/pages/publish_stream_page.dart';
-import 'package:example/pages/play_stream_page.dart';
-import 'package:example/pages/publish_stream_platformview_page.dart';
-import 'package:example/pages/play_stream_platformview_page.dart';
-import 'package:example/ui/zego_ui_tool.dart';
+import 'package:zegoliveroom_plugin_example/pages/publish_stream_page.dart';
+import 'package:zegoliveroom_plugin_example/pages/play_stream_page.dart';
+import 'package:zegoliveroom_plugin_example/pages/publish_stream_platformview_page.dart';
+import 'package:zegoliveroom_plugin_example/pages/play_stream_platformview_page.dart';
+import 'package:zegoliveroom_plugin_example/ui/zego_ui_tool.dart';
 
 class Authorization {
   final bool camera;
@@ -258,4 +258,3 @@ class _LoginRoomPageState extends State<LoginRoomPage> {
   }
 
 }
-

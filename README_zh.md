@@ -1,10 +1,22 @@
 # zegoliveroom_plugin [![pub package](https://img.shields.io/pub/v/zegoliveroom_plugin.svg)](https://pub.dartlang.org/packages/zegoliveroom_plugin)
 
-[English](https://github.com/zegoim/zego-flutter-sdk/blob/master/README.md) | [中文](https://github.com/zegoim/zego-flutter-sdk/blob/master/README_zh.md)
+**[English](https://github.com/zegoim/zego-flutter-sdk/blob/master/README.md) | [中文](https://github.com/zegoim/zego-flutter-sdk/blob/master/README_zh.md)**
 
 即构科技（Zego）音视频Flutter SDK，提供视频直播以及实时音视频服务。
 
 了解更多解决方案：[https://www.zego.im](https://www.zego.im)
+
+## ⚠️ 此项目为旧版 SDK，仅推荐老用户维护使用
+
+### **新用户请使用新版 `ZegoExpressEngine Flutter SDK`**
+
+- pub: **[https://pub.dev/packages/zego_express_engine](https://pub.dev/packages/zego_express_engine)**
+
+- Github: **[https://github.com/zegoim/zego-express-flutter-sdk](https://github.com/zegoim/zego-express-flutter-sdk)**
+
+- 官方文档: **[https://doc-zh.zego.im/zh/693.html](https://doc-zh.zego.im/zh/693.html)**
+
+> 🌞 经过重新设计的全新 API 更易于接入使用，与 ZEGO 原生 SDK 同步更新，功能更加齐全！
 
 ## 1️⃣ 下载并安装 Flutter
 
@@ -33,7 +45,7 @@ dependencies:
   flutter:
   sdk: flutter
 
-  zegoliveroom_plugin: ^1.2.12
+  zegoliveroom_plugin: ^1.2.18
 ```
 
 - ### 以 git 形式依赖

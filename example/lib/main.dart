@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:example/pages/init_sdk_page.dart';
-import 'package:example/config/zego_config.dart';
+import 'package:zegoliveroom_plugin_example/pages/init_sdk_page.dart';
+import 'package:zegoliveroom_plugin_example/config/zego_config.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,12 +10,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Zego Flutter Demo',
+      title: 'ZegoLiveRoom Demo',
       theme: ThemeData(
 
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(title: '互动视频示例'),
+      home: HomePage(title: 'ZegoLiveRoom Demo'),
     );
   }
 }
@@ -28,9 +28,8 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    ZegoConfig config = new ZegoConfig();
+    print(ZegoConfig.getInstance()); // Load config instance
 
-    // TODO: implement build
     return Scaffold(
         appBar: AppBar(
 
@@ -41,13 +40,12 @@ class HomePage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Text('基础功能'),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10.0),
                   ),
                   CupertinoButton(
                       color: Color(0xff0e88eb),
-                      child: Text('推流'),
+                      child: Text('Publish Stream'),
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
                           return InitPage(true);
@@ -59,7 +57,7 @@ class HomePage extends StatelessWidget {
                   ),
                   CupertinoButton(
                       color: Color(0xff0e88eb),
-                      child: Text('拉流'),
+                      child: Text('   Play Stream   '),
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
                           return InitPage(false);
@@ -73,5 +71,3 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
-
