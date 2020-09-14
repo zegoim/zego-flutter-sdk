@@ -18,7 +18,7 @@ public class ZegoPlatformViewFactory extends PlatformViewFactory{
     public static ZegoPlatformViewFactory shareInstance() {
         if(sInstance == null) {
             sInstance = new ZegoPlatformViewFactory(StandardMessageCodec.INSTANCE);
-            ZegoLogJNI.logNotice("[ZegoPlatformViewFactory] instance init");
+            ZegoLogJNI.log("[ZegoPlatformViewFactory] instance init");
         }
 
         return sInstance;
@@ -30,30 +30,30 @@ public class ZegoPlatformViewFactory extends PlatformViewFactory{
     }
 
     public void addView(int viewID, ZegoPlatformView view) {
-        ZegoLogJNI.logNotice("[ZegoPlatformViewFactory] addView: " + viewID);
+        ZegoLogJNI.log("[ZegoPlatformViewFactory] addView: " + viewID);
         mViews.put(Integer.valueOf(viewID), view);
     }
 
     public boolean removeView(int viewID) {
 
         if(!mViews.containsKey(Integer.valueOf(viewID))) {
-            ZegoLogJNI.logNotice("[ZegoPlatformViewFactory] removeView failed, no such view: " + viewID);
+            ZegoLogJNI.log("[ZegoPlatformViewFactory] removeView failed, no such view: " + viewID);
             return false;
         }
 
-        ZegoLogJNI.logNotice("[ZegoPlatformViewFactory] removeView: " + viewID);
+        ZegoLogJNI.log("[ZegoPlatformViewFactory] removeView: " + viewID);
         mViews.remove(Integer.valueOf(viewID));
         return true;
     }
 
     public ZegoPlatformView getPlatformView(int viewID) {
-        ZegoLogJNI.logNotice("[ZegoPlatformViewFactory] getView: " + viewID);
+        ZegoLogJNI.log("[ZegoPlatformViewFactory] getView: " + viewID);
         return mViews.get(Integer.valueOf(viewID));
     }
 
     @Override
     public PlatformView create(Context context, int viewID, Object args) {
-        ZegoLogJNI.logNotice("[ZegoPlatformViewFactory] create view, viewID: " + viewID);
+        ZegoLogJNI.log("[ZegoPlatformViewFactory] create view, viewID: " + viewID);
         ZegoPlatformView view = new ZegoPlatformView(context, viewID);
         addView(viewID, view);
 

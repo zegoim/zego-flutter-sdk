@@ -163,7 +163,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       mLogPath = call.argument("logPath");
       mLogSize = numberToIntValue((Number) call.argument("logSize"));
-      ZegoLogJNI.logNotice("[Flutter-Native] setLogConfig, logSize: " + mLogSize + " logPath: " + mLogPath);
+      ZegoLogJNI.log("[Flutter-Native] setLogConfig, logSize: " + mLogSize + " logPath: " + mLogPath);
       result.success(null);
 
     }else if (call.method.equals("initSDK")) {
@@ -189,7 +189,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         ZegoAudioPlayerController.getInstance().uninit();
         ZegoMediaPlayerController.getInstance().uninit();
 
-        ZegoLogJNI.logNotice("[Flutter-Native] unInitSDK");
+        ZegoLogJNI.log("[Flutter-Native] unInitSDK");
         //反初始化SDK里面会做回调的销毁处理
         result.success(mZegoLiveRoom.unInitSDK());
       }
@@ -225,7 +225,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       String roomName = call.argument("roomName");
       int role = numberToIntValue((Number) call.argument("role"));
 
-      ZegoLogJNI.logNotice("[Flutter-Native] loginRoom enter, roomID: " + roomID + " roomName: " + roomName + " role: " + role);
+      ZegoLogJNI.log("[Flutter-Native] loginRoom enter, roomID: " + roomID + " roomName: " + roomName + " role: " + role);
       boolean success = mZegoLiveRoom.loginRoom(roomID, roomName, role, new IZegoLoginCompletionCallback() {
         @Override
         public void onLoginCompletion(int i, ZegoStreamInfo[] zegoStreamInfos) {
@@ -243,7 +243,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
           HashMap<String, Object> returnMap = new HashMap<>();
           returnMap.put("errorCode", i);
           returnMap.put("streamList", streamList);
-          ZegoLogJNI.logNotice("[Flutter-Native] onLoginRoom, return map: " + returnMap);
+          ZegoLogJNI.log("[Flutter-Native] onLoginRoom, return map: " + returnMap);
           result.success(returnMap);
         }
       });
@@ -666,7 +666,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       }
 
       ZegoViewRenderer renderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
-      ZegoLogJNI.logNotice("[createPreviewRenderer] view size: " + "(" + width + ", " + height + ")" + "textureID:" + renderer.getTextureID());
+      ZegoLogJNI.log("[createPreviewRenderer] view size: " + "(" + width + ", " + height + ")" + "textureID:" + renderer.getTextureID());
       mRenders.put(mPublishMainChl, renderer);
       mZegoLiveRoom.setPreviewView(renderer.getSurface());
       result.success(renderer.getTextureID());
@@ -718,7 +718,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       //if(success) {
       mZegoLiveRoom.setPreviewView(renderer.getSurface());
       //}
-      ZegoLogJNI.logNotice("[updatePreviewRenderSize] width: " + width + " height: " + height + ", textureID: " + renderer.getTextureID());
+      ZegoLogJNI.log("[updatePreviewRenderSize] width: " + width + " height: " + height + ", textureID: " + renderer.getTextureID());
 
       result.success(success);
 
@@ -741,7 +741,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       ZegoViewRenderer renderer = mRenders.get(mPublishMainChl);
       if(renderer != null) {
-        ZegoLogJNI.logNotice("[destroyPreviewRenderer] textrueID: " + renderer.getTextureID());
+        ZegoLogJNI.log("[destroyPreviewRenderer] textrueID: " + renderer.getTextureID());
         mZegoLiveRoom.setPreviewView(null);
         renderer.release();
         result.success(true);
@@ -773,9 +773,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         if(width == 0 && height == 0) {
           reportInnerError("[setPreviewView UnexpectedException] view size is zero");
         }
-        ZegoLogJNI.logNotice("[SetPreviewView - ZegoPlatformView] view size: " + "(" + width + ", " + height + ")" + "viewID:" + viewID);
+        ZegoLogJNI.log("[SetPreviewView - ZegoPlatformView] view size: " + "(" + width + ", " + height + ")" + "viewID:" + viewID);
       }else {
-        ZegoLogJNI.logNotice("[SetPreviewView - ZegoPlatformView] no such view");
+        ZegoLogJNI.log("[SetPreviewView - ZegoPlatformView] no such view");
       }
       if(view == null) {
         result.success(false);
@@ -1101,9 +1101,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             if(width == 0 && height == 0) {
                 reportInnerError("[startPlayingStream UnexpectedException] view size is zero");
             }
-            ZegoLogJNI.logNotice("[StartPlayingStream - ZegoPlatformView] view size: " + "(" + width + ", " + height + ")" + "viewID: " + viewID);
+            ZegoLogJNI.log("[StartPlayingStream - ZegoPlatformView] view size: " + "(" + width + ", " + height + ")" + "viewID: " + viewID);
           } else {
-            ZegoLogJNI.logNotice("[StartPlayingStream - ZegoPlatformView] no such view");
+            ZegoLogJNI.log("[StartPlayingStream - ZegoPlatformView] no such view");
           }
           //传入错误的view id
           if(view == null) {
@@ -1233,7 +1233,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       ZegoViewRenderer renderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
       mRenders.put(streamID, renderer);
-      ZegoLogJNI.logNotice("[createPlayRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + renderer.getTextureID() + " streamID: " + streamID);
+      ZegoLogJNI.log("[createPlayRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + renderer.getTextureID() + " streamID: " + streamID);
       result.success(renderer.getTextureID());
 
     } else if (call.method.equals("updatePlayViewRenderSize")) {
@@ -1269,7 +1269,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       //if (success) {
       mZegoLiveRoom.updatePlayView(streamID, renderer.getSurface());
       //}
-      ZegoLogJNI.logNotice("[updatePlayRenderSize] view size: " + "(" + width + ", " + height + ")" + " textureID:" + renderer.getTextureID() + " streamID: " + streamID);
+      ZegoLogJNI.log("[updatePlayRenderSize] view size: " + "(" + width + ", " + height + ")" + " textureID:" + renderer.getTextureID() + " streamID: " + streamID);
       result.success(success);
 
     } else if (call.method.equals("destroyPlayViewRenderer")) {
@@ -1294,7 +1294,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       ZegoViewRenderer renderer = mRenders.get(streamID);
 
       if(renderer != null) {
-        ZegoLogJNI.logNotice("[updatePlayRenderSize] textureID:" + renderer.getTextureID() + " streamID: " + streamID);
+        ZegoLogJNI.log("[updatePlayRenderSize] textureID:" + renderer.getTextureID() + " streamID: " + streamID);
         //先停止渲染
         mZegoLiveRoom.updatePlayView(streamID, null);
 
@@ -1324,7 +1324,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         ZegoPlatformView view = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
         if(view == null) {
-          ZegoLogJNI.logNotice("[UpdatePlayView - ZegoPlatformView] no such view");
+          ZegoLogJNI.log("[UpdatePlayView - ZegoPlatformView] no such view");
           result.success(false);
           return;
         }
@@ -2083,7 +2083,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     } else if(call.method.equals("addNoticeLog")) {
 
       String content = call.argument("content");
-      ZegoLogJNI.logNotice(content);
+      ZegoLogJNI.log(content);
 
       result.success(null);
     }
@@ -2097,14 +2097,14 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
   @Override
   public void onListen(Object o, EventChannel.EventSink sink) {
 
-    ZegoLogJNI.logNotice("[Flutter-Native] onListen sink: " + sink + " object: " + o);
+    ZegoLogJNI.log("[Flutter-Native] onListen sink: " + sink + " object: " + o);
     mEventSink = sink;
   }
 
   @Override
   public void onCancel(Object o) {
 
-    ZegoLogJNI.logNotice("[Flutter-Native] onCancel sink, object: " + o);
+    ZegoLogJNI.log("[Flutter-Native] onCancel sink, object: " + o);
     mEventSink = null;
   }
 
@@ -2123,25 +2123,25 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
   public void throwSdkNotInitError(Result result, String methodName) {
     String errorMessage = String.format("[ERROR]: %s %s", methodName, "error because zegoliveroom api is not inited.");
-    ZegoLogJNI.logNotice("[Flutter-Native] " + errorMessage);
+    ZegoLogJNI.log("[Flutter-Native] " + errorMessage);
     result.error(String.format("%s_ERROR", methodName).toUpperCase(), errorMessage, null);
   }
 
   public void throwNoRendererError(Result result, String methodName) {
     String errorMessage = String.format("[ERROR]: %s %s", methodName, "error because zego preview or play renderer is null.");
-    ZegoLogJNI.logNotice("[Flutter-Native] " + errorMessage);
+    ZegoLogJNI.log("[Flutter-Native] " + errorMessage);
     result.error(String.format("%s_ERROR", methodName).toUpperCase(), errorMessage, null);
   }
 
   public void throwNoTextureError(Result result, String methodName) {
     String errorMessage = String.format("[ERROR]: %s %s", methodName, "error because \'enablePlatformView\' is true. make sure you turn off this api before calling \'initSDK\' when you use texture to render.");
-    ZegoLogJNI.logNotice("[Flutter-Native] " + errorMessage);
+    ZegoLogJNI.log("[Flutter-Native] " + errorMessage);
     result.error(String.format("%s_ERROR", methodName).toUpperCase(), errorMessage, null);
   }
 
   public void throwNoPlatformViewError(Result result, String methodName) {
     String errorMessage = String.format("[ERROR]: %s %s", methodName, "error because \'enablePlatformView\' is false. make sure you turn on this api before calling \'initSDK\' when you use platform view to render.");
-    ZegoLogJNI.logNotice("[Flutter-Native] " + errorMessage);
+    ZegoLogJNI.log("[Flutter-Native] " + errorMessage);
     result.error(String.format("%s_ERROR", methodName).toUpperCase(), errorMessage, null);
   }
 
@@ -2171,7 +2171,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       @Override
       public long getLogFileSize() {
-        ZegoLogJNI.logNotice("[Flutter-Native] getLogFileSize: " + mLogSize);
+        ZegoLogJNI.log("[Flutter-Native] getLogFileSize: " + mLogSize);
         return mLogSize;
       }
 
@@ -2192,7 +2192,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       @Override
       public String getLogPath() {
-        ZegoLogJNI.logNotice("[Flutter-Native] getLogPath: " + mLogPath);
+        ZegoLogJNI.log("[Flutter-Native] getLogPath: " + mLogPath);
         return mLogPath;
       }
 
@@ -2204,12 +2204,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     });
 
-    ZegoLogJNI.logNotice("[Flutter-Native] enter init sdk, app id: " + appID);
+    ZegoLogJNI.log("[Flutter-Native] enter init sdk, app id: " + appID);
 
       mZegoLiveRoom.setZegoRoomCallback(new IZegoRoomCallback() {
           @Override
           public void onStreamUpdated(int type, ZegoStreamInfo[] zegoStreamInfos, String roomID) {
-              ZegoLogJNI.logNotice("[Flutter-Native] onStreamUpdate enter, sink: " + mEventSink);
+              ZegoLogJNI.log("[Flutter-Native] onStreamUpdate enter, sink: " + mEventSink);
               if(mEventSink != null) {
 
                   ArrayList<HashMap<String, Object>> streamList = new ArrayList<>();
@@ -2232,7 +2232,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   method.put("streamList", streamList);
 
                   returnMap.put("method", method);
-                  ZegoLogJNI.logNotice("[Flutter-Native] onStreamUpdate, return map: " + returnMap);
+                  ZegoLogJNI.log("[Flutter-Native] onStreamUpdate, return map: " + returnMap);
                   mEventSink.success(returnMap);
               }
           }
@@ -2474,7 +2474,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       mZegoLiveRoom.setZegoLivePublisherCallback(new IZegoLivePublisherCallback() {
           @Override
           public void onPublishStateUpdate(int stateCode, String streamID, HashMap<String, Object> streamInfo) {
-              ZegoLogJNI.logNotice("[Flutter-Native] onPublishStateUpdate enter, sink: " + mEventSink);
+              ZegoLogJNI.log("[Flutter-Native] onPublishStateUpdate enter, sink: " + mEventSink);
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
@@ -2486,14 +2486,17 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   method.put("streamID", streamID);
 
                   HashMap<String, Object> info = new HashMap<>();
-                  streamInfo.put("streamID", streamInfo.get(ZegoConstants.StreamKey.STREAM_ID));
-                  streamInfo.put("rtmpList", streamInfo.get(ZegoConstants.StreamKey.RTMP_URL_LIST));
-                  streamInfo.put("flvList", streamInfo.get(ZegoConstants.StreamKey.FLV_URL_LIST));
-                  streamInfo.put("hlsList", streamInfo.get(ZegoConstants.StreamKey.HLS_URL_LST));
+                  info.put("streamID", streamInfo.get(ZegoConstants.StreamKey.STREAM_ID));
+                  String[] rtmpList = (String[]) streamInfo.get(ZegoConstants.StreamKey.RTMP_URL_LIST);
+                  String[] flvList = (String[]) streamInfo.get(ZegoConstants.StreamKey.FLV_URL_LIST);
+                  String[] hlsList = (String[]) streamInfo.get(ZegoConstants.StreamKey.HLS_URL_LST);
+                  info.put("rtmpList", new ArrayList<>(Arrays.asList(rtmpList)));
+                  info.put("flvList", new ArrayList<>(Arrays.asList(flvList)));
+                  info.put("hlsList", new ArrayList<>(Arrays.asList(hlsList)));
                   method.put("streamInfo", info);
 
                   returnMap.put("method", method);
-                  ZegoLogJNI.logNotice("[Flutter-Native] onPublishStateUpdate, return map: " + returnMap);
+                  ZegoLogJNI.log("[Flutter-Native] onPublishStateUpdate, return map: " + returnMap);
                   mEventSink.success(returnMap);
               }
           }
@@ -2603,7 +2606,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       mZegoLiveRoom.setZegoLivePublisherExCallback(new IZegoLivePublisherExCallback() {
         @Override
         public void onRelayCDNStateUpdate(ZegoStreamRelayCDNInfo[] stateInfo, String streamID) {
-          ZegoLogJNI.logNotice("[Flutter-Native] onRelayCDNStateUpdate enter, sink: " + mEventSink);
+          ZegoLogJNI.log("[Flutter-Native] onRelayCDNStateUpdate enter, sink: " + mEventSink);
           if(mEventSink != null) {
             ArrayList<HashMap<String, Object>> infoList = new ArrayList<>();
             for (ZegoStreamRelayCDNInfo info : stateInfo) {
@@ -2624,7 +2627,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             method.put("streamID", streamID);
 
             returnMap.put("method", method);
-            ZegoLogJNI.logNotice("[Flutter-Native] onRelayCDNStateUpdate, return map: " + returnMap);
+            ZegoLogJNI.log("[Flutter-Native] onRelayCDNStateUpdate, return map: " + returnMap);
             mEventSink.success(returnMap);
           }
         }
@@ -2633,7 +2636,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       mZegoLiveRoom.setZegoLivePlayerCallback(new IZegoLivePlayerCallback2() {
           @Override
           public void onPlayStateUpdate(int stateCode, String streamID) {
-              ZegoLogJNI.logNotice("[Flutter-Native] onPlayStateUpdate enter, sink: " + mEventSink);
+              ZegoLogJNI.log("[Flutter-Native] onPlayStateUpdate enter, sink: " + mEventSink);
               if(mEventSink != null) {
 
                   HashMap<String, Object> returnMap = new HashMap<>();
@@ -2645,7 +2648,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   method.put("streamID", streamID);
 
                   returnMap.put("method", method);
-                  ZegoLogJNI.logNotice("[Flutter-Native] onPlayStateUpdate, return map: " + returnMap);
+                  ZegoLogJNI.log("[Flutter-Native] onPlayStateUpdate, return map: " + returnMap);
                   mEventSink.success(returnMap);
               }
           }
@@ -2891,7 +2894,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       @Override
       public void onInitSDK(int i) {
 
-        ZegoLogJNI.logNotice("[Flutter-Native] on init sdk, errorCode: " + i);
+        ZegoLogJNI.log("[Flutter-Native] on init sdk, errorCode: " + i);
         result.success(i);
       }
     });

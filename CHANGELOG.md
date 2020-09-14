@@ -1,5 +1,9 @@
 # Change log
 
+## 1.2.19
+
+1. Fix the problem that the `info` parameter of the `onPublishStateUpdate` callback has no data on Android
+
 ## 1.2.18
 
 1. Update project configuration and README
