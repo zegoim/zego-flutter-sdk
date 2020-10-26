@@ -314,6 +314,11 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         }
     }
 
+    @Override
+    public void onReadEOF(int i) {
+
+    }
+
     private boolean numberToBoolValue(Boolean number) {
 
         return number != null ? number.booleanValue() : false;

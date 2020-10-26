@@ -1135,6 +1135,35 @@ Byte toByte(NSString* c) {
         BOOL success = [self.zegoApi logoutRoom];
         result(@(success));
 
+    } else if([@"switchRoom" isEqualToString:call.method]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        NSString *roomID = args[@"roomID"];
+        NSString *roomName = args[@"roomName"];
+        int role = [self numberToIntValue:args[@"role"]];
+        
+        BOOL success = [self.zegoApi switchRoom:roomID roomName:roomName role:role withCompletionBlock:^(int errorCode, NSArray<ZegoStream *> *streamList) {
+            
+            NSMutableArray *streamArray = [NSMutableArray array];
+            for (ZegoStream *stream in streamList) {
+
+                    [streamArray addObject:@{@"userID": stream.userID, @"userName": stream.userName, @"streamID": stream.streamID, @"extraInfo": stream.extraInfo}];
+            }
+
+            NSDictionary *dic = @{@"errorCode": @(errorCode), @"streamList": streamArray};
+            [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onLoginRoom, return map: %@", dic]];
+            result(dic);
+        }];
+        
+        if(!success) {
+            result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", call.method] uppercaseString] message:@"call \'switchRoom\' failed." details:nil]);
+        }
+        
+        
     } else if([@"pauseModule" isEqualToString:call.method]) {
 
         if(self.zegoApi == nil) {

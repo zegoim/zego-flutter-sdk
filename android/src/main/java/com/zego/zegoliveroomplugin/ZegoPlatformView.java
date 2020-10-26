@@ -18,7 +18,7 @@ public class ZegoPlatformView implements PlatformView, SurfaceHolder.Callback {
         this.mSurfaceView = new SurfaceView(context);
         this.mSurfaceView.getHolder().addCallback(this);
 
-        ZegoLogJNI.log("[ZegoPlatformView] new, viewID: " + viewID + ", context: " + context);
+        ZegoLogJNI.logNotice("[ZegoPlatformView] new, viewID: " + viewID + ", context: " + context);
 
     }
 
@@ -33,7 +33,7 @@ public class ZegoPlatformView implements PlatformView, SurfaceHolder.Callback {
 
     @Override
     public void dispose() {
-        ZegoLogJNI.log("[ZegoPlatformView] dispose, viewID: " + mViewID);
+        ZegoLogJNI.logNotice("[ZegoPlatformView] dispose, viewID: " + mViewID);
         if(mSurfaceView != null) {
             mSurfaceView.getHolder().removeCallback(this);
             Surface surface = mSurfaceView.getHolder().getSurface();
@@ -46,16 +46,16 @@ public class ZegoPlatformView implements PlatformView, SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        ZegoLogJNI.log("[ZegoPlatformView] onSurfaceCreated, viewID: " + mViewID);
+        ZegoLogJNI.logNotice("[ZegoPlatformView] onSurfaceCreated, viewID: " + mViewID);
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        ZegoLogJNI.log("[ZegoPlatformView] onSurfaceChanged, viewID: " + mViewID + ", size: (" + width + ", " + height + ")" + ", format: " + format);
+        ZegoLogJNI.logNotice("[ZegoPlatformView] onSurfaceChanged, viewID: " + mViewID + ", size: (" + width + ", " + height + ")" + ", format: " + format);
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        ZegoLogJNI.log("[ZegoPlatformView] onSurfaceDestroyed");
+        ZegoLogJNI.logNotice("[ZegoPlatformView] onSurfaceDestroyed");
     }
 }

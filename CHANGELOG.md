@@ -1,8 +1,9 @@
 # Change log
 
-## 1.2.19
+## 1.3.0
 
-1. Fix the problem that the `info` parameter of the `onPublishStateUpdate` callback has no data on Android
+1. update native sdk(2020.10.15).
+2. add `switchRoom` API.
 
 ## 1.2.18
 

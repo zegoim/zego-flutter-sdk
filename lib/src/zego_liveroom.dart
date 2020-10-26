@@ -177,6 +177,27 @@ class ZegoLiveRoomPlugin {
     return success;
   }
 
+  static Future<ZegoLoginRoomResult> switchRoom(String roomID, String roomName, int role) async {
+    _addRoomNoticeLog('[Flutter-Dart] switchRoom, roomID: $roomID, roomName: $roomName, role: $role');
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('switchRoom', {
+      'roomID': roomID,
+      'roomName': roomName,
+      'role': role
+    });
+
+    List<ZegoStreamInfo> streamList = [];
+    final List<dynamic> nativeList = mapResult['streamList'];
+
+    for(var stream in nativeList) {
+      ZegoStreamInfo streamInfo = new ZegoStreamInfo(stream['userID'], stream['userName'], stream['streamID'], stream['extraInfo']);
+      streamList.add(streamInfo);
+    }
+
+    ZegoLoginRoomResult result = new ZegoLoginRoomResult(mapResult['errorCode'], streamList);
+
+    return result;
+  }
+
   ///发送房间消息
   ///
   ///@param content 房间消息内容，不超过 512 字节
