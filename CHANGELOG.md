@@ -1,5 +1,10 @@
 # Change log
 
+## 1.3.1
+
+1. update native sdk.
+2. fix `onPublishStateUpdate` streamInfo is sometimes null.
+
 ## 1.3.0
 
 1. update native sdk(2020.10.15).

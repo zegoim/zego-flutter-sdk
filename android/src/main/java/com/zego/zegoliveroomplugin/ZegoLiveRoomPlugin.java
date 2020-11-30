@@ -2523,10 +2523,13 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                   method.put("streamID", streamID);
 
                   HashMap<String, Object> info = new HashMap<>();
-                  streamInfo.put("streamID", streamInfo.get(ZegoConstants.StreamKey.STREAM_ID));
-                  streamInfo.put("rtmpList", streamInfo.get(ZegoConstants.StreamKey.RTMP_URL_LIST));
-                  streamInfo.put("flvList", streamInfo.get(ZegoConstants.StreamKey.FLV_URL_LIST));
-                  streamInfo.put("hlsList", streamInfo.get(ZegoConstants.StreamKey.HLS_URL_LST));
+                  info.put("streamID", streamInfo.get(ZegoConstants.StreamKey.STREAM_ID));
+                  String[] rtmpList = (String[]) streamInfo.get(ZegoConstants.StreamKey.RTMP_URL_LIST);
+                  String[] flvList = (String[]) streamInfo.get(ZegoConstants.StreamKey.FLV_URL_LIST);
+                  String[] hlsList = (String[]) streamInfo.get(ZegoConstants.StreamKey.HLS_URL_LST);
+                  info.put("rtmpList", new ArrayList<>(Arrays.asList(rtmpList)));
+                  info.put("flvList", new ArrayList<>(Arrays.asList(flvList)));
+                  info.put("hlsList", new ArrayList<>(Arrays.asList(hlsList)));
                   method.put("streamInfo", info);
 
                   returnMap.put("method", method);
