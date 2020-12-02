@@ -1,5 +1,9 @@
 # Change log
 
+## 1.3.2
+
+1. update native ios sdk.
+
 ## 1.3.1
 
 1. update native sdk.
