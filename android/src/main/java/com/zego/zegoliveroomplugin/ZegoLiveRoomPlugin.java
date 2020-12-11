@@ -61,6 +61,8 @@ import com.zego.zegoliveroom.constants.ZegoConstants;
 import com.zego.zegoliveroom.constants.ZegoIM;
 import com.zego.zegoliveroom.entity.AuxData;
 import com.zego.zegoliveroom.entity.ZegoBigRoomMessage;
+import com.zego.zegoliveroom.entity.ZegoRoomExtraInfo;
+import com.zego.zegoliveroom.entity.ZegoRoomInfo;
 import com.zego.zegoliveroom.entity.ZegoRoomMessage;
 import com.zego.zegoliveroom.entity.ZegoStreamInfo;
 import com.zego.zegoliveroom.entity.ZegoPublishStreamQuality;
@@ -1436,6 +1438,19 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean success = mZegoLiveRoom.respondInviteJoinLiveReq(seq, rspResult);
       result.success(success);
 
+    } else if(call.method.equals("setPlayVolume")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      int volume = numberToIntValue((Number) call.argument("volume"));
+      String streamID = call.argument("streamID");
+
+      boolean success = mZegoLiveRoom.setPlayVolume(volume, streamID);
+      result.success(success);
+
     } else if(call.method.equals("enableSpeaker")) {
 
       if(mZegoLiveRoom == null) {
@@ -2318,7 +2333,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
               }
           }
 
-          @Override
+        @Override
+        public void onRoomInfoUpdated(ZegoRoomInfo zegoRoomInfo, String s) {
+
+        }
+
+        @Override
           public void onReconnect(int errorCode, String roomID) {
               if(mEventSink != null) {
 

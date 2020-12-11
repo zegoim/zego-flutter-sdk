@@ -1,20 +1,23 @@
-# zegoliveroom_plugin [![pub package](https://img.shields.io/pub/v/zegoliveroom_plugin.svg)](https://pub.dartlang.org/packages/zegoliveroom_plugin)
+# zegoliveroom_plugin **(Legacy)**
+
+[![pub package](https://img.shields.io/pub/v/zegoliveroom_plugin.svg)](https://pub.dartlang.org/packages/zegoliveroom_plugin)
+![legacy](https://img.shields.io/badge/Legacy%20Project-Will%20be%20deprecated%20soon-yellow)
 
 **[English](https://github.com/zegoim/zego-flutter-sdk/blob/master/README.md) | [中文](https://github.com/zegoim/zego-flutter-sdk/blob/master/README_zh.md)**
 
-Zego's audio and video Flutter SDK provides live video and real-time audio and video services.
+Zego's audio and video LiveRoom Flutter SDK **(Legacy)**, provides live video and real-time audio and video services.
 
 Learn more about the solution: [https://www.zego.im](https://www.zego.im)
 
-## ⚠️ This project is an old SDK, only recommended for maintenance by existing users
+## ⚠️❗️ This project is a **legacy** SDK and and will be deprecated in the future, only used to support the maintenance for existing users, it is recommended to migrate and upgrade to the new SDK as soon as possible
 
-### **New users please use the brand new `ZegoExpressEngine Flutter SDK`**
+## **🚀 Please use the brand new `ZegoExpressEngine Flutter SDK`**
 
 - pub: **[https://pub.dev/packages/zego_express_engine](https://pub.dev/packages/zego_express_engine)**
 
 - Github: **[https://github.com/zegoim/zego-express-flutter-sdk](https://github.com/zegoim/zego-express-flutter-sdk)**
 
-- Documents: **[https://doc-en.zego.im/en/693.html](https://doc-en.zego.im/en/693.html)**
+- Documents: **[https://doc-en.zego.im/en/5560.html](https://doc-en.zego.im/en/5560.html)**
 
 > 🌞 The new redesigned API is easier to use, updated in sync with the ZEGO native SDK, and has more complete functions!
 
@@ -45,7 +48,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  zegoliveroom_plugin: ^1.3.0
+  zegoliveroom_plugin: ^1.3.3
 ```
 
 - ### Depends on git

@@ -1,5 +1,11 @@
 # Change log
 
+## 1.3.3
+
+1. update native sdk.
+
+2. add `setPlayVolume` API.
+
 ## 1.3.2
 
 1. update native ios sdk.

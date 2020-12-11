@@ -282,6 +282,20 @@ class ZegoLiveRoomPlayerPlugin {
     return success;
   }
 
+  /// Sets the stream playback volume.
+  ///
+  /// This function is used to set the playback volume of the stream. Need to be called after calling startPlayingStream.
+  /// You need to reset after [stopPlayingStream] and [startPlayingStream].
+  ///
+  /// [volume] Volume percentage. The value ranges from 0 to 200, and the default value is 100.
+  /// [streamID] Stream ID. Set volume for all streams playing by set streamID as nil or empty.
+  static Future<bool> setPlayVolume(int volume, String streamID) async {
+    return await _channel.invokeMethod('setPlayVolume', {
+      'volume': volume,
+      'streamID': streamID
+    });
+  }
+
   ///设置回调对象
   ///
   ///@param onPlayStateUpdate 设置接收 播放流事件 回调，参考 [_onPlayStateUpdate] 定义

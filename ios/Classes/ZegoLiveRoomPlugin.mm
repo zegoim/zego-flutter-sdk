@@ -2196,6 +2196,19 @@ Byte toByte(NSString* c) {
         BOOL success = [self.zegoApi respondInviteJoinLiveReq:seq result:rspResult];
         result(@(success));
 
+    } else if([@"setPlayVolume" isEqualToString:call.method]) {
+
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        int volume = [self numberToIntValue:args[@"volume"]];
+        NSString *streamID = args[@"streamID"];
+
+        BOOL success = [self.zegoApi setPlayVolume:volume ofStream:streamID];
+        result(@(success));
+
     } else if([@"enableSpeaker" isEqualToString:call.method]) {
 
         if(self.zegoApi == nil) {
