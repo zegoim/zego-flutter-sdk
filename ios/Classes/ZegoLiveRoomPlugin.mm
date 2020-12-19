@@ -1913,6 +1913,29 @@ Byte toByte(NSString* c) {
 
         result(@(factor));
 
+    } else if ([@"takePublishStreamSnapshot" isEqualToString:call.method]) {
+
+        if (self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        [self.zegoApi takePreviewSnapshot:^(UIImage *img) {
+            if (!img) {
+                result(nil);
+                return;
+            }
+
+            NSData *imageData = UIImagePNGRepresentation(img);
+
+            if (!imageData || imageData.length == 0) {
+                result(nil);
+                return;
+            }
+
+            result(imageData);
+        }];
+
     /* LiveRoom-Player */
 #pragma mark LiveRoom-Player
     } else if([@"startPlayingStream" isEqualToString:call.method]) {
@@ -2231,6 +2254,30 @@ Byte toByte(NSString* c) {
         bool success = [self.zegoApi setBuiltInSpeakerOn:on];
         result(@(success));
 
+    } else if ([@"takePlayStreamSnapshot" isEqualToString:call.method]) {
+
+        if (self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        NSString *streamID = args[@"streamID"];
+
+        [self.zegoApi takeSnapshotOfStream:streamID withCompletionBlock:^(UIImage *img) {
+            if (!img) {
+                result(nil);
+                return;
+            }
+
+            NSData *imageData = UIImagePNGRepresentation(img);
+
+            if (!imageData || imageData.length == 0) {
+                result(nil);
+                return;
+            }
+
+            result(imageData);
+        }];
     }
     /* Media Side Info */
 #pragma mark LiveRoom-MediaSideInfo

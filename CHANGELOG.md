@@ -1,5 +1,13 @@
 # Change log
 
+## ⚠️❗️ This project is a **legacy** SDK and and will be deprecated in the future, only used to support the maintenance for existing users, it is recommended to migrate and upgrade to the new SDK as soon as possible
+
+## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
+
+## 1.3.4
+
+1. Add [`takePublishStreamSnapshot`](https://pub.dev/documentation/zegoliveroom_plugin/latest/zegoliveroom_plugin/ZegoLiveRoomPublisherPlugin/takePublishStreamSnapshot.html) and [`takePlayStreamSnapshot`](https://pub.dev/documentation/zegoliveroom_plugin/latest/zegoliveroom_plugin/ZegoLiveRoomPlayerPlugin/takePlayStreamSnapshot.html) APIs
+
 ## 1.3.3
 
 1. update native sdk.

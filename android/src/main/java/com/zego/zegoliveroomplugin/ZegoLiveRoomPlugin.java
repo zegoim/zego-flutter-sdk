@@ -2,6 +2,7 @@ package com.zego.zegoliveroomplugin;
 
 import android.app.Application;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.Surface;
 import android.os.Looper;
 import android.os.Handler;
@@ -17,6 +18,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.StandardMessageCodec;
 import io.flutter.view.TextureRegistry;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.lang.*;
@@ -47,6 +49,7 @@ import com.zego.zegoliveroom.callback.IZegoInitSDKCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoLiveEventCallback;
 import com.zego.zegoliveroom.callback.IZegoLivePlayerCallback;
 import com.zego.zegoliveroom.callback.IZegoLivePublisherExCallback;
+import com.zego.zegoliveroom.callback.IZegoSnapshotCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoUpdatePublishTargetCallback;
 import com.zego.zegoliveroom.callback.IZegoLivePlayerCallback2;
 import com.zego.zegoliveroom.callback.IZegoLivePublisherCallback;
@@ -1095,6 +1098,35 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
       result.success(factor);
 
+    } else if(call.method.equals("takePublishStreamSnapshot")) {
+
+      if(mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      mZegoLiveRoom.takePreviewSnapshot(new IZegoSnapshotCompletionCallback() {
+        @Override
+        public void onZegoSnapshotCompletion(Bitmap bitmap) {
+          if (bitmap == null) {
+            result.success(null);
+            return;
+          }
+
+          ByteArrayOutputStream stream = new ByteArrayOutputStream();
+          bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+          byte[] byteArray = stream.toByteArray();
+          bitmap.recycle();
+
+          if (byteArray == null || byteArray.length == 0) {
+            result.success(null);
+            return;
+          }
+
+          result.success(byteArray);
+        }
+      });
+
     }
     /* LiveRoom-Player */
     else if(call.method.equals("setViewMode")) {
@@ -1475,6 +1507,36 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
       boolean success = mZegoLiveRoom.setBuiltInSpeakerOn(on);
       result.success(success);
 
+    } else if (call.method.equals("takePlayStreamSnapshot")) {
+
+      if (mZegoLiveRoom == null) {
+        throwSdkNotInitError(result, call.method);
+        return;
+      }
+
+      String streamID = call.argument("streamID");
+
+      mZegoLiveRoom.takeSnapshotOfStream(streamID, new IZegoSnapshotCompletionCallback() {
+        @Override
+        public void onZegoSnapshotCompletion(Bitmap bitmap) {
+          if (bitmap == null) {
+            result.success(null);
+            return;
+          }
+
+          ByteArrayOutputStream stream = new ByteArrayOutputStream();
+          bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+          byte[] byteArray = stream.toByteArray();
+          bitmap.recycle();
+
+          if (byteArray == null || byteArray.length == 0) {
+            result.success(null);
+            return;
+          }
+
+          result.success(byteArray);
+        }
+      });
     }
     /* Media Side Info */
     else if (call.method.equals("setMediaSideFlags")) {

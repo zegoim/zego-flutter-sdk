@@ -11,7 +11,7 @@
 
 ## ⚠️❗️ 此项目为 **旧版** SDK，仅用于支持老用户维护使用，建议尽快迁移升级到新版 SDK
 
-## **🚀 请使用新版 `ZegoExpressEngine Flutter SDK`**
+## **🚀 请使用新版 [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
 - pub: **[https://pub.dev/packages/zego_express_engine](https://pub.dev/packages/zego_express_engine)**
 
@@ -48,7 +48,7 @@ dependencies:
   flutter:
   sdk: flutter
 
-  zegoliveroom_plugin: ^1.3.3
+  zegoliveroom_plugin: ^1.3.4
 ```
 
 - ### 以 git 形式依赖

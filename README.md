@@ -11,7 +11,7 @@ Learn more about the solution: [https://www.zego.im](https://www.zego.im)
 
 ## ⚠️❗️ This project is a **legacy** SDK and and will be deprecated in the future, only used to support the maintenance for existing users, it is recommended to migrate and upgrade to the new SDK as soon as possible
 
-## **🚀 Please use the brand new `ZegoExpressEngine Flutter SDK`**
+## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
 - pub: **[https://pub.dev/packages/zego_express_engine](https://pub.dev/packages/zego_express_engine)**
 
@@ -48,7 +48,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  zegoliveroom_plugin: ^1.3.3
+  zegoliveroom_plugin: ^1.3.4
 ```
 
 - ### Depends on git

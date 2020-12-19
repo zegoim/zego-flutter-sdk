@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'zego_api_defines.dart';
 import 'zego_api_error_code.dart';
@@ -74,7 +75,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Widget createPreviewPlatformView(Function(int viewID) onViewCreated) {
     if(TargetPlatform.iOS == defaultTargetPlatform) {
-      
+
       return UiKitView(
         key: new ObjectKey('preview'),
         viewType: 'plugins.zego.im/zego_view',
@@ -643,6 +644,25 @@ class ZegoLiveRoomPublisherPlugin {
     return factor;
   }
 
+  /// Take a snapshot of the publishing stream.
+  ///
+  /// Please call this function after calling [startPublishing] or [startPreview]
+  /// If calling this function neither in previewing nor in publishing, it will not return or may be return null.
+  /// The resolution of the snapshot is the encoding resolution set in [setAVConfig].
+  ///
+  /// - Returns Results of take publish stream snapshot, may be null, or it may not return at all
+  static Future<MemoryImage> takePublishStreamSnapshot() async {
+
+    final Uint8List pngImageBytes = await _channel.invokeMethod('takePublishStreamSnapshot');
+
+    if (pngImageBytes == null) {
+      return null;
+    }
+
+    MemoryImage image = MemoryImage(pngImageBytes);
+    return image;
+}
+
   ///设置回调对象
   ///
   ///@param onPublishStateUpdate 设置接收 推流状态更新 回调，参考 [_onPublishStateUpdate] 定义
@@ -839,7 +859,7 @@ class ZegoLiveRoomPublisherPlugin {
         break;
       case 'onRelayCDNStateUpdate':
         if(_onRelayCDNStateUpdate != null) {
-          
+
           String streamID = args['streamID'];
           List<ZegoStreamRelayCDNInfo> statesInfo = [];
           List<dynamic> objList = args['statesInfo'];

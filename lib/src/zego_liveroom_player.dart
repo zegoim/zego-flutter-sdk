@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'zego_api_defines.dart';
 import 'zego_liveroom_event_channel.dart';
@@ -294,6 +295,27 @@ class ZegoLiveRoomPlayerPlugin {
       'volume': volume,
       'streamID': streamID
     });
+  }
+
+  /// Take a snapshot of the playing stream.
+  ///
+  /// Please call this function after calling [startPlayingStream]
+  /// If calling this function when not in playing stream, it will not return or may be return null.
+  ///
+  /// [streamID] Stream ID to be snapshot
+  /// - Returns Results of take play stream snapshot, may be null, or it may not return at all
+  static Future<MemoryImage> takePlayStreamSnapshot(String streamID) async {
+
+    final Uint8List pngImageBytes = await _channel.invokeMethod('takePlayStreamSnapshot', {
+      'streamID': streamID
+    });
+
+    if (pngImageBytes == null) {
+      return null;
+    }
+
+    MemoryImage image = MemoryImage(pngImageBytes);
+    return image;
   }
 
   ///设置回调对象
