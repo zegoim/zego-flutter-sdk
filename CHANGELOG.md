@@ -4,6 +4,11 @@
 
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
+
+## 1.3.5
+
+1. Update Native SDK to 1.21.1.16
+
 ## 1.3.4
 
 1. Add [`takePublishStreamSnapshot`](https://pub.dev/documentation/zegoliveroom_plugin/latest/zegoliveroom_plugin/ZegoLiveRoomPublisherPlugin/takePublishStreamSnapshot.html) and [`takePlayStreamSnapshot`](https://pub.dev/documentation/zegoliveroom_plugin/latest/zegoliveroom_plugin/ZegoLiveRoomPlayerPlugin/takePlayStreamSnapshot.html) APIs
