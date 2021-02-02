@@ -5,6 +5,10 @@
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
 
+## 1.3.6
+
+1. Update Native SDK to 1.21.1.27
+
 ## 1.3.5
 
 1. Update Native SDK to 1.21.1.16
