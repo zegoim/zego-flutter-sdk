@@ -439,11 +439,17 @@
     
     std::lock_guard<std::mutex> lock(m_input_buffer_mutex);
     
-    if(self->m_pInputFrameBuffer) {
+    /*if(self->m_pInputFrameBuffer) {
         CVBufferRelease(self->m_pInputFrameBuffer);
     }
     self->m_pInputFrameBuffer = srcFrameBuffer;
-    CVBufferRetain(self->m_pInputFrameBuffer);
+    CVBufferRetain(self->m_pInputFrameBuffer);*/
+    
+    if(self->m_pRenderFrameBuffer) {
+        CVBufferRelease(self->m_pRenderFrameBuffer);
+    }
+    self->m_pRenderFrameBuffer = srcFrameBuffer;
+    CVBufferRetain(self->m_pRenderFrameBuffer);
     
     m_isNewFrameAvailable = YES;
 }
@@ -534,11 +540,11 @@
 #pragma mark - FlutterTexture
 - (CVPixelBufferRef)copyPixelBuffer {
    
-    __weak ZegoViewRenderer *weak_ptr = self;
+    /*__weak ZegoViewRenderer *weak_ptr = self;
     dispatch_async(m_opengl_queue, ^{
         ZegoViewRenderer *strong_ptr = weak_ptr;
         [strong_ptr processingData];
-    });
+    });*/
     
     CVPixelBufferRef temp = nil;
     
