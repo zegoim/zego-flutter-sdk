@@ -357,7 +357,7 @@
     CVReturn ret = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(nil, m_buffer_pool, ref, &processBuffer);
     if(ret != kCVReturnSuccess)
     {
-        [ZegoLog logNotice:@"alloc error: %d", ret];
+        [ZegoLog logNotice: [NSString stringWithFormat:@"alloc error: %d", ret]];
         return;
     }
 
