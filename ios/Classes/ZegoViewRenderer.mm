@@ -1,5 +1,6 @@
 #import "ZegoViewRenderer.h"
 #import <mutex>
+#import <ZegoLog.h>
 
 @interface ZegoViewRenderer()
 
@@ -346,9 +347,19 @@
         [self setupVAO:width height:height];
 
     CVPixelBufferRef processBuffer;
-    CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &processBuffer);
+    
+    NSDictionary *auxPixelBufferAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
+                                           [NSNumber numberWithInt:6], (id)kCVPixelBufferPoolAllocationThresholdKey,
+                                           nil
+                                           ];
+    
+    CFDictionaryRef ref = (__bridge CFDictionaryRef)auxPixelBufferAttributes;
+    CVReturn ret = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(nil, m_buffer_pool, ref, &processBuffer);
     if(ret != kCVReturnSuccess)
+    {
+        [ZegoLog logNotice:@"alloc error: %d", ret];
         return;
+    }
 
     /* create input frame texture from sdk */
     CVOpenGLESTextureRef texture_input = NULL;
