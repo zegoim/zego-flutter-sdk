@@ -349,7 +349,7 @@
     CVPixelBufferRef processBuffer;
     
     NSDictionary *auxPixelBufferAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
-                                           [NSNumber numberWithInt:6], (id)kCVPixelBufferPoolAllocationThresholdKey,
+                                           [NSNumber numberWithInt:2], (id)kCVPixelBufferPoolAllocationThresholdKey,
                                            nil
                                            ];
     
