@@ -358,6 +358,12 @@
     if(ret != kCVReturnSuccess)
     {
         [ZegoLog logNotice: [NSString stringWithFormat:@"alloc error: %d", ret]];
+        CVBufferRelease(readInputBuffer);
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            if(self->m_pRenderFrameBuffer)
+                CVBufferRelease(self->m_pRenderFrameBuffer);
+        }
         return;
     }
 
