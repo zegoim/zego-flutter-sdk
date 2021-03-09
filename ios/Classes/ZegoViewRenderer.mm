@@ -351,7 +351,7 @@
     CVPixelBufferRef processBuffer;
     
     NSDictionary *auxPixelBufferAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
-                                           [NSNumber numberWithInt:2], (id)kCVPixelBufferPoolAllocationThresholdKey,
+                                           [NSNumber numberWithInt:3], (id)kCVPixelBufferPoolAllocationThresholdKey,
                                            nil
                                            ];
     
@@ -364,7 +364,7 @@
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             if(self->m_pRenderFrameBuffer) {
-                CVBufferRelease(self->m_pRenderFrameBuffer);
+                //CVBufferRelease(self->m_pRenderFrameBuffer);
                 self->m_pRenderFrameBuffer = nil;
             }
         }
@@ -410,8 +410,8 @@
         
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            if(self->m_pRenderFrameBuffer)
-                CVBufferRelease(self->m_pRenderFrameBuffer);
+            //if(self->m_pRenderFrameBuffer)
+                //CVBufferRelease(self->m_pRenderFrameBuffer);
             
             self->m_pRenderFrameBuffer = processBuffer;
         }
@@ -565,8 +565,9 @@
     std::lock_guard<std::mutex> lock(m_mutex);
     if(m_pTempToCopyFrameBuffer != m_pRenderFrameBuffer) {
         
-        // 为啥反而这里不平
-        //CVBufferRelease(m_pTempToCopyFrameBuffer);
+        
+        //if(m_pTempToCopyFrameBuffer)
+        CVBufferRelease(m_pTempToCopyFrameBuffer);
         m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
         
         CVBufferRetain(m_pTempToCopyFrameBuffer);
