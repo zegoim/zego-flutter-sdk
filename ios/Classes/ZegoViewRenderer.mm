@@ -14,6 +14,7 @@
 {
     CVPixelBufferRef m_pInputFrameBuffer;
     CVPixelBufferRef m_pRenderFrameBuffer;
+    CVPixelBufferRef m_pTempToCopyFrameBuffer;
     
     dispatch_queue_t  m_opengl_queue;
     GLfloat m_lstVertices[8];
@@ -73,6 +74,7 @@
         m_isRendering = NO;
         
         [self createPixelBufferPool:&m_buffer_pool width:_view_width height:_view_height];
+        m_pTempToCopyFrameBuffer = nil;
         
         __weak ZegoViewRenderer *weak_ptr = self;
         dispatch_async(m_opengl_queue, ^{
@@ -361,8 +363,10 @@
         CVBufferRelease(readInputBuffer);
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            if(self->m_pRenderFrameBuffer)
+            if(self->m_pRenderFrameBuffer) {
                 CVBufferRelease(self->m_pRenderFrameBuffer);
+                self->m_pRenderFrameBuffer = nil;
+            }
         }
         return;
     }
@@ -410,7 +414,6 @@
                 CVBufferRelease(self->m_pRenderFrameBuffer);
             
             self->m_pRenderFrameBuffer = processBuffer;
-            //CVBufferRetain(self->m_pRenderFrameBuffer);
         }
         
         CFRelease(texture_input);
@@ -557,16 +560,25 @@
         [strong_ptr processingData];
     });
     
-    CVPixelBufferRef temp = nil;
+    //CVPixelBufferRef temp = nil;
     
     std::lock_guard<std::mutex> lock(m_mutex);
-    if (m_pRenderFrameBuffer) {
-        temp = m_pRenderFrameBuffer;
-        CVBufferRetain(temp);
+    if(m_pTempToCopyFrameBuffer != m_pRenderFrameBuffer) {
+        
+        // 为啥反而这里不平
+        //CVBufferRelease(m_pTempToCopyFrameBuffer);
+        m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
+        
+        CVBufferRetain(m_pTempToCopyFrameBuffer);
     }
     
+    /*if (m_pRenderFrameBuffer) {
+        temp = m_pRenderFrameBuffer;
+        CVBufferRetain(temp);
+    }*/
+    
     m_isNewFrameAvailable = NO;
-    return temp;
+    return m_pTempToCopyFrameBuffer;
 }
 
 - (void)createPixelBufferPool:(CVPixelBufferPoolRef *)pool width:(int)width height:(int)height {
