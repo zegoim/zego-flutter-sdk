@@ -17,6 +17,7 @@
     CVPixelBufferRef m_pTempToCopyFrameBuffer;
     
     CVPixelBufferRef m_pTmpProcessFrameBuffer;
+    CVPixelBufferRef m_pTmpProcess2FrameBuffer;
     
     dispatch_queue_t  m_opengl_queue;
     GLfloat m_lstVertices[8];
@@ -77,8 +78,9 @@
         
         [self createPixelBufferPool:&m_buffer_pool width:_view_width height:_view_height];
         m_pTempToCopyFrameBuffer = nil;
+        // 固定只开两个 buffer 做双缓冲
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcessFrameBuffer);
-        
+        CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess2FrameBuffer);
         
         __weak ZegoViewRenderer *weak_ptr = self;
         dispatch_async(m_opengl_queue, ^{
@@ -233,7 +235,9 @@
             
             [strong_ptr destroyPixelBufferPool:self->m_buffer_pool];
             [strong_ptr createPixelBufferPool:&self->m_buffer_pool width:strong_ptr.view_width height:strong_ptr.view_height];
-            
+            // 固定只开两个 buffer 做双缓冲
+            CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcessFrameBuffer);
+            CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcess2FrameBuffer);
             self->m_config_changed = YES;
             
         }
@@ -355,7 +359,16 @@
     /*if(m_pTmpProcessFrameBuffer) {
         CVBufferRelease(m_pTmpProcessFrameBuffer);
     }*/
-    CVPixelBufferRef processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
+    CVPixelBufferRef processBuffer = nil;
+    if(self->m_pRenderFrameBuffer == self->m_pTmpProcessFrameBuffer) {
+        // 如果上一帧使用的内存是 tmp process 1，那么这次使用 tmp process 2
+        processBuffer = CVBufferRetain(m_pTmpProcess2FrameBuffer);
+    }
+    else {
+        // 如果上一帧使用的内存是 tmp process 2，那么这次使用 tmp process 1
+        processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
+    }
+    //CVPixelBufferRef processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
     
     /*NSDictionary *auxPixelBufferAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
                                            [NSNumber numberWithInt:6], (id)kCVPixelBufferPoolAllocationThresholdKey,
