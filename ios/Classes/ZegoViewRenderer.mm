@@ -1,12 +1,15 @@
 #import "ZegoViewRenderer.h"
 #import <mutex>
+#import <atomic>
 #import <ZegoLog.h>
 
 @interface ZegoViewRenderer()
 
 @property (nonatomic, weak) id<FlutterTextureRegistry> registry;
 @property (nonatomic, assign) BOOL isPublisher;
-@property (nonatomic, strong)EAGLContext *context;
+@property (nonatomic, strong) EAGLContext *context;
+
+@property (nonatomic, strong) dispatch_source_t timer;
 
 @end
 
@@ -46,6 +49,9 @@
     
     //当有新帧到达或者屏幕大小发生变化时该标志位才会置位YES
     BOOL m_isNewFrameAvailable;
+    
+    // test
+    std::atomic_int m_consume_count;
 }
 
 @synthesize textureID  = _textureID;
@@ -75,6 +81,8 @@
         m_isNewFrameAvailable = NO;
         
         m_isRendering = NO;
+        
+        m_consume_count = 0;
         
         [self createPixelBufferPool:&m_buffer_pool width:_view_width height:_view_height];
         m_pTempToCopyFrameBuffer = nil;
@@ -356,9 +364,7 @@
     if(m_config_changed || width != m_img_width || height != m_img_height)
         [self setupVAO:width height:height];
 
-    /*if(m_pTmpProcessFrameBuffer) {
-        CVBufferRelease(m_pTmpProcessFrameBuffer);
-    }*/
+
     CVPixelBufferRef processBuffer = nil;
     if(self->m_pRenderFrameBuffer == self->m_pTmpProcessFrameBuffer) {
         // 如果上一帧使用的内存是 tmp process 1，那么这次使用 tmp process 2
@@ -368,29 +374,6 @@
         // 如果上一帧使用的内存是 tmp process 2，那么这次使用 tmp process 1
         processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
     }
-    //CVPixelBufferRef processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
-    
-    /*NSDictionary *auxPixelBufferAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
-                                           [NSNumber numberWithInt:6], (id)kCVPixelBufferPoolAllocationThresholdKey,
-                                           nil
-                                           ];
-    
-    CFDictionaryRef ref = (__bridge CFDictionaryRef)auxPixelBufferAttributes;
-    CVReturn ret = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(nil, m_buffer_pool, ref, &processBuffer);
-    if(ret != kCVReturnSuccess)
-    {
-        NSLog(@"process buffer alloc error: %d", ret);
-        //[ZegoLog logNotice: [NSString stringWithFormat:@"alloc error: %d", ret]];
-        CVBufferRelease(readInputBuffer);
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            if(self->m_pRenderFrameBuffer) {
-                //CVBufferRelease(self->m_pRenderFrameBuffer);
-                self->m_pRenderFrameBuffer = nil;
-            }
-        }
-        return;
-    }*/
 
     /* create input frame texture from sdk */
     CVOpenGLESTextureRef texture_input = NULL;
@@ -509,6 +492,22 @@
 }
 
 - (void)notifyDrawNewFrame {
+    
+    // 插入计数定时器观察生产和消费情况
+    if(!self.timer) {
+        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+        dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+        self.timer = timer;
+        dispatch_source_set_timer(timer, DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC, 0 * NSEC_PER_SEC);
+        dispatch_source_set_event_handler(timer, ^{
+            int count = self->m_consume_count;
+            //NSLog(@" current thread: %@, current consume count: %d", [NSThread currentThread], count);
+            [ZegoLog logNotice:[NSString stringWithFormat:@" current thread: %@, current consume count: %d", [NSThread currentThread], count]];
+        });
+        dispatch_resume(timer);
+    }
+    
+    
     [self.registry textureFrameAvailable:self.textureID];
 }
 
@@ -579,6 +578,7 @@
     dispatch_async(m_opengl_queue, ^{
         ZegoViewRenderer *strong_ptr = weak_ptr;
         [strong_ptr processingData];
+        self->m_consume_count++;
     });
     
     //CVPixelBufferRef temp = nil;
@@ -593,6 +593,8 @@
         
         CVBufferRetain(m_pTempToCopyFrameBuffer);
     }
+    
+    self->m_consume_count--;
     
     /*if (m_pRenderFrameBuffer) {
         temp = m_pRenderFrameBuffer;
