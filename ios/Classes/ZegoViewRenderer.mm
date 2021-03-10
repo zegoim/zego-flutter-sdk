@@ -9,8 +9,6 @@
 @property (nonatomic, assign) BOOL isPublisher;
 @property (nonatomic, strong) EAGLContext *context;
 
-@property (nonatomic, strong) dispatch_source_t timer;
-
 @end
 
 @implementation ZegoViewRenderer
@@ -51,9 +49,6 @@
     
     //当有新帧到达或者屏幕大小发生变化时该标志位才会置位YES
     BOOL m_isNewFrameAvailable;
-    
-    // test
-    std::atomic_int m_consume_count;
 }
 
 @synthesize textureID  = _textureID;
@@ -84,13 +79,11 @@
         
         m_isRendering = NO;
         
-        m_consume_count = 0;
-        
         m_tmp_buffer_index = 0;
         
         [self createPixelBufferPool:&m_buffer_pool width:_view_width height:_view_height];
         m_pTempToCopyFrameBuffer = nil;
-        // 固定只开两个 buffer 做双缓冲
+        // 固定只开三个 buffer 做缓冲
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcessFrameBuffer);
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess2FrameBuffer);
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess3FrameBuffer);
@@ -395,15 +388,6 @@
             break;
     }
     m_tmp_buffer_index ++;
-    
-    /*if(self->m_pRenderFrameBuffer == self->m_pTmpProcessFrameBuffer) {
-        // 如果上一帧使用的内存是 tmp process 1，那么这次使用 tmp process 2
-        processBuffer = CVBufferRetain(m_pTmpProcess2FrameBuffer);
-    }
-    else {
-        // 如果上一帧使用的内存是 tmp process 2，那么这次使用 tmp process 1
-        processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
-    }*/
 
     /* create input frame texture from sdk */
     CVOpenGLESTextureRef texture_input = NULL;
@@ -424,7 +408,7 @@
         // 黑色背景用于填充黑边
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        //glUseProgram(m_hProgram);
+        glUseProgram(m_hProgram);
         
         
         glBindTexture(CVOpenGLESTextureGetTarget(texture_input), CVOpenGLESTextureGetName(texture_input));
@@ -444,9 +428,6 @@
         
         {
             std::lock_guard<std::mutex> lock(m_mutex);
-            //if(self->m_pRenderFrameBuffer)
-                //CVBufferRelease(self->m_pRenderFrameBuffer);
-            
             self->m_pRenderFrameBuffer = processBuffer;
         }
         
@@ -522,22 +503,6 @@
 }
 
 - (void)notifyDrawNewFrame {
-    
-    // 插入计数定时器观察生产和消费情况
-    if(!self.timer) {
-        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-        dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
-        self.timer = timer;
-        dispatch_source_set_timer(timer, DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC, 0 * NSEC_PER_SEC);
-        dispatch_source_set_event_handler(timer, ^{
-            int count = self->m_consume_count;
-            //NSLog(@" current thread: %@, current consume count: %d", [NSThread currentThread], count);
-            [ZegoLog logNotice:[NSString stringWithFormat:@" current thread: %@, current consume count: %d", [NSThread currentThread], count]];
-        });
-        dispatch_resume(timer);
-    }
-    
-    
     [self.registry textureFrameAvailable:self.textureID];
 }
 
@@ -608,28 +573,13 @@
     dispatch_async(m_opengl_queue, ^{
         ZegoViewRenderer *strong_ptr = weak_ptr;
         [strong_ptr processingData];
-        self->m_consume_count++;
     });
     
-    //CVPixelBufferRef temp = nil;
-    
     std::lock_guard<std::mutex> lock(m_mutex);
-    //if(m_pTempToCopyFrameBuffer != m_pRenderFrameBuffer) {
-        
-        
-        //if(m_pTempToCopyFrameBuffer)
+
     CVBufferRelease(m_pTempToCopyFrameBuffer);
     m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
-    
     CVBufferRetain(m_pTempToCopyFrameBuffer);
-    //}
-    
-    self->m_consume_count--;
-    
-    /*if (m_pRenderFrameBuffer) {
-        temp = m_pRenderFrameBuffer;
-        CVBufferRetain(temp);
-    }*/
     
     m_isNewFrameAvailable = NO;
     return m_pTempToCopyFrameBuffer;
