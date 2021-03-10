@@ -16,6 +16,8 @@
     CVPixelBufferRef m_pRenderFrameBuffer;
     CVPixelBufferRef m_pTempToCopyFrameBuffer;
     
+    CVPixelBufferRef m_pTmpProcessFrameBuffer;
+    
     dispatch_queue_t  m_opengl_queue;
     GLfloat m_lstVertices[8];
     GLfloat m_lstTexCoord[8];
@@ -75,6 +77,8 @@
         
         [self createPixelBufferPool:&m_buffer_pool width:_view_width height:_view_height];
         m_pTempToCopyFrameBuffer = nil;
+        CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcessFrameBuffer);
+        
         
         __weak ZegoViewRenderer *weak_ptr = self;
         dispatch_async(m_opengl_queue, ^{
@@ -348,10 +352,13 @@
     if(m_config_changed || width != m_img_width || height != m_img_height)
         [self setupVAO:width height:height];
 
-    CVPixelBufferRef processBuffer;
+    /*if(m_pTmpProcessFrameBuffer) {
+        CVBufferRelease(m_pTmpProcessFrameBuffer);
+    }*/
+    CVPixelBufferRef processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
     
-    NSDictionary *auxPixelBufferAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
-                                           [NSNumber numberWithInt:3], (id)kCVPixelBufferPoolAllocationThresholdKey,
+    /*NSDictionary *auxPixelBufferAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
+                                           [NSNumber numberWithInt:6], (id)kCVPixelBufferPoolAllocationThresholdKey,
                                            nil
                                            ];
     
@@ -359,7 +366,8 @@
     CVReturn ret = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(nil, m_buffer_pool, ref, &processBuffer);
     if(ret != kCVReturnSuccess)
     {
-        [ZegoLog logNotice: [NSString stringWithFormat:@"alloc error: %d", ret]];
+        NSLog(@"process buffer alloc error: %d", ret);
+        //[ZegoLog logNotice: [NSString stringWithFormat:@"alloc error: %d", ret]];
         CVBufferRelease(readInputBuffer);
         {
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -369,7 +377,7 @@
             }
         }
         return;
-    }
+    }*/
 
     /* create input frame texture from sdk */
     CVOpenGLESTextureRef texture_input = NULL;
