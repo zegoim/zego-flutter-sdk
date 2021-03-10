@@ -21,6 +21,8 @@
     
     CVPixelBufferRef m_pTmpProcessFrameBuffer;
     CVPixelBufferRef m_pTmpProcess2FrameBuffer;
+    CVPixelBufferRef m_pTmpProcess3FrameBuffer;
+    std::atomic_int m_tmp_buffer_index;
     
     dispatch_queue_t  m_opengl_queue;
     GLfloat m_lstVertices[8];
@@ -84,11 +86,14 @@
         
         m_consume_count = 0;
         
+        m_tmp_buffer_index = 0;
+        
         [self createPixelBufferPool:&m_buffer_pool width:_view_width height:_view_height];
         m_pTempToCopyFrameBuffer = nil;
         // 固定只开两个 buffer 做双缓冲
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcessFrameBuffer);
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess2FrameBuffer);
+        CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess3FrameBuffer);
         
         __weak ZegoViewRenderer *weak_ptr = self;
         dispatch_async(m_opengl_queue, ^{
@@ -246,6 +251,7 @@
             // 固定只开两个 buffer 做双缓冲
             CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcessFrameBuffer);
             CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcess2FrameBuffer);
+            CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcess3FrameBuffer);
             self->m_config_changed = YES;
             
         }
@@ -366,14 +372,38 @@
 
 
     CVPixelBufferRef processBuffer = nil;
-    if(self->m_pRenderFrameBuffer == self->m_pTmpProcessFrameBuffer) {
+    //m_tmp_buffer_index = m_tmp_buffer_index > 2 ? 0 : m_tmp_buffer_index;
+    int index = m_tmp_buffer_index;
+    if(index > 2) {
+        m_tmp_buffer_index = 0;
+        index = 0;
+    }
+    //NSLog(@"current tmp buffer index: %d", index);
+    switch (index) {
+        case 0:
+            processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
+            break;
+        case 1:
+            processBuffer = CVBufferRetain(m_pTmpProcess2FrameBuffer);
+            break;
+        case 2:
+            processBuffer = CVBufferRetain(m_pTmpProcess3FrameBuffer);
+            break;
+            
+        default:
+            NSLog(@"index error: %d", index);
+            break;
+    }
+    m_tmp_buffer_index ++;
+    
+    /*if(self->m_pRenderFrameBuffer == self->m_pTmpProcessFrameBuffer) {
         // 如果上一帧使用的内存是 tmp process 1，那么这次使用 tmp process 2
         processBuffer = CVBufferRetain(m_pTmpProcess2FrameBuffer);
     }
     else {
         // 如果上一帧使用的内存是 tmp process 2，那么这次使用 tmp process 1
         processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
-    }
+    }*/
 
     /* create input frame texture from sdk */
     CVOpenGLESTextureRef texture_input = NULL;
