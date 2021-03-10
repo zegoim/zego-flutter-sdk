@@ -614,15 +614,15 @@
     //CVPixelBufferRef temp = nil;
     
     std::lock_guard<std::mutex> lock(m_mutex);
-    if(m_pTempToCopyFrameBuffer != m_pRenderFrameBuffer) {
+    //if(m_pTempToCopyFrameBuffer != m_pRenderFrameBuffer) {
         
         
         //if(m_pTempToCopyFrameBuffer)
-        CVBufferRelease(m_pTempToCopyFrameBuffer);
-        m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
-        
-        CVBufferRetain(m_pTempToCopyFrameBuffer);
-    }
+    CVBufferRelease(m_pTempToCopyFrameBuffer);
+    m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
+    
+    CVBufferRetain(m_pTempToCopyFrameBuffer);
+    //}
     
     self->m_consume_count--;
     
