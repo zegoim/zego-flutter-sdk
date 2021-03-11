@@ -8,6 +8,8 @@
 #import "ZegoRendererController.h"
 #import <mutex>
 
+#import <ZegoLog.h>
+
 @implementation ZegoPixelBufferPool
 
 - (instancetype)initWithPool:(CVPixelBufferPoolRef)pool width:(int)width height:(int)height {
@@ -64,16 +66,20 @@
 }
 
 - (BOOL)addRenderer:(ZegoViewRenderer *)renderer ofKey:(NSString *)streamID {
-    if([self isStreamExist:streamID])
+    if([self isStreamExist:streamID]){
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] add renderer to map failed, stream has exist: %@", streamID]];
         return NO;
+    }
     
     [self.renders setObject:renderer forKey:streamID];
     return YES;
 }
 
 - (BOOL)removeRenderer:(NSString *)streamID {
-    if(![self isStreamExist:streamID])
+    if(![self isStreamExist:streamID]) {
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] remove renderer to map failed, stream not exist: %@", streamID]];
         return NO;
+    }
     
     ZegoViewRenderer *renderer = [self.renders objectForKey:streamID];
     [renderer releaseRenderer:nil];
@@ -114,6 +120,8 @@
     _displayLink.paused = NO;
     
     self.isRendering = YES;
+    
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] start flutter rendering"]];
 }
 
 - (void)stopRendering {
@@ -124,6 +132,8 @@
     [_displayLink invalidate];
     
     self.isRendering = NO;
+    
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] stop flutter rendering"]];
 }
 
 

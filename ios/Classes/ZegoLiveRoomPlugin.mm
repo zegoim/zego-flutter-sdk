@@ -2048,7 +2048,8 @@ Byte toByte(NSString* c) {
         int height = [self numberToIntValue:args[@"height"]];
 
         ZegoViewRenderer *renderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
-
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] create play view renderer, width: %d, height: %d, texture id: %d, stream id: %@", width, height, renderer.textureID, streamID]];
+        
         if([self.renderController addRenderer:renderer ofKey:streamID]) {
 
             if(![self.renderController isRendering])
@@ -2130,7 +2131,9 @@ Byte toByte(NSString* c) {
                 if([self.renderController isRendering])
                     [self.renderController stopRendering];
             }
-
+            
+            [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] destroy play view renderer. stream id: %@", streamID]];
+            
             [self.renderController destroyPixelBufferPool:streamID];
             result(@(YES));
         } else {

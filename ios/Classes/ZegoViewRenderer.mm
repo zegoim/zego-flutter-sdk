@@ -88,6 +88,8 @@
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess2FrameBuffer);
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess3FrameBuffer);
         
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] init flutter view renderer. texture id: %lld, is publisher: %d", _textureID, _isPublisher]];
+        
         __weak ZegoViewRenderer *weak_ptr = self;
         dispatch_async(m_opengl_queue, ^{
             ZegoViewRenderer *strong_ptr = weak_ptr;
@@ -555,6 +557,7 @@
     });
     //释放GPU资源
     [self.registry unregisterTexture:_textureID];
+    [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] release flutter view renderer. texture id: %lld, is publisher: %d", _textureID, _isPublisher]];
 }
 
 //释放资源
