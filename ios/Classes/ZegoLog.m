@@ -12,7 +12,7 @@
 
 + (void)logNotice:(NSString *)content {
     NSLog(@"%@", content);
-    zego_liveroom_custom_log(content.UTF8String);
+    zego_liveroom_custom_log(content.UTF8String, 0);
 }
 
 @end
