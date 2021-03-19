@@ -17,6 +17,6 @@ A new flutter plugin project.
   s.public_header_files = 'Classes/**/*.h'
   s.static_framework = true
   s.dependency 'Flutter'
-  s.dependency 'ZegoLiveRoom/Advanced', '1.21.1.28'
+  s.dependency 'ZegoLiveRoom/Advanced', '1.21.3.18'
   s.ios.deployment_target = '8.0'
 end

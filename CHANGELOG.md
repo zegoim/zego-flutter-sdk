@@ -5,6 +5,11 @@
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
 
+## 1.4.0
+
+1. Optimization: Limit iOS memory allocation to avoid the problem of untimely memory release in some versions of flutter
+2. Update Native SDK to 1.21.3.18
+
 ## 1.3.6
 
 1. Update Native SDK to 1.21.1.27
