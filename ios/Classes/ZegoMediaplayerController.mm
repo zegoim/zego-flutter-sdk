@@ -6,6 +6,15 @@
 //
 
 #import "ZegoMediaplayerController.h"
+#import "ZegoViewRenderer.h"
+#import "ZegoLog.h"
+
+#import <sys/time.h>
+#import <memory>
+#import <thread>
+
+/** 对 MediaPlayer 数据进行渲染时，表示 MediaPlayer 本地预览 */
+NSString *kZegoVideoDataMediaPlayerStream = @"kZegoVideoDataMediaPlayerStream";
 
 static NSString * const KEY_START = @"start";
 static NSString * const KEY_STOP = @"stop";
@@ -14,11 +23,19 @@ static NSString * const KEY_RESUME = @"resume";
 static NSString * const KEY_LOAD = @"load";
 static NSString * const KEY_SEEK_TO = @"seek_to";
 
-@interface ZegoMediaPlayerController() <ZegoMediaPlayerEventWithIndexDelegate>
+static id<ZegoMediaPlayerControllerVideoDataDelegate> mVideoDataDelegate = nil;
+static ZegoMediaPlayerVideoPixelFormat mFormat = ZegoMediaPlayerVideoPixelFormatBGRA32;
+
+@interface ZegoMediaPlayerController() <ZegoMediaPlayerEventWithIndexDelegate, ZegoMediaPlayerVideoPlayWithIndexDelegate>{
+    CVPixelBufferPoolRef pool_;
+    int video_width_;
+    int video_height_;
+}
 
 
 @property (nonatomic, strong) ZegoMediaPlayer* mediaPlayer;
 @property (nonatomic, strong) NSMutableDictionary* callbackMap;
+@property (nonatomic, strong) ZegoRendererController *renderController;
 //@property (nonatomic, weak) id<ZegoAudioPlayerControllerDelegate> delegate;
 @property (nonatomic, weak) id<ZegoMediaPlayerControllerDelegate> delegate;
 
@@ -49,15 +66,39 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     _mediaPlayer = [[ZegoMediaPlayer alloc] initWithPlayerType:MediaPlayerTypeAux playerIndex:ZegoMediaPlayerIndexFirst];
     
     [_mediaPlayer setEventWithIndexDelegate:self];
+    if (mVideoDataDelegate) {
+        [_mediaPlayer setVideoPlayWithIndexDelegate:self format:mFormat];
+    }
 }
 
 - (void)uninitObject {
+    if ([_renderController removeRenderer:kZegoVideoDataMediaPlayerStream]) {
+        if([self.renderController getRenderCount] == 0) {
+
+            if([self.renderController isRendering])
+                [self.renderController stopRendering];
+        }
+
+        [_renderController destroyPixelBufferPool:kZegoVideoDataMediaPlayerStream];
+    };
+    _renderController = nil;
+    [_mediaPlayer setVideoPlayWithIndexDelegate:nil format:mFormat];
+    [_mediaPlayer setEventWithIndexDelegate:nil];
     [_mediaPlayer uninit];
     _mediaPlayer = nil;
 }
 
 - (void)setDelegate:(id<ZegoMediaPlayerControllerDelegate>)delegate {
     _delegate = delegate;
+}
+
+- (void)setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)videoDataDelegate withFormat:(ZegoMediaPlayerVideoPixelFormat)format {
+    mVideoDataDelegate = videoDataDelegate;
+    mFormat = format;
+}
+
+- (void)setRenderController:(ZegoRendererController *)rndController {
+    _renderController = rndController;
 }
 
 /*- (void)initPlayerWithType:(MediaPlayerType)type {
@@ -378,6 +419,96 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
         if([_delegate respondsToSelector:@selector(onProcessInterval:)])
         [_delegate onProcessInterval:timestamp];
     }
+}
+
+typedef void (*CFTypeDeleter)(CFTypeRef cf);
+#define MakeCFTypeHolder(ptr) std::unique_ptr<void, CFTypeDeleter>(ptr, CFRelease)
+
+/**
+ 播放器视频数据回调
+ 
+ @param data 视频数据
+ @param size 数据长度
+ @param format 数据类型
+ @param index 播放器index
+ */
+- (void)onPlayVideoData:(const char *)data size:(int)size format:(struct ZegoMediaPlayerVideoDataFormat)format playerIndex:(ZegoMediaPlayerIndex)index {
+    // 时间戳
+    struct timeval tv_now;
+    gettimeofday(&tv_now, NULL);
+    unsigned long long timeMS = (unsigned long long)(tv_now.tv_sec) * 1000 + tv_now.tv_usec / 1000;
+    // 构造 buffer
+    CVPixelBufferRef pixelBuffer = [self createInputBufferWithWidth:format.width height:format.height stride:format.strides[0]];
+    if (pixelBuffer == NULL) return;
+    
+    auto holder = MakeCFTypeHolder(pixelBuffer);
+    
+    CVReturn cvRet = CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    if (cvRet != kCVReturnSuccess) return;
+    
+    size_t destStride = CVPixelBufferGetBytesPerRow(pixelBuffer);
+    unsigned char *dest = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
+    unsigned char *src = (unsigned char *)data;
+    for (int i = 0; i < format.height; i++) {
+        memcpy(dest, src, format.strides[0]);
+        src += format.strides[0];
+        dest += destStride;
+    }
+    
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    // 进行渲染
+    if(![self.renderController isRendering]) {
+        [ZegoLog logNotice:@"[onPlayVideoData] render controller is not rendering, ignore"];
+        return;
+    }
+
+    // 通过固定的 key 拿到在 plugin 中创建的 Render
+    ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
+    [renderer setSrcFrameBuffer:pixelBuffer processBuffer:nil];
+    
+    // 回调出去
+    if ([mVideoDataDelegate respondsToSelector:@selector(onPlayerVideoFrame:timeStamp:)]) {
+        [mVideoDataDelegate onPlayerVideoFrame:pixelBuffer timeStamp:timeMS];
+    }
+}
+
+#pragma mark- Private
+- (void)createPixelBufferPool {
+    NSDictionary *pixelBufferAttributes = @{
+                                            (id)kCVPixelBufferOpenGLCompatibilityKey: @(YES),
+                                            (id)kCVPixelBufferWidthKey: @(video_width_),
+                                            (id)kCVPixelBufferHeightKey: @(video_height_),
+                                            (id)kCVPixelBufferIOSurfacePropertiesKey: [NSDictionary dictionary],
+                                            (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)
+                                            };
+    
+    CFDictionaryRef ref = (__bridge CFDictionaryRef)pixelBufferAttributes;
+    CVReturn ret = CVPixelBufferPoolCreate(nil, nil, ref, &pool_);
+    if (ret != kCVReturnSuccess) {
+        return ;
+    }
+}
+
+- (CVPixelBufferRef)createInputBufferWithWidth:(int)width height:(int)height stride:(int)stride {
+    if (video_width_ != width || video_height_ != height) {
+        if (video_height_ && video_width_) {
+            CVPixelBufferPoolFlushFlags flag = 0;
+            CVPixelBufferPoolFlush(pool_, flag);
+            CFRelease(pool_);
+            pool_ = nil;
+        }
+        
+        video_width_ = width;
+        video_height_ = height;
+        [self createPixelBufferPool];
+    }
+    
+    CVPixelBufferRef pixelBuffer;
+    CVReturn ret = CVPixelBufferPoolCreatePixelBuffer(nil, pool_, &pixelBuffer);
+    if (ret != kCVReturnSuccess)
+        return nil;
+    
+    return pixelBuffer;
 }
 
 @end

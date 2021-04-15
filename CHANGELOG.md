@@ -5,6 +5,10 @@
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
 
+## 1.5.0
+
+1. Add feature of MediaPlayer Rendering and publishing
+
 ## 1.4.0
 
 1. Optimization: Limit iOS memory allocation to avoid the problem of untimely memory release in some versions of flutter

@@ -12,6 +12,14 @@
 #import <Flutter/Flutter.h>
 #import <ZegoLiveRoom/zego-api-mediaplayer-oc.h>
 
+#import "ZegoRendererController.h"
+
+@protocol ZegoMediaPlayerControllerVideoDataDelegate <NSObject>
+
+- (void)onPlayerVideoFrame: (CVPixelBufferRef)buffer timeStamp: (unsigned long long)timeStamp;
+
+@end
+
 @protocol ZegoMediaPlayerControllerDelegate <NSObject>
 
 - (void)onPlayEnd;
@@ -39,6 +47,10 @@
 - (void)uninitObject;
 
 - (void)setDelegate:(id<ZegoMediaPlayerControllerDelegate>)delegate;
+
+- (void)setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)delegate withFormat:(ZegoMediaPlayerVideoPixelFormat)format;
+
+- (void)setRenderController:(ZegoRendererController *)rndController;
 
 - (void)start:(NSString *)path repeat:(BOOL)repeat asset:(BOOL)asset reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result;
 

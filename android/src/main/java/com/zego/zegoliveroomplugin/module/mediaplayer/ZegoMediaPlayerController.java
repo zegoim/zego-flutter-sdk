@@ -1,4 +1,5 @@
 package com.zego.zegoliveroomplugin.module.mediaplayer;
+
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -6,10 +7,12 @@ import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 
 import com.zego.zegoavkit2.IZegoMediaPlayerVideoPlayWithIndexCallback;
 import com.zego.zegoavkit2.IZegoMediaPlayerWithIndexCallback;
 import com.zego.zegoavkit2.ZegoMediaPlayer;
+import com.zego.zegoavkit2.ZegoVideoDataFormat;
 import com.zego.zegoliveroomplugin.utils.ZegoFileHelper;
 
 import java.io.IOException;
@@ -36,6 +39,8 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     //private HashMap<Integer, Result> mLoadResultList;
 
     private IZegoMediaPlayerControllerCallback mCallback = null;
+    private IZegoMediaPlayerVideoPlayWithIndexCallback mPlayVideoCallback = null;
+    private int mVideoDataFormat;
 
     public ZegoMediaPlayerController() {
         mResultMap = new HashMap<>();
@@ -45,18 +50,30 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         mPlayer = new ZegoMediaPlayer();
         mPlayer.init(ZegoMediaPlayer.PlayerTypeAux, 0);
         mPlayer.setEventWithIndexCallback(this);
+        if (mPlayVideoCallback != null) {
+            mPlayer.setVideoPlayWithIndexCallback(mPlayVideoCallback, mVideoDataFormat);
+        }
     }
 
     public void uninit() {
         mPlayer.setEventWithIndexCallback(null);
+        if (mPlayVideoCallback != null) {
+            mPlayer.setVideoPlayWithIndexCallback(null, mVideoDataFormat);
+            mPlayVideoCallback = null;
+        }
         mPlayer.uninit();
         mPlayer = null;
+    }
+
+    public void setVideoDataCallback(IZegoMediaPlayerVideoPlayWithIndexCallback callback, int format) {
+        this.mPlayVideoCallback = callback;
+        this.mVideoDataFormat = format;
     }
 
     public static ZegoMediaPlayerController getInstance() {
         if (sInstance == null) {
             Class var0 = ZegoMediaPlayerController.class;
-            synchronized(ZegoMediaPlayerController.class) {
+            synchronized (ZegoMediaPlayerController.class) {
                 if (sInstance == null) {
                     sInstance = new ZegoMediaPlayerController();
                 }
@@ -69,9 +86,9 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
 
         mResultMap.put(KEY_START, result);
 
-        if(isAsset) {
+        if (isAsset) {
 
-            if(path!= null && !path.isEmpty()) {
+            if (path != null && !path.isEmpty()) {
                 String loopUpKey = registrar.lookupKeyForAsset(path);
                 playEffectAsync(registrar.context(), loopUpKey, isRepeat);
             } else {
@@ -104,7 +121,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     public void preload(String path, boolean isAsset, Registrar registrar, Result result) {
 
         mResultMap.put(KEY_LOAD, result);
-        if(isAsset) {
+        if (isAsset) {
             String loopUpKey = registrar.lookupKeyForAsset(path);
             preloadEffectAsync(registrar.context(), loopUpKey);
         } else {
@@ -165,6 +182,10 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         mPlayer.setOnlineResourceCache(time, size);
     }
 
+    public void setView(Object view) {
+        mPlayer.setView(view);
+    }
+
     public void getOnlineResourceCache(Result result) {
         ZegoMediaPlayer.CacheStat cacheStat = new ZegoMediaPlayer.CacheStat();
         mPlayer.getOnlineResourceCacheStat(cacheStat);
@@ -196,7 +217,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     }
 
     private void preloadEffectAsync(final Context context, final String fileName) {
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 final String path = ZegoFileHelper.copyAssetsFile2Phone(context, fileName);
@@ -208,7 +229,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
 
     @Override
     public void onPlayEnd(int index) {
-        if(mCallback != null) {
+        if (mCallback != null) {
             mCallback.onPlayEnd();
         }
     }
@@ -216,7 +237,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onPlayStart(int index) {
         Result result = mResultMap.get(KEY_START);
-        if(result != null) {
+        if (result != null) {
             result.success(null);
             mResultMap.remove(KEY_START);
         }
@@ -225,7 +246,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onPlayPause(int index) {
         Result result = mResultMap.get(KEY_PAUSE);
-        if(result != null) {
+        if (result != null) {
             result.success(null);
             mResultMap.remove(KEY_PAUSE);
         }
@@ -234,7 +255,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onPlayStop(int index) {
         Result result = mResultMap.get(KEY_STOP);
-        if(result != null) {
+        if (result != null) {
             result.success(null);
             mResultMap.remove(KEY_STOP);
         }
@@ -243,7 +264,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onPlayResume(int var1) {
         Result result = mResultMap.get(KEY_RESUME);
-        if(result != null) {
+        if (result != null) {
             result.success(null);
             mResultMap.remove(KEY_RESUME);
         }
@@ -251,7 +272,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
 
     @Override
     public void onPlayError(int error, int index) {
-        if(mCallback != null) {
+        if (mCallback != null) {
             mCallback.onPlayError(error);
         }
     }
@@ -268,14 +289,14 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
 
     @Override
     public void onBufferBegin(int var1) {
-        if(mCallback != null) {
+        if (mCallback != null) {
             mCallback.onBufferBegin();
         }
     }
 
     @Override
     public void onBufferEnd(int var1) {
-        if(mCallback != null) {
+        if (mCallback != null) {
             mCallback.onBufferEnd();
         }
     }
@@ -283,7 +304,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onSeekComplete(int error, long timestamp, int index) {
         Result result = mResultMap.get(KEY_SEEK_TO);
-        if(result != null) {
+        if (result != null) {
             HashMap<String, Object> retMap = new HashMap<>();
             retMap.put("errorCode", error);
             retMap.put("timestamp", timestamp);
@@ -301,7 +322,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onLoadComplete(int var1) {
         Result result = mResultMap.get(KEY_LOAD);
-        if(result != null) {
+        if (result != null) {
             result.success(null);
             mResultMap.remove(KEY_LOAD);
         }
@@ -309,7 +330,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
 
     @Override
     public void onProcessInterval(long timestamp, int index) {
-        if(mCallback != null) {
+        if (mCallback != null) {
             mCallback.onProcessInterval(timestamp);
         }
     }

@@ -16,6 +16,7 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
 };
 
 static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
+static id<ZegoVideoCaptureFactory> videoCaptureFactory = nil;
 
 @interface ZegoLiveRoomPlugin()
 <ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoDeviceEventDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoVideoRenderCVPixelBufferDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, ZegoMediaPlayerControllerDelegate, FlutterStreamHandler>
@@ -158,6 +159,11 @@ Byte toByte(NSString* c) {
     videoFilterFactory = factory;
 }
 
+#pragma mark - External Video Capture Factory
++ (void)setExternalVideoCaptureFactory:(nullable id<ZegoVideoCaptureFactory>)factory {
+    videoCaptureFactory = factory;
+}
+
 #pragma mark - Handle Flutter CallMethods
 - (void)initSDKWithAppID:(unsigned int)appID appSign: (NSString *)appsign result:(FlutterResult)result {
 
@@ -198,6 +204,7 @@ Byte toByte(NSString* c) {
 
     [[ZegoAudioPlayerController instance] initObject];
     [[ZegoMediaPlayerController instance] initObject];
+    [[ZegoMediaPlayerController instance] setRenderController:self.renderController];
 
 }
 
@@ -2048,7 +2055,7 @@ Byte toByte(NSString* c) {
         int height = [self numberToIntValue:args[@"height"]];
 
         ZegoViewRenderer *renderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
-        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] create play view renderer, width: %d, height: %d, texture id: %d, stream id: %@", width, height, renderer.textureID, streamID]];
+        [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] create play view renderer, width: %d, height: %d, texture id: %lld, stream id: %@", width, height, renderer.textureID, streamID]];
         
         if([self.renderController addRenderer:renderer ofKey:streamID]) {
 
@@ -2595,7 +2602,38 @@ Byte toByte(NSString* c) {
 
         [[ZegoAudioPlayerController instance] getCurrentDuration:args result:result];
     }
-    /* MediaPlayer */
+#pragma mark LiveRoom-MediaPlayer
+    else if([@"createMediaPlayerRenderer" isEqualToString:call.method]) {
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
+            return;
+        }
+
+        int width = [self numberToIntValue:args[@"width"]];
+        int height = [self numberToIntValue:args[@"height"]];
+
+        ZegoViewRenderer *renderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
+        
+        extern NSString *kZegoVideoDataMediaPlayerStream;
+
+        if([self.renderController addRenderer:renderer ofKey:kZegoVideoDataMediaPlayerStream]) {
+            
+            if(![self.renderController isRendering]) {
+                [self.renderController startRendering];
+            }
+            NSLog(@"%lld", renderer.textureID);
+            result(@(renderer.textureID));
+        }
+        else {
+            NSLog(@"添加 Render 失败");
+            result(@(-1));
+        }
+    }
     else if([@"mpStart" isEqualToString:call.method]) {
 
         if(self.zegoApi == nil) {
@@ -2777,6 +2815,52 @@ Byte toByte(NSString* c) {
         [[ZegoMediaPlayerController instance] setDelegate:nil];
         result(nil);
     }
+    else if ([@"destroyMediaPlayerRenderer" isEqualToString:call.method]) {
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        if(self.isEnablePlatformView) {
+            [self throwNoTextureError:result ofMethodName:call.method];
+            return;
+        }
+        
+        extern NSString *kZegoVideoDataMediaPlayerStream;
+
+        if([self.renderController removeRenderer:kZegoVideoDataMediaPlayerStream]) {
+
+            if([self.renderController getRenderCount] == 0) {
+
+                if([self.renderController isRendering])
+                    [self.renderController stopRendering];
+            }
+
+            [self.renderController destroyPixelBufferPool:kZegoVideoDataMediaPlayerStream];
+            result(@(YES));
+        } else {
+            result(@(NO));
+        }
+    }
+    else if ([@"updateMediaPlayRenderSize" isEqualToString:call.method]) {
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        extern NSString *kZegoVideoDataMediaPlayerStream;
+        ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
+        if(renderer == nil) {
+            [self throwNoRendererError:result ofMethodName:call.method];
+            return;
+        }
+
+        int width = [self numberToIntValue:args[@"width"]];
+        int height = [self numberToIntValue:args[@"height"]];
+
+        [renderer updateRenderSize:CGSizeMake(width, height)];
+        result(nil);
+    }
     /* External Video Filter */
 #pragma mark LiveRoom-ExternalVideoFilter
     else if([@"enableExternalVideoFilterFactory" isEqualToString:call.method]) {
@@ -2787,6 +2871,16 @@ Byte toByte(NSString* c) {
             return;
         }
         [ZegoExternalVideoFilter setVideoFilterFactory:enable ? videoFilterFactory : nil channelIndex:ZEGOAPI_CHN_MAIN];
+        result(nil);
+    }
+#pragma mark LiveRoom-ExternalVideoCapture
+    else if ([@"enableExternalVideoCaptureFactory" isEqualToString:call.method]){
+        bool enable = [self numberToBoolValue:args[@"enable"]];
+        if (!videoCaptureFactory) {
+            result(nil);
+            return;
+        }
+        [ZegoExternalVideoCapture setVideoCaptureFactory:enable ? videoCaptureFactory : nil channelIndex:ZEGOAPI_CHN_MAIN];
         result(nil);
     }
     else if([@"setConfig" isEqualToString:call.method]) {
