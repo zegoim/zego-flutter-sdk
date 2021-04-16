@@ -5,6 +5,10 @@
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
 
+## 1.5.1
+
+1. Add some MediaPlayer API and `setCaptureVolume` API
+
 ## 1.5.0
 
 1. Add feature of MediaPlayer Rendering and publishing

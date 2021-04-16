@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 class ZegoLiveRoomPublisherPlugin {
   /* Method Channel */
   static const MethodChannel _channel =
-  const MethodChannel('plugins.zego.im/zegoliveroom_plugin');
+      const MethodChannel('plugins.zego.im/zegoliveroom_plugin');
 
   ///创建预览渲染器
   ///
@@ -22,10 +22,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 当看到画面带有明显锯齿感时，请检查是否传入的宽高乘上了 devicePixelRatio, 参考[MediaQuery.of(context).devicePixelRatio]
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<int> createPreviewRenderer(int width, int height) async {
-    final int textureID = await _channel.invokeMethod('createPreviewRenderer', {
-      'width': width,
-      'height': height
-    });
+    final int textureID = await _channel.invokeMethod(
+        'createPreviewRenderer', {'width': width, 'height': height});
 
     return textureID;
   }
@@ -37,9 +35,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 推流开始前调用本 API 进行参数配置
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<bool> setPreviewViewMode(int mode) async {
-    final bool success = await _channel.invokeMethod('setPreviewViewMode', {
-      'mode': mode
-    });
+    final bool success =
+        await _channel.invokeMethod('setPreviewViewMode', {'mode': mode});
 
     return success;
   }
@@ -53,10 +50,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 当看到画面带有明显锯齿感时，请检查是否传入的宽高乘上了 devicePixelRatio, 参考[MediaQuery.of(context).devicePixelRatio]
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 false 时，调用该API有效，否则会返回错误
   static Future<void> updatePreviewRenderSize(int width, int height) async {
-    return await _channel.invokeMethod('updatePreviewRenderSize', {
-      'width': width,
-      'height': height
-    });
+    return await _channel.invokeMethod(
+        'updatePreviewRenderSize', {'width': width, 'height': height});
   }
 
   ///销毁预览渲染器
@@ -74,24 +69,19 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param View创建后的回调，viewID 为 Platform View 的唯一标识，请开发者自行管理
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Widget createPreviewPlatformView(Function(int viewID) onViewCreated) {
-    if(TargetPlatform.iOS == defaultTargetPlatform) {
-
+    if (TargetPlatform.iOS == defaultTargetPlatform) {
       return UiKitView(
-        key: new ObjectKey('preview'),
-        viewType: 'plugins.zego.im/zego_view',
-        onPlatformViewCreated: (int viewID) {
-          if(onViewCreated != null)
-            onViewCreated(viewID);
-        }
-      );
-    } else if(TargetPlatform.android == defaultTargetPlatform) {
-
+          key: new ObjectKey('preview'),
+          viewType: 'plugins.zego.im/zego_view',
+          onPlatformViewCreated: (int viewID) {
+            if (onViewCreated != null) onViewCreated(viewID);
+          });
+    } else if (TargetPlatform.android == defaultTargetPlatform) {
       return AndroidView(
         key: new ObjectKey('preview'),
         viewType: 'plugins.zego.im/zego_view',
         onPlatformViewCreated: (int viewID) {
-          if(onViewCreated != null)
-            onViewCreated(viewID);
+          if (onViewCreated != null) onViewCreated(viewID);
         },
       );
     }
@@ -104,13 +94,11 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param viewID，调用 [createPreviewPlatformView] 之后返回的 Platform View 的唯一标识
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Future<bool> setPreviewView(int viewID) async {
-    final bool success = await _channel.invokeMethod('setPreviewView', {
-      'viewID': viewID
-    });
+    final bool success =
+        await _channel.invokeMethod('setPreviewView', {'viewID': viewID});
 
     return success;
   }
-
 
   ///设置预览 Platform View 视频视图的模式
   ///
@@ -119,9 +107,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 推流开始前调用本 API 进行参数配置
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Future<bool> setPlatformViewPreviewViewMode(int mode) async {
-    final bool success = await _channel.invokeMethod('setPlatformViewPreviewViewMode', {
-      'mode': mode
-    });
+    final bool success = await _channel
+        .invokeMethod('setPlatformViewPreviewViewMode', {'mode': mode});
 
     return success;
   }
@@ -131,9 +118,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param viewID，调用 [createPreviewPlatformView] 之后返回的 Platform View 的唯一标识
   ///@discussion 只有当 [ZegoLiveRoomPlugin.enablePlatformView] 传值为 true 时，调用该API有效，否则会返回错误
   static Future<bool> removePreviewPlatformView(int viewID) async {
-    final bool success = await _channel.invokeMethod('removePreviewPlatformView', {
-      'viewID': viewID
-    });
+    final bool success = await _channel
+        .invokeMethod('removePreviewPlatformView', {'viewID': viewID});
 
     return success;
   }
@@ -164,8 +150,10 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param extraInfo 流附加信息, 最大为 1024 字节
   ///@return true 成功，false 失败
   ///@discussion 发布直播成功后，等待 onPublishStateUpdate 通知
-  static Future<bool> startPublishing(String streamID, String title, int flag, {String extraInfo}) async {
-    _addRoomNoticeLog('[Flutter-Dart] startPublishing, streamID: $streamID, title: $title, flag: $flag');
+  static Future<bool> startPublishing(String streamID, String title, int flag,
+      {String extraInfo}) async {
+    _addRoomNoticeLog(
+        '[Flutter-Dart] startPublishing, streamID: $streamID, title: $title, flag: $flag');
     final bool success = await _channel.invokeMethod('startPublishing', {
       'streamID': streamID,
       'title': title,
@@ -193,9 +181,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 更新流附加信息成功后，除调用方外，同一房间内的其他人会收到 onStreamExtraInfoUpdated 通知
   static Future<bool> updateStreamExtraInfo(String extraInfo) async {
-    final bool success = await _channel.invokeMethod('updateStreamExtraInfo', {
-      'extraInfo': extraInfo
-    });
+    final bool success = await _channel
+        .invokeMethod('updateStreamExtraInfo', {'extraInfo': extraInfo});
 
     return success;
   }
@@ -205,9 +192,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param mode 延迟模式，参考 [ZegoLatencyMode] 定义。默认 [ZegoLatencyMode.ZEGO_LATENCY_MODE_NORMAL]
   ///@discussion 在推流前调用
   static Future<void> setLatencyMode(int mode) async {
-    return await _channel.invokeMethod('setLatencyMode', {
-      'mode': mode
-    });
+    return await _channel.invokeMethod('setLatencyMode', {'mode': mode});
   }
 
   ///设置预览和推流镜像
@@ -216,9 +201,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 预览镜像只对前置摄像头有效，后置无效。
   ///@return true 成功，false 失败
   static Future<void> setVideoMirrorMode(int mode) async {
-    final bool success = await _channel.invokeMethod('setVideoMirrorMode', {
-      'mode': mode
-    });
+    final bool success =
+        await _channel.invokeMethod('setVideoMirrorMode', {'mode': mode});
 
     return success;
   }
@@ -229,9 +213,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置
   static Future<bool> enableMic(bool enable) async {
-    final bool success = await _channel.invokeMethod('enableMic', {
-      'enable' : enable
-    });
+    final bool success =
+        await _channel.invokeMethod('enableMic', {'enable': enable});
 
     return success;
   }
@@ -242,9 +225,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置
   static Future<bool> enableCamera(bool enable) async {
-    final bool success = await _channel.invokeMethod('enableCamera', {
-      'enable': enable
-    });
+    final bool success =
+        await _channel.invokeMethod('enableCamera', {'enable': enable});
 
     return success;
   }
@@ -255,9 +237,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置
   static Future<bool> setFrontCam(bool bFront) async {
-    final bool success = await _channel.invokeMethod('setFrontCam', {
-      'enable' : bFront
-    });
+    final bool success =
+        await _channel.invokeMethod('setFrontCam', {'enable': bFront});
 
     return success;
   }
@@ -287,10 +268,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 主播端通过 onJoinLiveRequest 收到观众连麦申请，再调用本 API 响应
   static Future<bool> respondJoinLiveReq(int seq, int rspResult) async {
-    final bool success = await _channel.invokeMethod('respondJoinLiveReq', {
-      'seq': seq,
-      'rspResult': rspResult
-    });
+    final bool success = await _channel.invokeMethod(
+        'respondJoinLiveReq', {'seq': seq, 'rspResult': rspResult});
 
     return success;
   }
@@ -301,15 +280,11 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return 连麦请求响应结果，参考 [ZegoResponseResult] 定义
   ///@discussion 主播邀请连麦成功后，被邀请的观众收到 onInviteJoinLiveRequest 通知
   static Future<ZegoResponseResult> inviteJoinLive(String userID) async {
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('inviteJoinLive', {
-      'userID': userID
-    });
+    final Map<dynamic, dynamic> mapResult =
+        await _channel.invokeMethod('inviteJoinLive', {'userID': userID});
 
-    ZegoResponseResult result = new ZegoResponseResult(
-        mapResult['result'],
-        mapResult['fromUserID'],
-        mapResult['fromUserName']
-    );
+    ZegoResponseResult result = new ZegoResponseResult(mapResult['result'],
+        mapResult['fromUserID'], mapResult['fromUserName']);
 
     return result;
   }
@@ -319,14 +294,11 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param userId 指定UserId停止连麦
   ///@return 结束连麦结果，参考 [ZegoEndJoinLiveResult] 定义
   static Future<ZegoEndJoinLiveResult> endJoinLive(String userID) async {
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('endJoinLive', {
-      'userID': userID
-    });
+    final Map<dynamic, dynamic> mapResult =
+        await _channel.invokeMethod('endJoinLive', {'userID': userID});
 
-    ZegoEndJoinLiveResult result = new ZegoEndJoinLiveResult(
-        mapResult['errorCode'],
-        mapResult['roomID']
-    );
+    ZegoEndJoinLiveResult result =
+        new ZegoEndJoinLiveResult(mapResult['errorCode'], mapResult['roomID']);
 
     return result;
   }
@@ -337,9 +309,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置
   static Future<bool> enableBeautifying(int feature) async {
-    final bool success = await _channel.invokeMethod('enableBeautifying', {
-      'feature' : feature
-    });
+    final bool success =
+        await _channel.invokeMethod('enableBeautifying', {'feature': feature});
 
     return success;
   }
@@ -350,9 +321,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置。设置时需确保对应美颜特性开启
   static Future<bool> setPolishStep(double step) async {
-    final bool success = await _channel.invokeMethod('setPolishStep', {
-      'step' : step
-    });
+    final bool success =
+        await _channel.invokeMethod('setPolishStep', {'step': step});
 
     return success;
   }
@@ -363,9 +333,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置。设置时需确保对应美颜特性开启
   static Future<bool> setPolishFactor(double factor) async {
-    final bool success = await _channel.invokeMethod('setPolishFactor', {
-      'factor' : factor
-    });
+    final bool success =
+        await _channel.invokeMethod('setPolishFactor', {'factor': factor});
 
     return success;
   }
@@ -376,9 +345,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置。设置时需确保对应美颜特性开启
   static Future<bool> setWhitenFactor(double factor) async {
-    final bool success = await _channel.invokeMethod('setWhitenFactor', {
-      'factor' : factor
-    });
+    final bool success =
+        await _channel.invokeMethod('setWhitenFactor', {'factor': factor});
 
     return success;
   }
@@ -389,9 +357,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置。设置时需确保对应美颜特性开启
   static Future<bool> setSharpenFactor(double factor) async {
-    final bool success = await _channel.invokeMethod('setSharpenFactor', {
-      'factor': factor
-    });
+    final bool success =
+        await _channel.invokeMethod('setSharpenFactor', {'factor': factor});
 
     return success;
   }
@@ -402,9 +369,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 推流时可调用本 API 进行参数配置
   static Future<bool> setFilter(int filter) async {
-    final bool success = await _channel.invokeMethod('setFilter', {
-      'filter': filter
-    });
+    final bool success =
+        await _channel.invokeMethod('setFilter', {'filter': filter});
 
     return success;
   }
@@ -415,9 +381,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 如果要打开，需要在推流前设置。打开硬编硬解开关需后台可控，避免碰到版本升级或者硬件升级时出现硬编硬解失败的问题
   static Future<bool> requireHardwareEncoder(bool bRequire) async {
-    final bool success = await _channel.invokeMethod('requireHardwareEncoder', {
-      'bRequire': bRequire
-    });
+    final bool success = await _channel
+        .invokeMethod('requireHardwareEncoder', {'bRequire': bRequire});
 
     return success;
   }
@@ -429,10 +394,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion enable设置为false时，properties参数会被忽略
   ///@discussion 在推流前调用，在纯 UDP 方案才可以调用此接口
   static Future<void> enableTrafficControl(bool bEnable, int properties) async {
-    return await _channel.invokeMethod('enableTrafficControl', {
-      'enable' : bEnable,
-      'properties': properties
-    });
+    return await _channel.invokeMethod(
+        'enableTrafficControl', {'enable': bEnable, 'properties': properties});
   }
 
   ///设置TrafficControl视频码率最小值
@@ -442,11 +405,10 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion InitSDK 之后调用有效
   ///@discussion 设置一个在traffic control中video码率的一个最小值，当网络不足以发送这个最小值的时候视频会被卡住，而不是以低于该码率继续发送。
   ///@discussion 初始化SDK后默认情况下没有设置改值，即尽可能的保持视频流畅，InitSDK之后可以随时修改，未重新InitSDK之前如果需要取消该设置值的限制可以设置为0
-  static Future<void> setMinVideoBitrateForTrafficControl(int bitrate, int mode) async {
-    return await _channel.invokeMethod('setMinVideoBitrateForTrafficControl', {
-      'bitrate': bitrate,
-      'mode': mode
-    });
+  static Future<void> setMinVideoBitrateForTrafficControl(
+      int bitrate, int mode) async {
+    return await _channel.invokeMethod('setMinVideoBitrateForTrafficControl',
+        {'bitrate': bitrate, 'mode': mode});
   }
 
   ///设置选用分层编码
@@ -455,9 +417,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 设置选用分层编码,在 InitSDK 后，推流前调用有效
   static Future<bool> setVideoCodecId(int codecID) async {
-    final bool success = await _channel.invokeMethod('setVideoCodecId', {
-      'codecID': codecID
-    });
+    final bool success =
+        await _channel.invokeMethod('setVideoCodecId', {'codecID': codecID});
 
     return success;
   }
@@ -467,9 +428,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param mode 模式， 参考 [ZegoAudioDeviceMode] 定义。默认 [ZegoAudioDeviceMode.ZEGO_AUDIO_DEVICE_MODE_AUTO]
   ///@discussion 在 InitSDK 前调用
   static Future<void> setAudioDeviceMode(int mode) async {
-    return await _channel.invokeMethod('setAudioDeviceMode', {
-      'mode': mode
-    });
+    return await _channel.invokeMethod('setAudioDeviceMode', {'mode': mode});
   }
 
   ///设置音频码率
@@ -477,9 +436,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param bitrate 码率
   ///@return true 成功 false 失败
   static Future<bool> setAudioBitrate(int bitrate) async {
-    final bool success = await _channel.invokeMethod('setAudioBitrate', {
-      'bitrate': bitrate
-    });
+    final bool success =
+        await _channel.invokeMethod('setAudioBitrate', {'bitrate': bitrate});
 
     return success;
   }
@@ -488,9 +446,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///
   ///@param channels 声道数
   static Future<bool> setAudioChannelCount(int channels) async {
-    final bool success = await _channel.invokeMethod('setAudioChannelCount', {
-      'channels': channels
-    });
+    final bool success = await _channel
+        .invokeMethod('setAudioChannelCount', {'channels': channels});
 
     return success;
   }
@@ -501,9 +458,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功 false 失败
   ///@discussion 建议在推流前调用设置
   static Future<bool> enableAEC(bool enable) async {
-    final bool success = await _channel.invokeMethod('enableAEC', {
-      'enable': enable
-    });
+    final bool success =
+        await _channel.invokeMethod('enableAEC', {'enable': enable});
 
     return success;
   }
@@ -514,9 +470,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 建议在推流前调用设置
   static Future<void> setAECMode(int mode) async {
-    return await _channel.invokeMethod('setAECMode', {
-      'mode': mode
-    });
+    return await _channel.invokeMethod('setAECMode', {'mode': mode});
   }
 
   ///音频采集自动增益开关
@@ -525,9 +479,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 建议在推流前调用设置
   static Future<bool> enableAGC(bool enable) async {
-    final bool success = await _channel.invokeMethod('enableAGC', {
-      'enable': enable
-    });
+    final bool success =
+        await _channel.invokeMethod('enableAGC', {'enable': enable});
 
     return success;
   }
@@ -539,9 +492,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 在有音频的条件下检测到语音时才发送语音包，有效减少流量消耗，降低成本
   ///@discussion 在推流前调用，只有纯 UDP 方案才可以调用此接口
   static Future<void> enableVAD(bool enable) async {
-    return await _channel.invokeMethod('enableVAD', {
-      'enable': enable
-    });
+    return await _channel.invokeMethod('enableVAD', {'enable': enable});
   }
 
   ///音频采集噪声抑制开关
@@ -549,9 +500,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param enable true 开启，false 关闭，默认在 iOS 平台为关闭，在 Android 平台为打开
   ///@return true 成功，false 失败
   static Future<bool> enableANS(bool enable) async {
-    final bool success = await _channel.invokeMethod('enableANS', {
-      'enable': enable
-    });
+    final bool success =
+        await _channel.invokeMethod('enableANS', {'enable': enable});
 
     return success;
   }
@@ -563,9 +513,7 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 默认状态下，关闭麦克风后会发送静音包
   ///@discussion 在推流前调用，只有纯 UDP 方案才可以调用此接口
   static Future<void> enableDTX(bool enable) async {
-    return await _channel.invokeMethod('enableDTX', {
-     'enable': enable
-   });
+    return await _channel.invokeMethod('enableDTX', {'enable': enable});
   }
 
   ///设置手机方向
@@ -574,9 +522,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 本设置用于校正主播输出视频朝向
   static Future<bool> setAppOrientation(int orientation) async {
-    final success = await _channel.invokeMethod('setAppOrientation', {
-      'orientation': orientation
-    });
+    final success = await _channel
+        .invokeMethod('setAppOrientation', {'orientation': orientation});
 
     return success;
   }
@@ -585,9 +532,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///
   ///@param  rtmpURL 用户指定的转推 RTMP 地址，非 RTMP 地址可能导致转推失败
   static Future<void> setPublishConfig(String rtmpURL) async {
-    return await _channel.invokeMethod('setPublishConfig', {
-      'rtmpURL': rtmpURL
-    });
+    return await _channel
+        .invokeMethod('setPublishConfig', {'rtmpURL': rtmpURL});
   }
 
   ///添加已发布直播的转推地址
@@ -596,13 +542,13 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param streamID 推流ID
   ///@return true 表示调用成功，false 表示调用失败。
   ///@discussion 注意: 必须在 initSDK 后调用
-  static Future<ZegoStreamRelayCDNResult> addPublishTarget(String target, String streamID) async {
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('addPublishTarget', {
-      'target': target,
-      'streamID': streamID
-    });
+  static Future<ZegoStreamRelayCDNResult> addPublishTarget(
+      String target, String streamID) async {
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod(
+        'addPublishTarget', {'target': target, 'streamID': streamID});
 
-    ZegoStreamRelayCDNResult result = new ZegoStreamRelayCDNResult(mapResult['errorCode'], mapResult['streamID']);
+    ZegoStreamRelayCDNResult result = new ZegoStreamRelayCDNResult(
+        mapResult['errorCode'], mapResult['streamID']);
     return result;
   }
 
@@ -612,13 +558,13 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param streamID 推流ID
   ///@return true 表示调用成功，false 表示调用失败。
   ///@discussion 注意: 必须在 initSDK 后调用
-  static Future<ZegoStreamRelayCDNResult> deletePublishTarget(String target, String streamID) async {
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('deletePublishTarget', {
-      'target': target,
-      'streamID': streamID
-    });
+  static Future<ZegoStreamRelayCDNResult> deletePublishTarget(
+      String target, String streamID) async {
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod(
+        'deletePublishTarget', {'target': target, 'streamID': streamID});
 
-    ZegoStreamRelayCDNResult result = new ZegoStreamRelayCDNResult(mapResult['errorCode'], mapResult['streamID']);
+    ZegoStreamRelayCDNResult result = new ZegoStreamRelayCDNResult(
+        mapResult['errorCode'], mapResult['streamID']);
     return result;
   }
 
@@ -628,11 +574,18 @@ class ZegoLiveRoomPublisherPlugin {
   ///@return true 成功，false 失败
   ///@discussion 每次摄像头重新启动采集，设置都会失效，需要重新设置.
   static Future<bool> setCamZoomFactor(double factor) async {
-    final success = await _channel.invokeMethod('setCamZoomFactor', {
-      'factor': factor
-    });
+    final success =
+        await _channel.invokeMethod('setCamZoomFactor', {'factor': factor});
 
     return success;
+  }
+
+  ///设置采集音量
+  ///
+  ///@param volume 采集音量值, 取值范围 [0, 200], 默认 100
+  ///@discussion SDK 采集音频时会根据该 API 设置的音量值进行音量大小的控制
+  static Future<void> setCaptureVolume(int volume) async {
+    return await _channel.invokeMethod('setCaptureVolume', {'volume': volume});
   }
 
   ///获取摄像头最大变焦倍数
@@ -652,8 +605,8 @@ class ZegoLiveRoomPublisherPlugin {
   ///
   /// - Returns Results of take publish stream snapshot, may be null, or it may not return at all
   static Future<MemoryImage> takePublishStreamSnapshot() async {
-
-    final Uint8List pngImageBytes = await _channel.invokeMethod('takePublishStreamSnapshot');
+    final Uint8List pngImageBytes =
+        await _channel.invokeMethod('takePublishStreamSnapshot');
 
     if (pngImageBytes == null) {
       return null;
@@ -661,7 +614,7 @@ class ZegoLiveRoomPublisherPlugin {
 
     MemoryImage image = MemoryImage(pngImageBytes);
     return image;
-}
+  }
 
   ///设置回调对象
   ///
@@ -673,15 +626,18 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param onJoinLiveRequest 设置接收 收到连麦请求 回调，参考[_onJoinLiveRequest] 定义
   ///@discussion 开发者只有调用本 API 设置回调对象才能收到相关回调
   static void registerPublisherCallback({
-    Function(int stateCode, String streamID, Map<String, dynamic> info) onPublishStateUpdate,
-    Function(String streamID, ZegoPublishStreamQuality quality) onPublishQualityUpdate,
-    Function(String streamID, List<ZegoStreamRelayCDNInfo> statesInfo) onRelayCDNStateUpdate,
+    Function(int stateCode, String streamID, Map<String, dynamic> info)
+        onPublishStateUpdate,
+    Function(String streamID, ZegoPublishStreamQuality quality)
+        onPublishQualityUpdate,
+    Function(String streamID, List<ZegoStreamRelayCDNInfo> statesInfo)
+        onRelayCDNStateUpdate,
     Function(int width, int height) onCaptureVideoSizeChangedTo,
     Function() onCaptureAudioFirstFrame,
     Function() onCaptureVideoFirstFrame,
-    Function(int seq, String fromUserID, String fromUserName, String roomID) onJoinLiveRequest,
+    Function(int seq, String fromUserID, String fromUserName, String roomID)
+        onJoinLiveRequest,
   }) {
-
     _onPublishStateUpdate = onPublishStateUpdate;
     _onPublishQualityUpdate = onPublishQualityUpdate;
     _onRelayCDNStateUpdate = onRelayCDNStateUpdate;
@@ -690,19 +646,20 @@ class ZegoLiveRoomPublisherPlugin {
     _onCaptureVideoFirstFrame = onCaptureVideoFirstFrame;
     _onJoinLiveRequest = onJoinLiveRequest;
 
-    _addRoomNoticeLog('[Flutter-Dart] registerPublisherCallback, init publisher stream subscription');
-    _streamSubscription = ZegoLiveRoomEventChannel.listenPublishEvent().listen(_eventListener, onError: (error) {
+    _addRoomNoticeLog(
+        '[Flutter-Dart] registerPublisherCallback, init publisher stream subscription');
+    _streamSubscription = ZegoLiveRoomEventChannel.listenPublishEvent()
+        .listen(_eventListener, onError: (error) {
       PlatformException exception = error;
-      _addRoomNoticeLog('[Flutter-Dart] publisher stream subscription listen error: ${exception.message??'no error message'}');
+      _addRoomNoticeLog(
+          '[Flutter-Dart] publisher stream subscription listen error: ${exception.message ?? 'no error message'}');
     });
-
   }
 
   ///销毁回调对象
   ///
   ///@discussion 当开发者不再需要接收回调时，必须显式调用本 API 销毁回调对象
   static void unregisterPublisherCallback() {
-
     _addRoomNoticeLog('[Flutter-Dart] unregisterPublisherCallback');
 
     _onPublishStateUpdate = null;
@@ -715,15 +672,14 @@ class ZegoLiveRoomPublisherPlugin {
 
     _streamSubscription.cancel().then((_) {
       _streamSubscription = null;
-      _addRoomNoticeLog('[Flutter-Dart] publisher stream subscription cancel success');
+      _addRoomNoticeLog(
+          '[Flutter-Dart] publisher stream subscription cancel success');
     }).catchError((error) {
       PlatformException exception = error;
-      _addRoomNoticeLog('[Flutter-Dart] publisher stream subscription cancel error: ${exception.message??'no error message'}');
+      _addRoomNoticeLog(
+          '[Flutter-Dart] publisher stream subscription cancel error: ${exception.message ?? 'no error message'}');
     });
-
   }
-
-
 
   ///推流状态更新
   ///
@@ -733,7 +689,9 @@ class ZegoLiveRoomPublisherPlugin {
   ///@discussion 主播调用 [startPublishing] 推流成功后，通过该 API 通知主播方
   ///@discussion 开发者必须调用 [registerPublisherCallback] 且设置 onPublishStateUpdate 对象参数之后才能收到该回调
   ///@note 推流状态码，详见[ZegoErrorCode]
-  static void Function(int stateCode, String streamID, Map<String, dynamic> info) _onPublishStateUpdate;
+  static void Function(
+          int stateCode, String streamID, Map<String, dynamic> info)
+      _onPublishStateUpdate;
 
   ///发布质量更新
   ///
@@ -741,14 +699,16 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param quality 推流质量参数 参考 [ZegoPublishStreamQuality] 定义
   ///@discussion 调用 [startPublishing] 后，该 API 会被多次回调。调用者可以在此回调中获取当前的视频质量数据，加以处理
   ///@discussion 开发者必须调用 [registerPublisherCallback] 且设置 onPublishQualityUpdate 对象参数之后才能收到该回调
-  static void Function(String streamID, ZegoPublishStreamQuality quality) _onPublishQualityUpdate;
+  static void Function(String streamID, ZegoPublishStreamQuality quality)
+      _onPublishQualityUpdate;
 
   ///发布直播转推 CDN 状态信息更新
   ///
   ///@param statesInfo 转推CDN状态信息数组
   ///@param streamID 发布直播的流ID，在用户同时推多路流的情况下需要以此判断本次回调表示的是哪一路流的状态更新
   ///@discussion 可以通过此 API 获取当前发布的直播转推 CDN 的状态更新。
-  static void Function(String streamID, List<ZegoStreamRelayCDNInfo> statesInfo) _onRelayCDNStateUpdate;
+  static void Function(String streamID, List<ZegoStreamRelayCDNInfo> statesInfo)
+      _onRelayCDNStateUpdate;
 
   ///采集视频的宽度和高度变化通知
   ///
@@ -778,30 +738,27 @@ class ZegoLiveRoomPublisherPlugin {
   ///@param roomID 房间 ID
   ///@discussion 观众调用申请连麦后，主播端会收到本通知
   ///@discussion 开发者必须调用 [registerPublisherCallback] 且设置 onJoinLiveRequest 对象参数之后才能收到该回调
-  static void Function(int seq, String fromUserID, String fromUserName, String roomID) _onJoinLiveRequest;
+  static void Function(
+          int seq, String fromUserID, String fromUserName, String roomID)
+      _onJoinLiveRequest;
 
   /// SDK内置日志，开发者无需关注
   static void _addRoomNoticeLog(String content) {
-
-    _channel.invokeMethod('addNoticeLog', {
-      'content': content
-    });
-
+    _channel.invokeMethod('addNoticeLog', {'content': content});
   }
-
 
   /// 用于接收native层事件流，开发者无需关注
   static StreamSubscription<dynamic> _streamSubscription;
+
   /// 用于处理native层事件流，开发者无需关注
   static void _eventListener(dynamic data) {
-
     final Map<dynamic, dynamic> args = data;
-    _addRoomNoticeLog('[Flutter-Dart] publisher eventListener, method name: ${args['name']}');
+    _addRoomNoticeLog(
+        '[Flutter-Dart] publisher eventListener, method name: ${args['name']}');
 
     switch (args['name']) {
       case 'onPublishStateUpdate':
-        if(_onPublishStateUpdate != null) {
-
+        if (_onPublishStateUpdate != null) {
           int stateCode = args['stateCode'];
           String streamID = args['streamID'];
           Map<String, dynamic> info = {};
@@ -814,8 +771,7 @@ class ZegoLiveRoomPublisherPlugin {
         }
         break;
       case 'onPublishQualityUpdate':
-        if(_onPublishQualityUpdate != null) {
-
+        if (_onPublishQualityUpdate != null) {
           String streamID = args['streamID'];
 
           double vcapfps = args['vcapFps'];
@@ -837,77 +793,69 @@ class ZegoLiveRoomPublisherPlugin {
 
           int quality = args['quality'];
 
-          ZegoPublishStreamQuality publishStreamQuality = new ZegoPublishStreamQuality(
-              vcapfps,
-              vencFps,
-              fps,
-              kbps,
-              acapFps,
-              afps,
-              akbps,
-              rtt,
-              pktLostRate * 1.0 / 255.0,
-              quality,
-              isHardwareVenc,
-              width,
-              height
-          );
+          ZegoPublishStreamQuality publishStreamQuality =
+              new ZegoPublishStreamQuality(
+                  vcapfps,
+                  vencFps,
+                  fps,
+                  kbps,
+                  acapFps,
+                  afps,
+                  akbps,
+                  rtt,
+                  pktLostRate * 1.0 / 255.0,
+                  quality,
+                  isHardwareVenc,
+                  width,
+                  height);
 
           _onPublishQualityUpdate(streamID, publishStreamQuality);
-
         }
         break;
       case 'onRelayCDNStateUpdate':
-        if(_onRelayCDNStateUpdate != null) {
-
+        if (_onRelayCDNStateUpdate != null) {
           String streamID = args['streamID'];
           List<ZegoStreamRelayCDNInfo> statesInfo = [];
           List<dynamic> objList = args['statesInfo'];
 
           for (Map<dynamic, dynamic> obj in objList) {
-            ZegoStreamRelayCDNInfo info = new ZegoStreamRelayCDNInfo(obj['rtmpURL'], obj['state'], obj['detail'], obj['stateTime']);
+            ZegoStreamRelayCDNInfo info = new ZegoStreamRelayCDNInfo(
+                obj['rtmpURL'], obj['state'], obj['detail'], obj['stateTime']);
             statesInfo.add(info);
           }
           _onRelayCDNStateUpdate(streamID, statesInfo);
         }
         break;
       case 'onCaptureVideoSizeChangedTo':
-        if(_onCaptureVideoSizeChangedTo != null) {
-
+        if (_onCaptureVideoSizeChangedTo != null) {
           int width = args['width'];
           int height = args['height'];
 
           _onCaptureVideoSizeChangedTo(width, height);
-
         }
         break;
       case 'onCaptureAudioFirstFrame':
-        if(_onCaptureAudioFirstFrame != null) {
-
+        if (_onCaptureAudioFirstFrame != null) {
           _onCaptureAudioFirstFrame();
         }
         break;
       case 'onCaptureVideoFirstFrame':
-        if(_onCaptureVideoFirstFrame != null) {
-
+        if (_onCaptureVideoFirstFrame != null) {
           _onCaptureVideoFirstFrame();
         }
         break;
       case 'onJoinLiveRequest':
-        if(_onJoinLiveRequest != null) {
-
+        if (_onJoinLiveRequest != null) {
           int seq = args['seq'];
           String fromUserID = args['fromUserID'];
           String fromUserName = args['fromUserName'];
           String roomID = args['roomID'];
 
           _onJoinLiveRequest(seq, fromUserID, fromUserName, roomID);
-
         }
         break;
       default:
         break;
     }
-
   }
 }

@@ -1791,6 +1791,15 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             ZegoAudioPlayerController.getInstance().getCurrentDuration(call, result);
 
+        }else if (call.method.equals("setCaptureVolume")) {
+            if (mZegoLiveRoom == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+            int volume = numberToIntValue((Number) call.argument("volume"));
+            mZegoLiveRoom.setCaptureVolume(volume);
+            result.success(null);
+
         }
         /* LiveRoom-MediaPlayer */
         else if (call.method.equals("mpStart")) {
@@ -1928,7 +1937,62 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             ZegoMediaPlayerController.getInstance().getOnlineResourceCache(result);
 
-        } else if (call.method.equals("setBufferThreshold")) {
+        }
+         else if (call.method.equals("mpSetAudioStream")) {
+            if (mZegoLiveRoom == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+            int streamIndex = numberToIntValue((Number) call.argument("streamIndex"));
+            ZegoMediaPlayerController.getInstance().setAudioStream(streamIndex);
+            result.success(null);
+        }
+         else if (call.method.equals("mpGetAudioStreamCount")) {
+            if (mZegoLiveRoom == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+            ZegoMediaPlayerController.getInstance().getAudioStreamCount(result);
+
+        }
+         else if (call.method.equals("mpGetPublishVolume")) {
+            if (mZegoLiveRoom == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+            ZegoMediaPlayerController.getInstance().getPublishVolume(result);
+
+        }
+         else if (call.method.equals("mpGetPlayVolume")) {
+            if (mZegoLiveRoom == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+            ZegoMediaPlayerController.getInstance().getPlayVolume(result);
+
+        }
+         else if (call.method.equals("mpSetPublishVolume")) {
+            if (mZegoLiveRoom == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+            int volume = numberToIntValue((Number) call.argument("volume"));
+            ZegoMediaPlayerController.getInstance().setPublishVolume(volume);
+
+        }
+
+         else if (call.method.equals("mpSetPlayVolume")) {
+            if (mZegoLiveRoom == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+            int volume = numberToIntValue((Number) call.argument("volume"));
+            ZegoMediaPlayerController.getInstance().setPlayVolume(volume);
+
+        }
+
+
+        else if (call.method.equals("setBufferThreshold")) {
             if (mZegoLiveRoom == null) {
                 throwSdkNotInitError(result, call.method);
                 return;

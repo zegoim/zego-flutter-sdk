@@ -82,17 +82,17 @@
 
 - (void)setLoadResourceTimeout:(int)timeout;
 
-//- (void)setPublishVolume:(int)volume;
+- (void)setPublishVolume:(int)volume;
 
-//- (void)setPlayVolume:(int)volume;
+- (void)setPlayVolume:(int)volume;
 
-//- (int)getPublishVolume;
+- (int)getPublishVolume;
 
-//- (int)getPlayVolume;
+- (int)getPlayVolume;
 
-//- (long)setAudioStream:(long)streamIndex;
+- (long)setAudioStream:(long)streamIndex;
 
-//- (long)getAudioStreamCount;
+- (long)getAudioStreamCount;
 
 - (void)enableRepeatMode:(BOOL)enable;
 

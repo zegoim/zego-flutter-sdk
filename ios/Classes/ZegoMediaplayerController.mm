@@ -201,7 +201,7 @@ static ZegoMediaPlayerVideoPixelFormat mFormat = ZegoMediaPlayerVideoPixelFormat
     [self.mediaPlayer setLoadResourceTimeout:timeout];
 }
 
-/*- (void)setPublishVolume:(int)volume {
+- (void)setPublishVolume:(int)volume {
     [self.mediaPlayer setPublishVolume:volume];
 }
 
@@ -218,12 +218,12 @@ static ZegoMediaPlayerVideoPixelFormat mFormat = ZegoMediaPlayerVideoPixelFormat
 }
 
 - (long)setAudioStream:(long)streamIndex {
-    
+    return [self.mediaPlayer setAudioStream:streamIndex];
 }
 
 - (long)getAudioStreamCount {
-    
-}*/
+    return [self.mediaPlayer getAudioStreamCount];
+}
 
 - (void)enableRepeatMode:(BOOL)enable {
     [self.mediaPlayer enableRepeatMode:enable];

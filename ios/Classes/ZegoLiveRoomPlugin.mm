@@ -1942,7 +1942,15 @@ Byte toByte(NSString* c) {
 
             result(imageData);
         }];
-
+    }else if ([@"setCaptureVolume" isEqualToString:call.method]) {
+        if (self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        int vol = [self numberToIntValue:args[@"volume"]];
+        [self.zegoApi setCaptureVolume: vol];
+        result(nil);
+        
     /* LiveRoom-Player */
 #pragma mark LiveRoom-Player
     } else if([@"startPlayingStream" isEqualToString:call.method]) {
@@ -2860,6 +2868,63 @@ Byte toByte(NSString* c) {
 
         [renderer updateRenderSize:CGSizeMake(width, height)];
         result(nil);
+    }
+    else if ([@"mpGetAudioStreamCount" isEqualToString:call.method]) {
+        // 获取音轨数量
+        if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        int streamCount = (int)[[ZegoMediaPlayerController instance] getAudioStreamCount];
+        result(@(streamCount));
+    }
+    else if ([@"mpSetAudioStream" isEqualToString:call.method]) {
+        // 切换音轨
+        if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        int streamIndex = [self numberToIntValue:args[@"streamIndex"]];
+        int ret = (int)[[ZegoMediaPlayerController instance] setAudioStream:streamIndex];
+        result(@(ret));
+    }
+    else if ([@"mpSetPlayVolume" isEqualToString:call.method]) {
+        // 本地播放音量
+        if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        int vol = [self numberToIntValue:args[@"volume"]];
+        [[ZegoMediaPlayerController instance] setPlayVolume:vol];
+        result(nil);
+    }
+    else if ([@"mpSetPublishVolume" isEqualToString:call.method]) {
+        // 推流音量
+        if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        int vol = [self numberToIntValue:args[@"volume"]];
+        [[ZegoMediaPlayerController instance] setPublishVolume:vol];
+        result(nil);
+    }
+    else if ([@"mpGetPlayVolume" isEqualToString:call.method]) {
+        // 获取本地播放音量
+        if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        int ret = [[ZegoMediaPlayerController instance] getPlayVolume];
+        result(@(ret));
+    }
+    else if ([@"mpGetPublishVolume" isEqualToString:call.method]) {
+        // 获取推流音量
+        if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        int ret = [[ZegoMediaPlayerController instance] getPublishVolume];
+        result(@(ret));
     }
     /* External Video Filter */
 #pragma mark LiveRoom-ExternalVideoFilter

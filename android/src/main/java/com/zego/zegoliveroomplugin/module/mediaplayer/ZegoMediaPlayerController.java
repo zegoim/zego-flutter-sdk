@@ -182,6 +182,30 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         mPlayer.setOnlineResourceCache(time, size);
     }
 
+    public void setAudioStream(int streamIndex) {
+        mPlayer.setAudioStream(streamIndex);
+    }
+
+    public void getAudioStreamCount(Result result) {
+        result.success(mPlayer.getAudioStreamCount());
+    }
+
+    public void getPublishVolume(Result result) {
+        result.success(mPlayer.getPublishVolume());
+    }
+
+    public void getPlayVolume(Result result) {
+        result.success(mPlayer.getPlayVolume());
+    }
+
+    public void setPublishVolume(int volume) {
+        mPlayer.setPublishVolume(volume);
+    }
+
+    public void setPlayVolume(int volume) {
+        mPlayer.setPlayVolume(volume);
+    }
+
     public void setView(Object view) {
         mPlayer.setView(view);
     }

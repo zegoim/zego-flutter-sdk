@@ -33,6 +33,7 @@ class ZegoMediaplayer {
 
     return textureID;
   }
+
   ///更新媒体渲染器的渲染大小
   ///
   ///@param width，渲染宽度，单位 px (px = viewWidth * devicePixelRatio)
@@ -41,10 +42,8 @@ class ZegoMediaplayer {
   ///@discussion 当需要更新 Texture 渲染控件的大小时，调用本API同步更新渲染器的渲染大小，否则可能会导致图像变形等问题
   ///@discussion 当看到画面带有明显锯齿感时，请检查是否传入的宽高乘上了 devicePixelRatio, 参考[MediaQuery.of(context).devicePixelRatio]
   static Future<void> updateMediaPlayRenderSize(int width, int height) async {
-    return await _channel.invokeMethod('updateMediaPlayRenderSize', {
-      'width': width,
-      'height': height
-    });
+    return await _channel.invokeMethod(
+        'updateMediaPlayRenderSize', {'width': width, 'height': height});
   }
 
   ///销毁媒体渲染器
@@ -52,7 +51,8 @@ class ZegoMediaplayer {
   ///@return true 成功，false 失败
   ///@discussion 释放渲染器资源
   static Future<bool> destroyMediaPlayerRenderer() async {
-    final bool success = await _channel.invokeMethod('destroyMediaPlayerRenderer');
+    final bool success =
+        await _channel.invokeMethod('destroyMediaPlayerRenderer');
 
     return success;
   }
@@ -167,6 +167,54 @@ class ZegoMediaplayer {
   static Future<void> setLoadResourceTimeout(int timeout) async {
     return await _channel
         .invokeMethod('setLoadResourceTimeout', {'timeout': timeout});
+  }
+
+  ///设置播放文件的音轨
+  ///
+  ///@param streamIndex 音轨序号，可以通过 getAudioStreamCount 接口获取音轨个数
+  static Future<void> setAudioStream(int streamIndex) async {
+   return await _channel
+        .invokeMethod('mpSetAudioStream', {'streamIndex': streamIndex});
+
+  }
+
+  ///获取音轨个数
+  ///
+  ///@return 音轨个数
+  static Future<int> getAudioStreamCount() async {
+    int count = await _channel.invokeMethod('mpGetAudioStreamCount');
+    return count;
+  }
+
+  ///获取推流音量
+  ///
+  ///@return 推流音量
+  static Future<int> getPublishVolume() async {
+    int count = await _channel.invokeMethod('mpGetPublishVolume');
+    return count;
+  }
+
+  ///获取本地播放音量
+  ///
+  ///@return 本地播放音量
+  static Future<int> getPlayVolume() async {
+    int count = await _channel.invokeMethod('mpGetPlayVolume');
+    return count;
+  }
+
+  ///设置推流音量
+  ///
+  ///@param volume 音量，取值范围[0, 200]，默认 60
+  static Future<void> setPublishVolume(int volume) async {
+    return await _channel
+        .invokeMethod('mpSetPublishVolume', {'volume': volume});
+  }
+
+  ///设置本地播放音量
+  ///
+  ///@param volume 音量，取值范围[0, 200]，默认 60
+  static Future<void> setPlayVolume(int volume) async {
+    return await _channel.invokeMethod('mpSetPlayVolume', {'volume': volume});
   }
 
   ///设置回调对象
