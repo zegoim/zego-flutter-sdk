@@ -204,7 +204,6 @@ Byte toByte(NSString* c) {
 
     [[ZegoAudioPlayerController instance] initObject];
     [[ZegoMediaPlayerController instance] initObject];
-    [[ZegoMediaPlayerController instance] setRenderController:self.renderController];
 
 }
 
@@ -2624,6 +2623,8 @@ Byte toByte(NSString* c) {
 
         int width = [self numberToIntValue:args[@"width"]];
         int height = [self numberToIntValue:args[@"height"]];
+        
+        [[ZegoMediaPlayerController instance] setRenderController:self.renderController];
 
         ZegoViewRenderer *renderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
         
@@ -2945,6 +2946,12 @@ Byte toByte(NSString* c) {
             result(nil);
             return;
         }
+        
+        if ([videoCaptureFactory conformsToProtocol:@protocol(ZegoMediaPlayerControllerVideoDataDelegate)]) {
+            
+            [[ZegoMediaPlayerController instance] setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)videoCaptureFactory];
+        }
+        
         [ZegoExternalVideoCapture setVideoCaptureFactory:enable ? videoCaptureFactory : nil channelIndex:ZEGOAPI_CHN_MAIN];
         result(nil);
     }

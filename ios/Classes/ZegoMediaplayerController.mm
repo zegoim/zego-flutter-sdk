@@ -23,9 +23,6 @@ static NSString * const KEY_RESUME = @"resume";
 static NSString * const KEY_LOAD = @"load";
 static NSString * const KEY_SEEK_TO = @"seek_to";
 
-static id<ZegoMediaPlayerControllerVideoDataDelegate> mVideoDataDelegate = nil;
-static ZegoMediaPlayerVideoPixelFormat mFormat = ZegoMediaPlayerVideoPixelFormatBGRA32;
-
 @interface ZegoMediaPlayerController() <ZegoMediaPlayerEventWithIndexDelegate, ZegoMediaPlayerVideoPlayWithIndexDelegate>{
     CVPixelBufferPoolRef pool_;
     int video_width_;
@@ -38,6 +35,8 @@ static ZegoMediaPlayerVideoPixelFormat mFormat = ZegoMediaPlayerVideoPixelFormat
 @property (nonatomic, strong) ZegoRendererController *renderController;
 //@property (nonatomic, weak) id<ZegoAudioPlayerControllerDelegate> delegate;
 @property (nonatomic, weak) id<ZegoMediaPlayerControllerDelegate> delegate;
+@property (nonatomic, weak) id<ZegoMediaPlayerControllerVideoDataDelegate> mVideoDataDelegate;
+@property (nonatomic, assign) ZegoMediaPlayerVideoPixelFormat mFormat;
 
 @end
 
@@ -66,9 +65,6 @@ static ZegoMediaPlayerVideoPixelFormat mFormat = ZegoMediaPlayerVideoPixelFormat
     _mediaPlayer = [[ZegoMediaPlayer alloc] initWithPlayerType:MediaPlayerTypeAux playerIndex:ZegoMediaPlayerIndexFirst];
     
     [_mediaPlayer setEventWithIndexDelegate:self];
-    if (mVideoDataDelegate) {
-        [_mediaPlayer setVideoPlayWithIndexDelegate:self format:mFormat];
-    }
 }
 
 - (void)uninitObject {
@@ -82,7 +78,7 @@ static ZegoMediaPlayerVideoPixelFormat mFormat = ZegoMediaPlayerVideoPixelFormat
         [_renderController destroyPixelBufferPool:kZegoVideoDataMediaPlayerStream];
     };
     _renderController = nil;
-    [_mediaPlayer setVideoPlayWithIndexDelegate:nil format:mFormat];
+    [_mediaPlayer setVideoPlayWithIndexDelegate:nil format:self.mFormat];
     [_mediaPlayer setEventWithIndexDelegate:nil];
     [_mediaPlayer uninit];
     _mediaPlayer = nil;
@@ -92,13 +88,14 @@ static ZegoMediaPlayerVideoPixelFormat mFormat = ZegoMediaPlayerVideoPixelFormat
     _delegate = delegate;
 }
 
-- (void)setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)videoDataDelegate withFormat:(ZegoMediaPlayerVideoPixelFormat)format {
-    mVideoDataDelegate = videoDataDelegate;
-    mFormat = format;
+- (void)setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)videoDataDelegate {
+    self.mVideoDataDelegate = videoDataDelegate;
 }
 
 - (void)setRenderController:(ZegoRendererController *)rndController {
     _renderController = rndController;
+    // 说明外界要渲染视频数据，所以要做好代理设置等准备
+    [self.mediaPlayer setVideoPlayWithIndexDelegate:self format:ZegoMediaPlayerVideoPixelFormatBGRA32];
 }
 
 /*- (void)initPlayerWithType:(MediaPlayerType)type {
@@ -467,8 +464,8 @@ typedef void (*CFTypeDeleter)(CFTypeRef cf);
     [renderer setSrcFrameBuffer:pixelBuffer processBuffer:nil];
     
     // 回调出去
-    if ([mVideoDataDelegate respondsToSelector:@selector(onPlayerVideoFrame:timeStamp:)]) {
-        [mVideoDataDelegate onPlayerVideoFrame:pixelBuffer timeStamp:timeMS];
+    if ([self.mVideoDataDelegate respondsToSelector:@selector(onPlayerVideoFrame:timeStamp:)]) {
+        [self.mVideoDataDelegate onPlayerVideoFrame:pixelBuffer timeStamp:timeMS];
     }
 }
 

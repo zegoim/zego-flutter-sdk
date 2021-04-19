@@ -48,7 +48,7 @@
 
 - (void)setDelegate:(id<ZegoMediaPlayerControllerDelegate>)delegate;
 
-- (void)setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)delegate withFormat:(ZegoMediaPlayerVideoPixelFormat)format;
+- (void)setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)delegate;
 
 - (void)setRenderController:(ZegoRendererController *)rndController;
 

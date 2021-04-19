@@ -10,7 +10,7 @@
 #import <memory>
 #import <thread>
 
-@interface ZGVideoCaptureForMediaPlayer () {
+@interface ZGVideoCaptureForMediaPlayer () <ZegoVideoCaptureDevice> {
     id<ZegoVideoCaptureClientDelegate> client_;
     BOOL capture_started_;
     std::mutex capture_lock_;
@@ -22,6 +22,17 @@
 @end
 
 @implementation ZGVideoCaptureForMediaPlayer
+
+#pragma mark - ZegoVideoCaptureFactory
+
+- (id<ZegoVideoCaptureDevice>)zego_create:(NSString *)deviceId {
+    NSLog(@"%s", __func__);
+    return self;
+}
+
+- (void)zego_destroy:(id<ZegoVideoCaptureDevice>)device {
+    NSLog(@"%s", __func__);
+}
 
 #pragma mark - ZegoVideoCaptureDevice
 
@@ -69,4 +80,3 @@
 }
 
 @end
-
