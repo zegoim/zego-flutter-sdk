@@ -4,6 +4,9 @@
 
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
+## 1.5.3
+1. Optimization: Adjust some head files to remove Objective-C++ restricts
+
 ## 1.5.2
 1. Optimization: Widen the limits of some MediaPlayer API
 
