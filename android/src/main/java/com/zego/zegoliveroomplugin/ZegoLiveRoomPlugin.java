@@ -99,7 +99,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     private int mLogSize = 5 * 1024 * 1024;
     private String mLogPath = null;
-    private ZegoViewRenderer mMediaPlayerRenderer;
+    private ZegoViewRenderer mMediaPlayerRenderer = null;
 
     private ZegoLiveRoomPlugin(Registrar registrar) {
         this.registrar = registrar;
@@ -2034,10 +2034,16 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             int width = numberToIntValue((Number) call.argument("width"));
             int height = numberToIntValue((Number) call.argument("height"));
-            mMediaPlayerRenderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
-            ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
-            ZegoLogJNI.logNotice("[createMediaPlayerRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + mMediaPlayerRenderer.getTextureID());
-            result.success(mMediaPlayerRenderer.getTextureID());
+
+            if(mMediaPlayerRenderer == null) {
+                mMediaPlayerRenderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
+                ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
+                ZegoLogJNI.logNotice("[createMediaPlayerRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + mMediaPlayerRenderer.getTextureID());
+                result.success(mMediaPlayerRenderer.getTextureID());
+            } else {
+                result.success(mMediaPlayerRenderer.getTextureID());
+            }
+
         } else if (call.method.equals("destroyMediaPlayerRenderer")) {
             if (mZegoLiveRoom == null) {
                 throwSdkNotInitError(result, call.method);

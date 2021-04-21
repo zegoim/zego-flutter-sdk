@@ -1,5 +1,5 @@
-#import "ZegoLiveRoomPlugin.h"
 #import <ZegoLiveRoom/ZegoLiveRoomApi-AudioIO.h>
+#import "ZegoLiveRoomPlugin.h"
 #import "ZegoRendererController.h"
 #import "ZegoPlatformViewFactory.h"
 #import "ZegoAudioPlayerController.h"
@@ -2626,22 +2626,22 @@ Byte toByte(NSString* c) {
         int height = [self numberToIntValue:args[@"height"]];
         
         [[ZegoMediaPlayerController instance] setRenderController:self.renderController];
-
-        ZegoViewRenderer *renderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
         
         extern NSString *kZegoVideoDataMediaPlayerStream;
-
-        if([self.renderController addRenderer:renderer ofKey:kZegoVideoDataMediaPlayerStream]) {
-            
-            if(![self.renderController isRendering]) {
-                [self.renderController startRendering];
-            }
-            NSLog(@"%lld", renderer.textureID);
+        
+        ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
+        if(renderer) {
             result(@(renderer.textureID));
-        }
-        else {
-            NSLog(@"添加 Render 失败");
-            result(@(-1));
+        } else {
+            ZegoViewRenderer *newRenderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
+            if([self.renderController addRenderer:newRenderer ofKey:kZegoVideoDataMediaPlayerStream]) {
+                
+                if(![self.renderController isRendering]) {
+                    [self.renderController startRendering];
+                }
+                NSLog(@"new renderer. textureID: %lld", newRenderer.textureID);
+                result(@(newRenderer.textureID));
+            }
         }
     }
     else if([@"mpStart" isEqualToString:call.method]) {

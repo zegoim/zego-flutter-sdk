@@ -3,6 +3,8 @@
 ## ⚠️❗️ This project is a **legacy** SDK and and will be deprecated in the future, only used to support the maintenance for existing users, it is recommended to migrate and upgrade to the new SDK as soon as possible
 
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
+## 1.5.4
+1. Optimization: Now allow reuse textureID when createMediaPlayerRenderer called more than one times without destroyMediaPlayerRenderer called
 
 ## 1.5.3
 1. Optimization: Adjust some head files to remove Objective-C++ restricts
