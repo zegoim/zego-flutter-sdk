@@ -22,7 +22,15 @@
 
 @protocol ZegoMediaPlayerControllerDelegate <NSObject>
 
+- (void)onPlayBegin;
+
+- (void)onPlayPause;
+
+- (void)onPlayResume;
+
 - (void)onPlayEnd;
+
+- (void)onPlayStop;
 
 - (void)onPlayError:(int)errorCode;
 
@@ -30,7 +38,13 @@
 
 - (void)onBufferEnd;
 
+- (void)onAudioBegin;
+
+- (void)onVideoBegin;
+
 - (void)onProcessInterval:(long)timestamp;
+
+- (void)onSeekComplete:(int)errorCode when:(long)millisecond;
 
 @end
 
@@ -97,6 +111,8 @@
 - (void)enableRepeatMode:(BOOL)enable;
 
 - (void)setProcessInterval:(long)interval;
+
+- (BOOL)isPlaying;
 
 @end
 

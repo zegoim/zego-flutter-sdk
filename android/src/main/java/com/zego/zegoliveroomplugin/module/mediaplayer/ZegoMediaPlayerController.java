@@ -34,6 +34,8 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     private static ZegoMediaPlayerController sInstance;
     private ZegoMediaPlayer mPlayer;
 
+    private boolean isPlay = false;
+
     private HashMap<String, Result> mResultMap;
     //private HashMap<Integer, Result> mStartResultList;
     //private HashMap<Integer, Result> mLoadResultList;
@@ -256,6 +258,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         if (mCallback != null) {
             mCallback.onPlayEnd();
         }
+        isPlay = false;
     }
 
     @Override
@@ -265,6 +268,10 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             result.success(null);
             mResultMap.remove(KEY_START);
         }
+        if (mCallback!=null){
+            mCallback.onPlayBegin();
+        }
+        isPlay = true;
     }
 
     @Override
@@ -274,6 +281,10 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             result.success(null);
             mResultMap.remove(KEY_PAUSE);
         }
+        if (mCallback != null){
+            mCallback.onPlayPause();
+        }
+        isPlay = false;
     }
 
     @Override
@@ -283,6 +294,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             result.success(null);
             mResultMap.remove(KEY_STOP);
         }
+        isPlay = false;
     }
 
     @Override
@@ -292,6 +304,10 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             result.success(null);
             mResultMap.remove(KEY_RESUME);
         }
+        if (mCallback != null){
+            mCallback.onPlayResume();
+        }
+        isPlay = true;
     }
 
     @Override
@@ -299,16 +315,23 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         if (mCallback != null) {
             mCallback.onPlayError(error);
         }
+        isPlay = false;
     }
 
     @Override
     public void onVideoBegin(int index) {
-
+        if (mCallback != null){
+            mCallback.onVideoBegin();
+        }
+        isPlay = true;
     }
 
     @Override
     public void onAudioBegin(int index) {
-
+        if (mCallback != null){
+            mCallback.onAudioBegin();
+        }
+        isPlay = true;
     }
 
     @Override
@@ -336,6 +359,10 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
 
             mResultMap.remove(KEY_SEEK_TO);
         }
+        if (mCallback != null){
+            mCallback.onSeekComplete(error,timestamp);
+        }
+        isPlay = true;
     }
 
     @Override
@@ -350,6 +377,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             result.success(null);
             mResultMap.remove(KEY_LOAD);
         }
+        isPlay = true;
     }
 
     @Override
@@ -377,5 +405,9 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     private long numberToLongValue(Number number) {
 
         return number != null ? number.longValue() : 0;
+    }
+
+    public boolean getMediaPlayerState(){
+        return isPlay;
     }
 }

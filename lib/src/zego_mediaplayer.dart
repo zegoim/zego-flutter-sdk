@@ -85,6 +85,13 @@ class ZegoMediaplayer {
         .invokeMethod('mpLoad', {'path': path, 'asset': isAsset});
   }
 
+  ///获取播放器当前状态
+  ///
+  ///@return true 正在播放，false 不在播放
+  static Future<bool> isPlaying() async {
+    return await _channel.invokeMethod('mpIsPlaying');
+  }
+
   ///设置音量，包括本地播放音量和推流音量
   ///
   ///@param soundID 音效ID，标识当前播放的是哪个音频。取值为非负数
@@ -173,9 +180,8 @@ class ZegoMediaplayer {
   ///
   ///@param streamIndex 音轨序号，可以通过 getAudioStreamCount 接口获取音轨个数
   static Future<void> setAudioStream(int streamIndex) async {
-   return await _channel
+    return await _channel
         .invokeMethod('mpSetAudioStream', {'streamIndex': streamIndex});
-
   }
 
   ///获取音轨个数
@@ -222,18 +228,32 @@ class ZegoMediaplayer {
   ///@param onAudioPlayEnd 设置接收 音效播放完成 回调，参考 [_onAudioPlayEnd] 定义
   ///@discussion 开发者只有调用本 API 设置回调对象才能收到相关回调
   static Future<void> registerMediaPlayerCallback(
-      {Function() onPlayEnd,
+      {Function() onPlayBegin,
+      Function() onPlayPause,
+      Function() onPlayResume,
+      Function() onPlayEnd,
+      Function() onPlayStop,
       Function(int errorCode) onPlayError,
       Function() onBufferBegin,
       Function() onBufferEnd,
+      Function() onAudioBegin,
+      Function() onVideoBegin,
+      Function(int errorCode, int millisecond) onSeekComplete,
       Function(int timestamp) onProcessInterval}) async {
     await _channel.invokeMethod('registerMediaPlayerCallback');
 
+    _onPlayBegin = onPlayBegin;
+    _onPlayPause = onPlayPause;
+    _onPlayResume = onPlayResume;
     _onPlayEnd = onPlayEnd;
+    _onPlayStop = onPlayStop;
     _onPlayError = onPlayError;
     _onBufferBegin = onBufferBegin;
     _onBufferEnd = onBufferEnd;
+    _onAudioBegin = onAudioBegin;
+    _onVideoBegin = onVideoBegin;
     _onProcessInterval = onProcessInterval;
+    _onSeekComplete = onSeekComplete;
 
     if (_streamSubscription == null)
       _streamSubscription = ZegoLiveRoomEventChannel.listenMediaPlayerEvent()
@@ -246,11 +266,18 @@ class ZegoMediaplayer {
   static Future<void> unregisterMediaPlayerCallback() async {
     await _channel.invokeMethod('unregisterMediaPlayerCallback');
 
+    _onPlayBegin = null;
+    _onPlayPause = null;
+    _onPlayResume = null;
     _onPlayEnd = null;
+    _onPlayStop = null;
     _onPlayError = null;
     _onBufferBegin = null;
     _onBufferEnd = null;
+    _onAudioBegin = null;
+    _onVideoBegin = null;
     _onProcessInterval = null;
+    _onSeekComplete = null;
 
     _streamSubscription?.cancel();
     _streamSubscription = null;
@@ -260,13 +287,27 @@ class ZegoMediaplayer {
   ///
   ///@discussion 当音频播放完毕后，会收到此回调
   ///@discussion 开发者必须调用 [registerMediaPlayerCallback] 且设置 onAudioPlayEnd 对象参数之后才能收到该回调
+  static void Function() _onPlayBegin;
+
+  static void Function() _onPlayPause;
+
+  static void Function() _onPlayResume;
+
   static void Function() _onPlayEnd;
+
+  static void Function() _onPlayStop;
 
   static void Function(int errorCode) _onPlayError;
 
   static void Function() _onBufferBegin;
 
   static void Function() _onBufferEnd;
+
+  static void Function(int errorCode, int millisecond) _onSeekComplete;
+
+  static void Function() _onAudioBegin;
+
+  static void Function() _onVideoBegin;
 
   static void Function(int timestamp) _onProcessInterval;
 
@@ -277,9 +318,29 @@ class ZegoMediaplayer {
   static void _eventListener(dynamic data) {
     final Map<dynamic, dynamic> args = data;
     switch (args['name']) {
+      case 'onPlayBegin':
+        if (_onPlayBegin != null) {
+          _onPlayBegin();
+        }
+        break;
+      case 'onPlayPause':
+        if (_onPlayPause != null) {
+          _onPlayPause();
+        }
+        break;
+      case 'onPlayResume':
+        if (_onPlayResume != null) {
+          _onPlayResume();
+        }
+        break;
       case 'onPlayEnd':
         if (_onPlayEnd != null) {
           _onPlayEnd();
+        }
+        break;
+      case 'onPlayStop':
+        if (_onPlayStop != null) {
+          _onPlayStop();
         }
         break;
       case 'onPlayError':
@@ -296,6 +357,23 @@ class ZegoMediaplayer {
       case 'onBufferEnd':
         if (_onBufferEnd != null) {
           _onBufferEnd();
+        }
+        break;
+      case 'onSeekComplete':
+        if (_onSeekComplete != null) {
+          int errCode = args['errorCode'];
+          int millisecond = args['millisecond'];
+          _onSeekComplete(errCode, millisecond);
+        }
+        break;
+      case 'onAudioBegin':
+        if (_onAudioBegin != null) {
+          _onAudioBegin();
+        }
+        break;
+      case 'onVideoBegin':
+        if (_onVideoBegin != null) {
+          _onVideoBegin();
         }
         break;
       case 'onProcessInterval':

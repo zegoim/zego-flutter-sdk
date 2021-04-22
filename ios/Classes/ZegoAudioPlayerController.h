@@ -13,6 +13,11 @@
 #import <ZegoLiveRoom/zego-api-audio-player-oc.h>
 
 @protocol ZegoAudioPlayerControllerDelegate <NSObject>
+- (void)onAudioPlayBegin:(unsigned int)soundID errorCode:(int)errorCode;
+
+- (void)onAudioLoad:(unsigned int)soundID errorCode:(int)errorCode;
+
+- (void)onAudioLoadComplete:(unsigned int)soundID;
 
 - (void)onAudioPlayEnd:(unsigned int)soundID;
 
@@ -43,6 +48,7 @@
 - (void)getTotalDuration:(NSDictionary *)args result:(FlutterResult)result;
 - (void)getCurrentDuration:(NSDictionary *)args result:(FlutterResult)result;
 
+- (BOOL)isPlaying:(int)soundID;
 
 - (void)setAudioPlayerEventDelegate:(id<ZegoAudioPlayerControllerDelegate>)delegate;
 

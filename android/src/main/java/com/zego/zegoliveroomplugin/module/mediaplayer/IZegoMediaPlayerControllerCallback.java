@@ -10,4 +10,16 @@ public interface IZegoMediaPlayerControllerCallback {
     void onBufferEnd();
 
     void onProcessInterval(long timestamp);
+
+    void onPlayBegin();
+
+    void onPlayPause();
+
+    void onPlayResume();
+
+    void onSeekComplete(int errorCode, long millisecond);
+
+    void onAudioBegin();
+
+    void onVideoBegin();
 }

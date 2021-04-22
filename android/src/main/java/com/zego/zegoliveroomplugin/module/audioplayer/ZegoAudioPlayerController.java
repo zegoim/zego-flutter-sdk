@@ -11,6 +11,7 @@ import com.zego.zegoavkit2.audioplayer.ZegoAudioPlayer;
 import com.zego.zegoliveroomplugin.utils.ZegoFileHelper;
 
 import java.io.IOException;
+import java.security.interfaces.RSAMultiPrimePrivateCrtKey;
 import java.util.HashMap;
 
 import io.flutter.plugin.common.MethodCall;
@@ -26,6 +27,8 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
     private HashMap<Integer, Result> mLoadResultList;
 
     private IZegoAudioPlayerControllerCallback mCallback = null;
+
+    private CurrentPlay currentPlay = new CurrentPlay();
 
     public ZegoAudioPlayerController() {
         mStartResultList = new HashMap<>();
@@ -208,6 +211,15 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
 
             mStartResultList.remove(Integer.valueOf(soundID));
         }
+        if(mCallback != null) {
+            mCallback.onAudioPlayBegin(soundID,errorCode);
+        }
+        if (errorCode == 0){
+            currentPlay.isPlay = true;
+        }else {
+            currentPlay.isPlay = false;
+        }
+        currentPlay.soundID = soundID;
     }
 
     @Override
@@ -215,6 +227,8 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
         if(mCallback != null) {
             mCallback.onAudioPlayEnd(soundID);
         }
+        currentPlay.isPlay = false;
+        currentPlay.soundID = soundID;
     }
 
     @Override
@@ -229,11 +243,23 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
 
             mLoadResultList.remove(Integer.valueOf(soundID));
         }
+        if(mCallback != null) {
+            mCallback.onAudioLoad(soundID,errorCode);
+        }
+        currentPlay.isPlay = false;
+        currentPlay.soundID = soundID;
     }
 
     @Override
     public void onPreloadComplete(int i) {
+        if(mCallback != null) {
+            mCallback.onAudioLoadComplete(i);
+        }
+        if (currentPlay.soundID != i){
 
+        }
+        currentPlay.isPlay = true;
+        currentPlay.soundID = i;
     }
 
     private boolean numberToBoolValue(Boolean number) {
@@ -250,4 +276,18 @@ public class ZegoAudioPlayerController implements IZegoAudioPlayerCallback {
 
         return number != null ? number.longValue() : 0;
     }
+
+    public boolean getAudioPlayerState(int soundID){
+        if (soundID == currentPlay.soundID && currentPlay.isPlay){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    static class CurrentPlay{
+        boolean isPlay;
+        int soundID;
+    }
+
 }

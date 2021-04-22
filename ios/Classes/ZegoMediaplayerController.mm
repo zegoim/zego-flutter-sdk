@@ -38,6 +38,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
 @property (nonatomic, weak) id<ZegoMediaPlayerControllerVideoDataDelegate> mVideoDataDelegate;
 @property (nonatomic, assign) ZegoMediaPlayerVideoPixelFormat mFormat;
 
+@property (nonatomic, assign) BOOL isPlaying;
+
 @end
 
 @implementation ZegoMediaPlayerController
@@ -56,6 +58,7 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     self = [super init];
     if(self) {
         _callbackMap = [[NSMutableDictionary alloc] init];
+        _isPlaying = NO;
     }
     
     return self;
@@ -230,6 +233,10 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     [self.mediaPlayer setProcessInterval:interval];
 }
 
+- (BOOL)isPlaying {
+    return _isPlaying;
+}
+
 /**
  开始播放
  
@@ -242,6 +249,14 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
         result(nil);
         [self.callbackMap removeObjectForKey:KEY_START];
     }
+    
+    if (_delegate) {
+        if ([self.delegate respondsToSelector:@selector(onPlayBegin)]) {
+            [self.delegate onPlayBegin];
+        }
+    }
+    
+    self.isPlaying = YES;
 }
 
 /**
@@ -256,6 +271,14 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
            result(nil);
            [self.callbackMap removeObjectForKey:KEY_PAUSE];
        }
+    
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onPlayPause)]) {
+            [_delegate onPlayPause];
+        }
+    }
+    
+    self.isPlaying = NO;
 }
 
 /**
@@ -270,6 +293,14 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
            result(nil);
            [self.callbackMap removeObjectForKey:KEY_RESUME];
        }
+    
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onPlayResume)]) {
+            [_delegate onPlayResume];
+        }
+    }
+    
+    self.isPlaying = YES;
 }
 
 /**
@@ -289,6 +320,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
         if([_delegate respondsToSelector:@selector(onPlayError:)])
         [_delegate onPlayError:code];
     }
+    
+    self.isPlaying = NO;
 }
 
 /**
@@ -297,7 +330,13 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  @param index 播放器序号
  */
 - (void)onVideoBegin:(ZegoMediaPlayerIndex)index {
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onVideoBegin)]) {
+            [_delegate onVideoBegin];
+        }
+    }
     
+    self.isPlaying = YES;
 }
 
 
@@ -307,7 +346,13 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  @param index 播放器序号
  */
 - (void)onAudioBegin:(ZegoMediaPlayerIndex)index {
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onAudioBegin)]) {
+            [_delegate onAudioBegin];
+        }
+    }
     
+    self.isPlaying = YES;
 }
 
 
@@ -321,6 +366,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
         if([_delegate respondsToSelector:@selector(onPlayEnd)])
         [_delegate onPlayEnd];
     }
+    
+    self.isPlaying = NO;
 }
 
 /**
@@ -335,6 +382,14 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
            result(nil);
            [self.callbackMap removeObjectForKey:KEY_STOP];
        }
+    
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onPlayStop)]) {
+            [_delegate onPlayStop];
+        }
+    }
+    
+    self.isPlaying = NO;
 }
 
 /**
@@ -377,6 +432,14 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
            result(@{@"errorCode": @(code), @"timestamp": @(millisecond)});
            [self.callbackMap removeObjectForKey:KEY_SEEK_TO];
        }
+    
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onSeekComplete:when:)]) {
+            [_delegate onSeekComplete:code when:millisecond];
+        }
+    }
+    
+    self.isPlaying = YES;
 }
 
 /**
@@ -402,6 +465,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
            result(nil);
            [self.callbackMap removeObjectForKey:KEY_LOAD];
        }
+    
+    self.isPlaying = YES;
 }
 
 /**

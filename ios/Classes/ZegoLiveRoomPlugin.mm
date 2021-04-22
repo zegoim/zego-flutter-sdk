@@ -1,4 +1,3 @@
-#import <ZegoLiveRoom/ZegoLiveRoomApi-AudioIO.h>
 #import "ZegoLiveRoomPlugin.h"
 #import "ZegoRendererController.h"
 #import "ZegoPlatformViewFactory.h"
@@ -818,6 +817,38 @@ Byte toByte(NSString* c) {
 }
 
 #pragma mark - ZegoAudioPlayControllerDelegate
+- (void)onAudioLoad:(unsigned int)soundID errorCode:(int)errorCode {
+    FlutterEventSink sink = _eventSink;
+    if (sink) {
+        sink(@{@"type": @(TYPE_AUDIO_PLAYER_EVENT),
+               @"method": @{@"name": @"onAudioLoad",
+                            @"soundID": @(soundID),
+                            @"errorCode":@(errorCode)}
+             });
+    }
+}
+
+- (void)onAudioLoadComplete:(unsigned int)soundID {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_AUDIO_PLAYER_EVENT),
+               @"method": @{@"name": @"onAudioLoadComplete",
+                            @"soundID": @(soundID)}
+               });
+    }
+}
+
+- (void)onAudioPlayBegin:(unsigned int)soundID errorCode:(int)errorCode {
+    FlutterEventSink sink = _eventSink;
+    if (sink) {
+        sink(@{@"type": @(TYPE_AUDIO_PLAYER_EVENT),
+               @"method": @{@"name": @"onAudioPlayBegin",
+                            @"soundID": @(soundID),
+                            @"errorCode":@(errorCode)}
+             });
+    }
+}
+
 - (void)onAudioPlayEnd:(unsigned int)soundID {
     FlutterEventSink sink = _eventSink;
     if(sink) {
@@ -829,11 +860,47 @@ Byte toByte(NSString* c) {
 }
 
 #pragma mark - ZegoMediaPlayerControllerDelegate
+- (void)onPlayBegin {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onPlayBegin"}
+             });
+    }
+}
+
+- (void)onPlayPause {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onPlayPause"}
+             });
+    }
+}
+
+- (void)onPlayResume {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onPlayResume"}
+             });
+    }
+}
+
 - (void)onPlayEnd {
     FlutterEventSink sink = _eventSink;
     if(sink) {
         sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
                @"method": @{@"name": @"onPlayEnd"}
+             });
+    }
+}
+
+- (void)onPlayStop {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onPlayStop"}
              });
     }
 }
@@ -866,12 +933,41 @@ Byte toByte(NSString* c) {
     }
 }
 
+- (void)onAudioBegin {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onAudioBegin"}
+             });
+    }
+}
+
+- (void)onVideoBegin {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onVideoBegin"}
+             });
+    }
+}
+
 - (void)onProcessInterval:(long)timestamp {
     FlutterEventSink sink = _eventSink;
     if(sink) {
         sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
                @"method": @{@"name": @"onProcessInterval",
                             @"timestamp": @(timestamp)}
+             });
+    }
+}
+
+- (void)onSeekComplete:(int)errorCode when:(long)millisecond {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_MEDIA_PLAYER_EVENT),
+               @"method": @{@"name": @"onSeekComplete",
+                            @"errorCode": @(errorCode),
+                            @"millisecond": @(millisecond)}
              });
     }
 }
@@ -2609,6 +2705,14 @@ Byte toByte(NSString* c) {
         }
 
         [[ZegoAudioPlayerController instance] getCurrentDuration:args result:result];
+    } else if ([@"isPlaying" isEqualToString:call.method]) {
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        int soundID = [self numberToIntValue:args[@"soundID"]];
+        BOOL ret = [[ZegoAudioPlayerController instance] isPlaying:soundID];
+        result(@(ret));
     }
 #pragma mark LiveRoom-MediaPlayer
     else if([@"createMediaPlayerRenderer" isEqualToString:call.method]) {
@@ -2626,25 +2730,24 @@ Byte toByte(NSString* c) {
         int height = [self numberToIntValue:args[@"height"]];
         
         [[ZegoMediaPlayerController instance] setRenderController:self.renderController];
+
+        ZegoViewRenderer *renderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
         
         extern NSString *kZegoVideoDataMediaPlayerStream;
-        
-        ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
-        if(renderer) {
-            result(@(renderer.textureID));
-        } else {
-            ZegoViewRenderer *newRenderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
-            if([self.renderController addRenderer:newRenderer ofKey:kZegoVideoDataMediaPlayerStream]) {
-                
-                if(![self.renderController isRendering]) {
-                    [self.renderController startRendering];
-                }
-                NSLog(@"new renderer. textureID: %lld", newRenderer.textureID);
-                result(@(newRenderer.textureID));
+
+        if([self.renderController addRenderer:renderer ofKey:kZegoVideoDataMediaPlayerStream]) {
+            
+            if(![self.renderController isRendering]) {
+                [self.renderController startRendering];
             }
+            NSLog(@"%lld", renderer.textureID);
+            result(@(renderer.textureID));
         }
-    }
-    else if([@"mpStart" isEqualToString:call.method]) {
+        else {
+            NSLog(@"添加 Render 失败");
+            result(@(-1));
+        }
+    } else if([@"mpStart" isEqualToString:call.method]) {
 
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
@@ -2808,24 +2911,22 @@ Byte toByte(NSString* c) {
         [[ZegoMediaPlayerController instance] setBufferThreshold:threshold];
         result(nil);
 
-    }else if([@"setLoadResourceTimeout" isEqualToString:call.method]) {
+    } else if([@"setLoadResourceTimeout" isEqualToString:call.method]) {
 
         int timeout = [self numberToIntValue:args[@"timeout"]];
 
         [[ZegoMediaPlayerController instance] setLoadResourceTimeout:timeout];
         result(nil);
 
-    }else if([@"registerMediaPlayerCallback" isEqualToString:call.method]) {
+    } else if([@"registerMediaPlayerCallback" isEqualToString:call.method]) {
 
         [[ZegoMediaPlayerController instance] setDelegate:self];
         result(nil);
-    }
-    else if([@"unregisterMediaPlayerCallback" isEqualToString:call.method]) {
+    } else if([@"unregisterMediaPlayerCallback" isEqualToString:call.method]) {
 
         [[ZegoMediaPlayerController instance] setDelegate:nil];
         result(nil);
-    }
-    else if ([@"destroyMediaPlayerRenderer" isEqualToString:call.method]) {
+    } else if ([@"destroyMediaPlayerRenderer" isEqualToString:call.method]) {
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
@@ -2851,8 +2952,7 @@ Byte toByte(NSString* c) {
         } else {
             result(@(NO));
         }
-    }
-    else if ([@"updateMediaPlayRenderSize" isEqualToString:call.method]) {
+    } else if ([@"updateMediaPlayRenderSize" isEqualToString:call.method]) {
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
@@ -2870,8 +2970,7 @@ Byte toByte(NSString* c) {
 
         [renderer updateRenderSize:CGSizeMake(width, height)];
         result(nil);
-    }
-    else if ([@"mpGetAudioStreamCount" isEqualToString:call.method]) {
+    } else if ([@"mpGetAudioStreamCount" isEqualToString:call.method]) {
         // 获取音轨数量
         if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
@@ -2879,8 +2978,7 @@ Byte toByte(NSString* c) {
         }
         int streamCount = (int)[[ZegoMediaPlayerController instance] getAudioStreamCount];
         result(@(streamCount));
-    }
-    else if ([@"mpSetAudioStream" isEqualToString:call.method]) {
+    } else if ([@"mpSetAudioStream" isEqualToString:call.method]) {
         // 切换音轨
         if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
@@ -2889,8 +2987,7 @@ Byte toByte(NSString* c) {
         int streamIndex = [self numberToIntValue:args[@"streamIndex"]];
         int ret = (int)[[ZegoMediaPlayerController instance] setAudioStream:streamIndex];
         result(@(ret));
-    }
-    else if ([@"mpSetPlayVolume" isEqualToString:call.method]) {
+    } else if ([@"mpSetPlayVolume" isEqualToString:call.method]) {
         // 本地播放音量
         if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
@@ -2899,8 +2996,7 @@ Byte toByte(NSString* c) {
         int vol = [self numberToIntValue:args[@"volume"]];
         [[ZegoMediaPlayerController instance] setPlayVolume:vol];
         result(nil);
-    }
-    else if ([@"mpSetPublishVolume" isEqualToString:call.method]) {
+    } else if ([@"mpSetPublishVolume" isEqualToString:call.method]) {
         // 推流音量
         if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
@@ -2909,8 +3005,7 @@ Byte toByte(NSString* c) {
         int vol = [self numberToIntValue:args[@"volume"]];
         [[ZegoMediaPlayerController instance] setPublishVolume:vol];
         result(nil);
-    }
-    else if ([@"mpGetPlayVolume" isEqualToString:call.method]) {
+    } else if ([@"mpGetPlayVolume" isEqualToString:call.method]) {
         // 获取本地播放音量
         if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
@@ -2918,14 +3013,20 @@ Byte toByte(NSString* c) {
         }
         int ret = [[ZegoMediaPlayerController instance] getPlayVolume];
         result(@(ret));
-    }
-    else if ([@"mpGetPublishVolume" isEqualToString:call.method]) {
+    } else if ([@"mpGetPublishVolume" isEqualToString:call.method]) {
         // 获取推流音量
         if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
         int ret = [[ZegoMediaPlayerController instance] getPublishVolume];
+        result(@(ret));
+    } else if ([@"mpIsPlaying" isEqualToString:call.method]) {
+        if (self.zegoApi == nil && [ZegoMediaPlayerController instance] == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        BOOL ret = [[ZegoMediaPlayerController instance] isPlaying];
         result(@(ret));
     }
     /* External Video Filter */

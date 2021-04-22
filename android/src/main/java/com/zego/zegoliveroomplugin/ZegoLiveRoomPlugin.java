@@ -99,7 +99,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     private int mLogSize = 5 * 1024 * 1024;
     private String mLogPath = null;
-    private ZegoViewRenderer mMediaPlayerRenderer = null;
+    private ZegoViewRenderer mMediaPlayerRenderer;
 
     private ZegoLiveRoomPlugin(Registrar registrar) {
         this.registrar = registrar;
@@ -2034,16 +2034,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             int width = numberToIntValue((Number) call.argument("width"));
             int height = numberToIntValue((Number) call.argument("height"));
-
-            if(mMediaPlayerRenderer == null) {
-                mMediaPlayerRenderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
-                ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
-                ZegoLogJNI.logNotice("[createMediaPlayerRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + mMediaPlayerRenderer.getTextureID());
-                result.success(mMediaPlayerRenderer.getTextureID());
-            } else {
-                result.success(mMediaPlayerRenderer.getTextureID());
-            }
-
+            mMediaPlayerRenderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
+            ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
+            ZegoLogJNI.logNotice("[createMediaPlayerRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + mMediaPlayerRenderer.getTextureID());
+            result.success(mMediaPlayerRenderer.getTextureID());
         } else if (call.method.equals("destroyMediaPlayerRenderer")) {
             if (mZegoLiveRoom == null) {
                 throwSdkNotInitError(result, call.method);
@@ -2345,6 +2339,17 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             ZegoLogJNI.logNotice(content);
 
             result.success(null);
+        } else if (call.method.equals("isPlaying")) {
+
+            int soundID = numberToIntValue((Number) call.argument("soundID"));
+            boolean isPlay = ZegoAudioPlayerController.getInstance().getAudioPlayerState(soundID);
+            result.success(isPlay);
+
+        } else if (call.method.equals("mpIsPlaying")) {
+
+            boolean isPlay = ZegoMediaPlayerController.getInstance().getMediaPlayerState();
+            result.success(isPlay);
+
         } else {
 
             result.notImplemented();
@@ -3246,6 +3251,47 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     }
 
     @Override
+    public void onAudioPlayBegin(int soundID,int errorCode) {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onAudioPlayBegin");
+        method.put("soundID",soundID);
+        method.put("errorCode", errorCode);
+
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
+    public void onAudioLoad(int soundID,int errorCode) {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onAudioLoad");
+        method.put("soundID", soundID);
+        method.put("errorCode", errorCode);
+
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
+    public void onAudioLoadComplete(int soundID) {
+        HashMap<String,Object> returnMap = new HashMap<>();
+        returnMap.put("type",ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+
+        HashMap<String,Object> method = new HashMap<>();
+        method.put("name","onAudioLoadComplete");
+        method.put("soundID",soundID);
+
+        returnMap.put("method",method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
     public void onPlayEnd() {
         if (mEventSink != null) {
 
@@ -3327,6 +3373,79 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             });
 
         }
+    }
+
+    @Override
+    public void onPlayBegin() {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onPlayBegin");
+
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
+    public void onPlayPause() {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onPlayPause");
+
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
+    public void onPlayResume() {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onPlayResume");
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
+    public void onSeekComplete(int error, long millisecond) {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onSeekComplete");
+        method.put("error",error);
+        method.put("millisecond", millisecond);
+
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
+    public void onAudioBegin() {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onAudioBegin");
+
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
+    public void onVideoBegin() {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onVideoBegin");
+
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
     }
 
     private boolean numberToBoolValue(Boolean number) {

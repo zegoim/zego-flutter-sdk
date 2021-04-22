@@ -18,6 +18,8 @@
 @property (nonatomic, strong) NSMutableDictionary<NSNumber*, FlutterResult> *startResultList;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber*, FlutterResult> *loadResultList;
 
+@property (nonatomic, strong) NSMutableDictionary<NSNumber*, NSNumber*> *playingStatus;
+
 @end
 
 
@@ -39,6 +41,7 @@
     if(self) {
         _startResultList = [[NSMutableDictionary alloc] init];
         _loadResultList = [[NSMutableDictionary alloc] init];
+        _playingStatus = [[NSMutableDictionary alloc] init];
     }
     
     return self;
@@ -175,6 +178,15 @@
     _delegate = delegate;
 }
 
+- (BOOL)isPlaying:(int)soundID {
+    NSNumber *ret = self.playingStatus[@(soundID)];
+    if (ret) {
+        return [ret boolValue];
+    }else {
+        return NO;
+    }
+}
+
 #pragma mark ZegoAudioPlayerDelegate
 
 /*
@@ -190,6 +202,18 @@
         result(@{@"errorCode": @(error), @"soundID": @(soundID)});
         [self.startResultList removeObjectForKey:@(soundID)];
     }
+    
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onAudioPlayBegin:errorCode:)]) {
+            [_delegate onAudioPlayBegin:soundID errorCode:error];
+        }
+    }
+    
+    if (error != 0) {
+        self.playingStatus[@(soundID)] = @(NO);
+    }else {
+        self.playingStatus[@(soundID)] = @(YES);
+    }
 }
 
 /**
@@ -202,6 +226,7 @@
         if([_delegate respondsToSelector:@selector(onAudioPlayEnd:)])
             [_delegate onAudioPlayEnd:soundID];
     }
+    self.playingStatus[@(soundID)] = @(NO);
 }
 
 /*
@@ -217,6 +242,13 @@
         result(@{@"errorCode": @(error), @"soundID": @(soundID)});
         [self.loadResultList removeObjectForKey:@(soundID)];
     }
+    
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onAudioLoad:errorCode:)]) {
+            [_delegate onAudioLoad:soundID errorCode:error];
+        }
+    }
+    self.playingStatus[@(soundID)] = @(NO);
 }
 
 /**
@@ -225,7 +257,12 @@
  * @param soundID 音效 ID
  */
 - (void)onPreloadComplete:(unsigned int)soundID {
-    
+    if (_delegate) {
+        if ([_delegate respondsToSelector:@selector(onAudioLoadComplete:)]) {
+            [_delegate onAudioLoadComplete:soundID];
+        }
+    }
+    self.playingStatus[@(soundID)] = @(YES);
 }
 
 - (unsigned int)numberToUintValue:(NSNumber *)number {
