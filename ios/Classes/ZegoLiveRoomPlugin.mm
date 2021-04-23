@@ -1,3 +1,4 @@
+#import <ZegoLiveRoom/ZegoLiveRoomApi-AudioIO.h>
 #import "ZegoLiveRoomPlugin.h"
 #import "ZegoRendererController.h"
 #import "ZegoPlatformViewFactory.h"

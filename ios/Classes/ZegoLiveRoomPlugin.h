@@ -1,7 +1,6 @@
 #import <Flutter/Flutter.h>
 #import <ZegoLiveRoom/ZegoLiveRoom.h>
 #import <ZegoLiveRoom/ZegoLiveRoomApi-Publisher2.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApi-AudioIO.h>
 #import <ZegoLiveRoom/zego-api-media-side-info-oc.h>
 #import <ZegoLiveRoom/zego-api-external-video-filter-oc.h>
 #import <ZegoLiveRoom/zego-api-external-video-capture-oc.h>
