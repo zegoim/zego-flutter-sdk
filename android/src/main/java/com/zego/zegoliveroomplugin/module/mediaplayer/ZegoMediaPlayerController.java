@@ -67,9 +67,12 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         mPlayer = null;
     }
 
-    public void setVideoDataCallback(IZegoMediaPlayerVideoPlayWithIndexCallback callback, int format) {
-        this.mPlayVideoCallback = callback;
-        this.mVideoDataFormat = format;
+    public void setVideoDataCallback(final IZegoMediaPlayerVideoPlayWithIndexCallback callback, final int format) {
+        mPlayVideoCallback = callback;
+        mVideoDataFormat = format;
+        if (mPlayer != null) {
+            mPlayer.setVideoPlayWithIndexCallback(mPlayVideoCallback, mVideoDataFormat);
+        }
     }
 
     public static ZegoMediaPlayerController getInstance() {

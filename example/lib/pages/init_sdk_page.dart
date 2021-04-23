@@ -78,7 +78,6 @@ class _InitPageState extends State<InitPage> {
     ZegoLiveRoomPlugin.enableExternalVideoFilterFactory(
         ZegoConfig.getInstance().enableExternalVideoFilter);
     // 设置是否开启外部视频采集 （这里暂时只在 MediaPlayer 部分实现，所以先这么判断）
-    ZegoLiveRoomPlugin.enableExternalVideoCaptureFactory(widget.isMediaplayer);
 
     // 设置是否使用 PlatformView
     ZegoLiveRoomPlugin.enablePlatformView(

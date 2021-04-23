@@ -14,8 +14,8 @@
 		861F8EE32410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 861F8ECE2410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.m */; };
 		861F8F0B24110299004AACC3 /* ZGPixelBufferUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 861F8F0A24110299004AACC3 /* ZGPixelBufferUtils.m */; };
 		861F8F1124110E31004AACC3 /* ZGVideoFilterFactoryDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 861F8F1024110E31004AACC3 /* ZGVideoFilterFactoryDemo.m */; };
-		86B491422626D0100041B0BC /* ZGVideoCaptureForMediaPlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 86B491402626D0100041B0BC /* ZGVideoCaptureForMediaPlayer.mm */; };
 		86B491452626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 86B491432626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m */; };
+		86B491B7262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 86B491B6262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm */; };
 		9740EEB41CF90195004384FC /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9740EEB21CF90195004384FC /* Debug.xcconfig */; };
 		978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AFFD8EE1D35381100E5BB4D /* AppDelegate.m */; };
 		97C146F31CF9000F007C117D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 97C146F21CF9000F007C117D /* main.m */; };
@@ -55,10 +55,10 @@
 		861F8F0A24110299004AACC3 /* ZGPixelBufferUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZGPixelBufferUtils.m; sourceTree = "<group>"; };
 		861F8F0F24110E31004AACC3 /* ZGVideoFilterFactoryDemo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZGVideoFilterFactoryDemo.h; sourceTree = "<group>"; };
 		861F8F1024110E31004AACC3 /* ZGVideoFilterFactoryDemo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZGVideoFilterFactoryDemo.m; sourceTree = "<group>"; };
-		86B491402626D0100041B0BC /* ZGVideoCaptureForMediaPlayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZGVideoCaptureForMediaPlayer.mm; sourceTree = "<group>"; };
-		86B491412626D0100041B0BC /* ZGVideoCaptureForMediaPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZGVideoCaptureForMediaPlayer.h; sourceTree = "<group>"; };
 		86B491432626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZGExternalVideoCaptureFactory.m; sourceTree = "<group>"; };
 		86B491442626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZGExternalVideoCaptureFactory.h; sourceTree = "<group>"; };
+		86B491B5262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZGVideoCaptureForMediaPlayer.h; sourceTree = "<group>"; };
+		86B491B6262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZGVideoCaptureForMediaPlayer.mm; sourceTree = "<group>"; };
 		917B0B80B2273A64D089C6FD /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
@@ -118,10 +118,10 @@
 		86B4913C2626CF5E0041B0BC /* ExternalVideoCapture */ = {
 			isa = PBXGroup;
 			children = (
+				86B491B5262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.h */,
+				86B491B6262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm */,
 				86B491442626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.h */,
 				86B491432626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m */,
-				86B491412626D0100041B0BC /* ZGVideoCaptureForMediaPlayer.h */,
-				86B491402626D0100041B0BC /* ZGVideoCaptureForMediaPlayer.mm */,
 			);
 			path = ExternalVideoCapture;
 			sourceTree = "<group>";
@@ -335,8 +335,8 @@
 			files = (
 				861F8EE02410D1BB004AACC3 /* ZGVideoFilterSyncDemo.m in Sources */,
 				978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */,
+				86B491B7262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm in Sources */,
 				86B491452626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m in Sources */,
-				86B491422626D0100041B0BC /* ZGVideoCaptureForMediaPlayer.mm in Sources */,
 				97C146F31CF9000F007C117D /* main.m in Sources */,
 				861F8EE32410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.m in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
@@ -426,7 +426,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
 				);
-				GCC_INPUT_FILETYPE = automatic;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -551,7 +551,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
 				);
-				GCC_INPUT_FILETYPE = automatic;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -576,7 +576,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
 				);
-				GCC_INPUT_FILETYPE = automatic;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (

@@ -48,7 +48,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  zegoliveroom_plugin: ^1.5.5
+  zegoliveroom_plugin: ^1.5.6
 ```
 
 - ### Depends on git

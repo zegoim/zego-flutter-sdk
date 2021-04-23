@@ -30,10 +30,7 @@ public class MainActivity extends FlutterActivity {
         ZegoLiveRoomPlugin.setExternalVideoFilterFactory(factory);
 
 
-        MediaPlayerVideoCapture videoCapture = new MediaPlayerVideoCapture();
-        ZegoVideoCaptureFactory videoCaptureFactory = new VideoCaptureFactory(videoCapture);
-        ZegoMediaPlayerController.getInstance().setVideoDataCallback(videoCapture, PIXEL_FORMAT_BGRA32);
-        ZegoLiveRoomPlugin.setExternalVideoCaptureFactory(videoCaptureFactory);
+        ZegoLiveRoomPlugin.setExternalVideoCaptureFactory(new VideoCaptureFactory());
 
         GeneratedPluginRegistrant.registerWith(this);
     }

@@ -4,6 +4,9 @@
 
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
 
+## 1.5.6
+1. Fix Android native bugs triggered by external video capture with mediaplayer
+
 ## 1.5.5
 1. Add some MediaPlayer, AudioPlayer callbacks.
 

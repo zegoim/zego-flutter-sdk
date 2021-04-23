@@ -29,6 +29,7 @@ class LoginRoomPage extends StatefulWidget {
 
 class _LoginRoomPageState extends State<LoginRoomPage> {
   final TextEditingController _controller = new TextEditingController();
+  bool isExternalVideoCapture = false;
 
   @override
   void initState() {
@@ -72,7 +73,8 @@ class _LoginRoomPageState extends State<LoginRoomPage> {
 
   void _loginRoom() {
     String roomID = _controller.text.trim();
-
+    ZegoLiveRoomPlugin.enableExternalVideoCaptureFactory(
+        isExternalVideoCapture);
     // 调用登录房间之前，必须先调用setUser
     ZegoLiveRoomPlugin.setUser(
         ZegoConfig.getInstance().userID, ZegoConfig.getInstance().userName);
@@ -249,7 +251,20 @@ class _LoginRoomPageState extends State<LoginRoomPage> {
                     ),
                     onPressed: onButtonPressed,
                   ),
-                )
+                ),
+                Row(
+                  children: <Widget>[
+                    Checkbox(
+                      value: isExternalVideoCapture,
+                      onChanged: (value) {
+                        setState(() {
+                          isExternalVideoCapture = value;
+                        });
+                      },
+                    ),
+                    Text('是否使用外部采集'),
+                  ],
+                ),
               ],
             ),
           )),
