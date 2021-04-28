@@ -2473,6 +2473,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         });
 
+        ZegoLogJNI.logNotice("[Flutter-Native] uninit sdk before initsdk next time");
+        mZegoLiveRoom.uninitSDK();
+
         ZegoLogJNI.logNotice("[Flutter-Native] enter init sdk, app id: " + appID);
 
         mZegoLiveRoom.setZegoRoomCallback(new IZegoRoomCallback() {
