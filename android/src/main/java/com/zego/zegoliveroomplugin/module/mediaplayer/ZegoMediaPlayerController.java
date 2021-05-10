@@ -1,24 +1,16 @@
 package com.zego.zegoliveroomplugin.module.mediaplayer;
 
-import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.media.MediaPlayer;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
+import android.content.Context;
+import android.graphics.Bitmap;
 
 import com.zego.zegoavkit2.IZegoMediaPlayerVideoPlayWithIndexCallback;
 import com.zego.zegoavkit2.IZegoMediaPlayerWithIndexCallback;
 import com.zego.zegoavkit2.ZegoMediaPlayer;
-import com.zego.zegoavkit2.ZegoVideoDataFormat;
 import com.zego.zegoliveroomplugin.utils.ZegoFileHelper;
 
-import java.io.IOException;
 import java.util.HashMap;
 
-import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
@@ -211,7 +203,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         mPlayer.setPlayVolume(volume);
     }
 
-    public void setView(Object view) {
+    public void setView(View view) {
         mPlayer.setView(view);
     }
 

@@ -22,22 +22,22 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.lang.*;
 
-import com.zego.zegoavkit2.ZegoExternalVideoCapture;
+//import com.zego.zegoavkit2.ZegoExternalVideoCapture;
 import com.zego.zegoavkit2.ZegoStreamExtraPlayInfo;
-import com.zego.zegoavkit2.ZegoVideoCaptureFactory;
+//import com.zego.zegoavkit2.ZegoVideoCaptureFactory;
 import com.zego.zegoavkit2.audioprocessing.ZegoAudioProcessing;
 import com.zego.zegoavkit2.audioprocessing.ZegoAudioReverbMode;
 import com.zego.zegoavkit2.audioprocessing.ZegoAudioReverbParam;
 import com.zego.zegoavkit2.camera.ZegoCamera;
 import com.zego.zegoavkit2.entities.ZegoStreamRelayCDNInfo;
 import com.zego.zegoavkit2.error.ZegoError;
-import com.zego.zegoavkit2.mediaside.IZegoMediaSideCallback;
-import com.zego.zegoavkit2.mediaside.ZegoMediaSideInfo;
+//import com.zego.zegoavkit2.mediaside.IZegoMediaSideCallback;
+//import com.zego.zegoavkit2.mediaside.ZegoMediaSideInfo;
 import com.zego.zegoavkit2.soundlevel.IZegoSoundLevelCallback;
 import com.zego.zegoavkit2.soundlevel.ZegoSoundLevelInfo;
 import com.zego.zegoavkit2.soundlevel.ZegoSoundLevelMonitor;
-import com.zego.zegoavkit2.videofilter.ZegoExternalVideoFilter;
-import com.zego.zegoavkit2.videofilter.ZegoVideoFilterFactory;
+//import com.zego.zegoavkit2.videofilter.ZegoExternalVideoFilter;
+//import com.zego.zegoavkit2.videofilter.ZegoVideoFilterFactory;
 import com.zego.zegoavkit2.ZegoConstants.PublishChannelIndex;
 import com.zego.zegoliveroom.ZegoLiveRoom;
 import com.zego.zegoliveroom.callback.IZegoAVEngineCallback;
@@ -69,15 +69,16 @@ import com.zego.zegoliveroom.entity.ZegoPlayStreamQuality;
 import com.zego.zegoliveroom.entity.ZegoUser;
 import com.zego.zegoliveroom.entity.ZegoUserState;
 import com.zego.zegoliveroomplugin.constants.ZegoEventType;
-import com.zego.zegoliveroomplugin.module.audioplayer.IZegoAudioPlayerControllerCallback;
-import com.zego.zegoliveroomplugin.module.audioplayer.ZegoAudioPlayerController;
+//import com.zego.zegoliveroomplugin.module.audioplayer.IZegoAudioPlayerControllerCallback;
+//import com.zego.zegoliveroomplugin.module.audioplayer.ZegoAudioPlayerController;
 import com.zego.zegoliveroomplugin.module.mediaplayer.IZegoMediaPlayerControllerCallback;
 import com.zego.zegoliveroomplugin.module.mediaplayer.ZegoMediaPlayerController;
 
 /**
  * ZegoLiveRoomPlugin
  */
-public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler, IZegoAudioPlayerControllerCallback, IZegoMediaPlayerControllerCallback {
+public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler, IZegoMediaPlayerControllerCallback {
+//public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.StreamHandler, IZegoAudioPlayerControllerCallback, IZegoMediaPlayerControllerCallback {
 
     /**
      * Plugin registration.
@@ -85,15 +86,15 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     private static String mPublishMainChl = com.zego.zegoavkit2.ZegoConstants.ZegoVideoDataMainPublishingStream;
 
-    private static ZegoVideoFilterFactory videoFilterFactory;
-    private static ZegoVideoCaptureFactory videoCaptureFactory;
+//    private static ZegoVideoFilterFactory videoFilterFactory;
+//    private static ZegoVideoCaptureFactory videoCaptureFactory;
     private final Registrar registrar;
     private final TextureRegistry textures;
     private final Context mContext;
     private EventSink mEventSink;
 
     private ZegoLiveRoom mZegoLiveRoom;
-    private ZegoMediaSideInfo mZegoMediaSideInfo;
+//    private ZegoMediaSideInfo mZegoMediaSideInfo;
     private HashMap<String, ZegoViewRenderer> mRenders;
     private boolean mIsEnablePlatformView;
 
@@ -107,7 +108,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         this.mContext = registrar.context();    //获取应用程序的Context
 
         this.mZegoLiveRoom = null;
-        this.mZegoMediaSideInfo = null;
+//        this.mZegoMediaSideInfo = null;
         this.mIsEnablePlatformView = false;
 
         this.mRenders = new HashMap<>();
@@ -122,9 +123,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
      *
      * @param factory 外部视频滤镜工厂
      */
-    public static void setExternalVideoFilterFactory(ZegoVideoFilterFactory factory) {
-        videoFilterFactory = factory;
-    }
+//    public static void setExternalVideoFilterFactory(ZegoVideoFilterFactory factory) {
+//        videoFilterFactory = factory;
+//    }
 
     /**
      * 预存外部视频采集工厂
@@ -135,9 +136,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
      *
      * @param factory 外部视频采集工厂
      */
-    public static void setExternalVideoCaptureFactory(ZegoVideoCaptureFactory factory) {
-        videoCaptureFactory = factory;
-    }
+//    public static void setExternalVideoCaptureFactory(ZegoVideoCaptureFactory factory) {
+//        videoCaptureFactory = factory;
+//    }
 
     public static void registerWith(Registrar registrar) {
 
@@ -201,13 +202,13 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             } else {
 
-                if (mZegoMediaSideInfo != null) {
-                    mZegoMediaSideInfo.setZegoMediaSideCallback(null);
-                    mZegoMediaSideInfo = null;
-                }
-
-                ZegoAudioPlayerController.getInstance().uninit();
-                ZegoMediaPlayerController.getInstance().uninit();
+//                if (mZegoMediaSideInfo != null) {
+//                    mZegoMediaSideInfo.setZegoMediaSideCallback(null);
+//                    mZegoMediaSideInfo = null;
+//                }
+//
+//                ZegoAudioPlayerController.getInstance().uninit();
+//                ZegoMediaPlayerController.getInstance().uninit();
 
                 ZegoLogJNI.logNotice("[Flutter-Native] unInitSDK");
                 //反初始化SDK里面会做回调的销毁处理
@@ -1552,38 +1553,38 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             });
         }
         /* Media Side Info */
-        else if (call.method.equals("setMediaSideFlags")) {
-
-            if (mZegoLiveRoom == null || mZegoMediaSideInfo == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            boolean start = numberToBoolValue((Boolean) call.argument("start"));
-            boolean onlyAudioPublish = numberToBoolValue((Boolean) call.argument("onlyAudioPublish"));
-
-            mZegoMediaSideInfo.setMediaSideFlags(start, onlyAudioPublish, 0);
-            result.success(null);
-
-        } else if (call.method.equals("sendMediaSideInfo")) {
-
-            if (mZegoLiveRoom == null || mZegoMediaSideInfo == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            String data = call.argument("data");
-
-            ByteBuffer tmpData = ByteBuffer.wrap(data.getBytes());
-
-            ByteBuffer inData = ByteBuffer.allocateDirect(tmpData.capacity());
-            for (int i = 0; i < inData.capacity(); i++)
-                inData.put(i, tmpData.get(i));
-
-            mZegoMediaSideInfo.sendMediaSideInfo(inData, inData.capacity(), false, 0);
-            result.success(null);
-
-        }
+//        else if (call.method.equals("setMediaSideFlags")) {
+//
+//            if (mZegoLiveRoom == null || mZegoMediaSideInfo == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            boolean start = numberToBoolValue((Boolean) call.argument("start"));
+//            boolean onlyAudioPublish = numberToBoolValue((Boolean) call.argument("onlyAudioPublish"));
+//
+//            mZegoMediaSideInfo.setMediaSideFlags(start, onlyAudioPublish, 0);
+//            result.success(null);
+//
+//        } else if (call.method.equals("sendMediaSideInfo")) {
+//
+//            if (mZegoLiveRoom == null || mZegoMediaSideInfo == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            String data = call.argument("data");
+//
+//            ByteBuffer tmpData = ByteBuffer.wrap(data.getBytes());
+//
+//            ByteBuffer inData = ByteBuffer.allocateDirect(tmpData.capacity());
+//            for (int i = 0; i < inData.capacity(); i++)
+//                inData.put(i, tmpData.get(i));
+//
+//            mZegoMediaSideInfo.sendMediaSideInfo(inData, inData.capacity(), false, 0);
+//            result.success(null);
+//
+//        }
         /* Sound Level */
         else if (call.method.equals("registerSoundLevelCallback")) {
 
@@ -1656,142 +1657,142 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         }
         /* LiveRoom-AudioPlayer */
-        else if (call.method.equals("playAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().playAudioEffect(call, this.registrar, result);
-
-        } else if (call.method.equals("stopAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().stopAudioEffect(call, result);
-
-        } else if (call.method.equals("pauseAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().pauseAudioEffect(call, result);
-
-        } else if (call.method.equals("resumeAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().resumeAudioEffect(call, result);
-
-        } else if (call.method.equals("setAudioEffectVolume")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().setAudioEffectVolume(call, result);
-
-        } else if (call.method.equals("preloadAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().preloadAudioEffect(call, this.registrar, result);
-
-        } else if (call.method.equals("unloadAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().unloadAudioEffect(call, result);
-
-        } else if (call.method.equals("setAllAudioEffectVolume")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().setAllEffectVolume(call, result);
-
-        } else if (call.method.equals("pauseAllAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().pauseAllEffect(result);
-
-        } else if (call.method.equals("resumeAllAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().resumeAllEffect(result);
-
-        } else if (call.method.equals("stopAllAudioEffect")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().stopAllEffect(result);
-
-        } else if (call.method.equals("registerAudioPlayerCallback")) {
-
-            ZegoAudioPlayerController.getInstance().setAudioPlayerEventCallback(this);
-            result.success(null);
-
-        } else if (call.method.equals("unregisterAudioPlayerCallback")) {
-
-            ZegoAudioPlayerController.getInstance().setAudioPlayerEventCallback(null);
-            result.success(null);
-        } else if (call.method.equals("seekToAudio")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().seekTo(call, result);
-
-        } else if (call.method.equals("getTotalDurationAudio")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().getTotalDuration(call, result);
-
-        } else if (call.method.equals("getCurrentDurationAudio")) {
-
-            if (mZegoLiveRoom == null) {
-                throwSdkNotInitError(result, call.method);
-                return;
-            }
-
-            ZegoAudioPlayerController.getInstance().getCurrentDuration(call, result);
-
-        }else if (call.method.equals("setCaptureVolume")) {
+//        else if (call.method.equals("playAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().playAudioEffect(call, this.registrar, result);
+//
+//        } else if (call.method.equals("stopAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().stopAudioEffect(call, result);
+//
+//        } else if (call.method.equals("pauseAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().pauseAudioEffect(call, result);
+//
+//        } else if (call.method.equals("resumeAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().resumeAudioEffect(call, result);
+//
+//        } else if (call.method.equals("setAudioEffectVolume")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().setAudioEffectVolume(call, result);
+//
+//        } else if (call.method.equals("preloadAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().preloadAudioEffect(call, this.registrar, result);
+//
+//        } else if (call.method.equals("unloadAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().unloadAudioEffect(call, result);
+//
+//        } else if (call.method.equals("setAllAudioEffectVolume")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().setAllEffectVolume(call, result);
+//
+//        } else if (call.method.equals("pauseAllAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().pauseAllEffect(result);
+//
+//        } else if (call.method.equals("resumeAllAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().resumeAllEffect(result);
+//
+//        } else if (call.method.equals("stopAllAudioEffect")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().stopAllEffect(result);
+//
+//        } else if (call.method.equals("registerAudioPlayerCallback")) {
+//
+//            ZegoAudioPlayerController.getInstance().setAudioPlayerEventCallback(this);
+//            result.success(null);
+//
+//        } else if (call.method.equals("unregisterAudioPlayerCallback")) {
+//
+//            ZegoAudioPlayerController.getInstance().setAudioPlayerEventCallback(null);
+//            result.success(null);
+//        } else if (call.method.equals("seekToAudio")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().seekTo(call, result);
+//
+//        } else if (call.method.equals("getTotalDurationAudio")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().getTotalDuration(call, result);
+//
+//        } else if (call.method.equals("getCurrentDurationAudio")) {
+//
+//            if (mZegoLiveRoom == null) {
+//                throwSdkNotInitError(result, call.method);
+//                return;
+//            }
+//
+//            ZegoAudioPlayerController.getInstance().getCurrentDuration(call, result);
+//        }
+        else if (call.method.equals("setCaptureVolume")) {
             if (mZegoLiveRoom == null) {
                 throwSdkNotInitError(result, call.method);
                 return;
@@ -2037,7 +2038,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             if(mMediaPlayerRenderer == null) {
                 mMediaPlayerRenderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
-                ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
+//                ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
                 ZegoLogJNI.logNotice("[createMediaPlayerRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + mMediaPlayerRenderer.getTextureID());
                 result.success(mMediaPlayerRenderer.getTextureID());
             } else {
@@ -2081,7 +2082,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             ZegoMediaPlayerController.getInstance().setView(null);
             boolean success = mMediaPlayerRenderer.updateRenderSize(width, height);
             //if(success) {
-            ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
+//            ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
             //}
             ZegoLogJNI.logNotice("[updateMediaPlayRenderSize] width: " + width + " height: " + height + ", textureID: " + mMediaPlayerRenderer.getTextureID());
 
@@ -2198,15 +2199,16 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         }
 
         /* External Video Filter */
-        else if (call.method.equals("enableExternalVideoFilterFactory")) {
-            boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
-            ZegoExternalVideoFilter.setVideoFilterFactory(enable ? videoFilterFactory : null, 0);
-            result.success(null);
-        } else if (call.method.equals("enableExternalVideoCaptureFactory")) {
-            boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
-            ZegoExternalVideoCapture.setVideoCaptureFactory(enable ? videoCaptureFactory : null, 0);
-            result.success(null);
-        } else if (call.method.equals("setConfig")) {
+//        else if (call.method.equals("enableExternalVideoFilterFactory")) {
+//            boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+//            ZegoExternalVideoFilter.setVideoFilterFactory(enable ? videoFilterFactory : null, 0);
+//            result.success(null);
+//        } else if (call.method.equals("enableExternalVideoCaptureFactory")) {
+//            boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+//            ZegoExternalVideoCapture.setVideoCaptureFactory(enable ? videoCaptureFactory : null, 0);
+//            result.success(null);
+//        }
+        else if (call.method.equals("setConfig")) {
             String config = call.argument("config");
             ZegoLiveRoom.setConfig(config);
             result.success(null);
@@ -2345,11 +2347,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             ZegoLogJNI.logNotice(content);
 
             result.success(null);
-        } else if (call.method.equals("isPlaying")) {
-
-            int soundID = numberToIntValue((Number) call.argument("soundID"));
-            boolean isPlay = ZegoAudioPlayerController.getInstance().getAudioPlayerState(soundID);
-            result.success(isPlay);
+//        } else if (call.method.equals("isPlaying")) {
+//
+//            int soundID = numberToIntValue((Number) call.argument("soundID"));
+//            boolean isPlay = ZegoAudioPlayerController.getInstance().getAudioPlayerState(soundID);
+//            result.success(isPlay);
 
         } else if (call.method.equals("mpIsPlaying")) {
 
@@ -2479,6 +2481,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         ZegoLogJNI.logNotice("[Flutter-Native] enter init sdk, app id: " + appID);
 
         mZegoLiveRoom.setZegoRoomCallback(new IZegoRoomCallback() {
+
+            @Override
+            public void onNetworkQuality(java.lang.String s, int i, int i1) {
+
+            }
+
             @Override
             public void onStreamUpdated(int type, ZegoStreamInfo[] zegoStreamInfos, String roomID) {
                 ZegoLogJNI.logNotice("[Flutter-Native] onStreamUpdate enter, sink: " + mEventSink);
@@ -2911,6 +2919,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         });
 
         mZegoLiveRoom.setZegoLivePlayerCallback(new IZegoLivePlayerCallback2() {
+
+            @Override
+            public void onPlayStatsUpdate(com.zego.zegoliveroom.entity.ZegoPlayStats zegoPlayStats) {
+
+            }
+
             @Override
             public void onPlayStateUpdate(int stateCode, String streamID) {
                 ZegoLogJNI.logNotice("[Flutter-Native] onPlayStateUpdate enter, sink: " + mEventSink);
@@ -3184,121 +3198,121 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         if (!success)
             result.success(false);
 
-        ZegoAudioPlayerController.getInstance().init();
+//        ZegoAudioPlayerController.getInstance().init();
         ZegoMediaPlayerController.getInstance().init();
 
-        mZegoMediaSideInfo = new ZegoMediaSideInfo();
-        mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
-            @Override
-            public void onRecvMediaSideInfo(String streamID, ByteBuffer data, int dataLen) {
-
-                if (mEventSink != null) {
-
-                    if (dataLen == 0) {
-                        return;
-                    }
-
-                    int mediaType = (data.get(0) & 0xFF) << 24 | (data.get(1) & 0xFF) << 16 | (data.get(2) & 0xFF) << 8 | (data.get(3) & 0xFF);
-
-                    byte[] tempBuffer;
-                    if (mediaType == 1001 || mediaType == 1002) {
-
-                        tempBuffer = new byte[dataLen - 4];
-                        for (int i = 0; i < dataLen - 4; i++) {
-                            tempBuffer[i] = data.get(i + 4);
-                        }
-
-                    } else {
-
-                        tempBuffer = new byte[dataLen - 5];
-                        for (int i = 0; i < dataLen - 5; i++) {
-                            tempBuffer[i] = data.get(i + 5);
-                        }
-
-                    }
-
-
-                    String strData = new String(tempBuffer);
-
-                    final HashMap<String, Object> returnMap = new HashMap<>();
-                    returnMap.put("type", ZegoEventType.TYPE_MEDIA_SIDE_INFO_EVENT);
-
-                    HashMap<String, Object> method = new HashMap<>();
-                    method.put("name", "onRecvMediaSideInfo");
-                    method.put("streamID", streamID);
-                    method.put("data", strData);
-
-                    returnMap.put("method", method);
-                    Handler mainHandler = new Handler(Looper.getMainLooper());
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mEventSink.success(returnMap);
-                        }
-                    });
-                }
-            }
-        });
+//        mZegoMediaSideInfo = new ZegoMediaSideInfo();
+//        mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
+//            @Override
+//            public void onRecvMediaSideInfo(String streamID, ByteBuffer data, int dataLen) {
+//
+//                if (mEventSink != null) {
+//
+//                    if (dataLen == 0) {
+//                        return;
+//                    }
+//
+//                    int mediaType = (data.get(0) & 0xFF) << 24 | (data.get(1) & 0xFF) << 16 | (data.get(2) & 0xFF) << 8 | (data.get(3) & 0xFF);
+//
+//                    byte[] tempBuffer;
+//                    if (mediaType == 1001 || mediaType == 1002) {
+//
+//                        tempBuffer = new byte[dataLen - 4];
+//                        for (int i = 0; i < dataLen - 4; i++) {
+//                            tempBuffer[i] = data.get(i + 4);
+//                        }
+//
+//                    } else {
+//
+//                        tempBuffer = new byte[dataLen - 5];
+//                        for (int i = 0; i < dataLen - 5; i++) {
+//                            tempBuffer[i] = data.get(i + 5);
+//                        }
+//
+//                    }
+//
+//
+//                    String strData = new String(tempBuffer);
+//
+//                    final HashMap<String, Object> returnMap = new HashMap<>();
+//                    returnMap.put("type", ZegoEventType.TYPE_MEDIA_SIDE_INFO_EVENT);
+//
+//                    HashMap<String, Object> method = new HashMap<>();
+//                    method.put("name", "onRecvMediaSideInfo");
+//                    method.put("streamID", streamID);
+//                    method.put("data", strData);
+//
+//                    returnMap.put("method", method);
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            mEventSink.success(returnMap);
+//                        }
+//                    });
+//                }
+//            }
+//        });
 
 
     }
 
-    @Override
-    public void onAudioPlayEnd(int soundID) {
-        if (mEventSink != null) {
+//    @Override
+//    public void onAudioPlayEnd(int soundID) {
+//        if (mEventSink != null) {
+//
+//            HashMap<String, Object> returnMap = new HashMap<>();
+//            returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+//
+//            HashMap<String, Object> method = new HashMap<>();
+//            method.put("name", "onAudioPlayEnd");
+//            method.put("soundID", soundID);
+//
+//            returnMap.put("method", method);
+//            mEventSink.success(returnMap);
+//        }
+//    }
 
-            HashMap<String, Object> returnMap = new HashMap<>();
-            returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+//    @Override
+//    public void onAudioPlayBegin(int soundID,int errorCode) {
+//        HashMap<String, Object> returnMap = new HashMap<>();
+//        returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+//
+//        HashMap<String, Object> method = new HashMap<>();
+//        method.put("name", "onAudioPlayBegin");
+//        method.put("soundID",soundID);
+//        method.put("errorCode", errorCode);
+//
+//        returnMap.put("method", method);
+//        mEventSink.success(returnMap);
+//    }
 
-            HashMap<String, Object> method = new HashMap<>();
-            method.put("name", "onAudioPlayEnd");
-            method.put("soundID", soundID);
+//    @Override
+//    public void onAudioLoad(int soundID,int errorCode) {
+//        HashMap<String, Object> returnMap = new HashMap<>();
+//        returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+//
+//        HashMap<String, Object> method = new HashMap<>();
+//        method.put("name", "onAudioLoad");
+//        method.put("soundID", soundID);
+//        method.put("errorCode", errorCode);
+//
+//        returnMap.put("method", method);
+//        mEventSink.success(returnMap);
+//    }
 
-            returnMap.put("method", method);
-            mEventSink.success(returnMap);
-        }
-    }
-
-    @Override
-    public void onAudioPlayBegin(int soundID,int errorCode) {
-        HashMap<String, Object> returnMap = new HashMap<>();
-        returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
-
-        HashMap<String, Object> method = new HashMap<>();
-        method.put("name", "onAudioPlayBegin");
-        method.put("soundID",soundID);
-        method.put("errorCode", errorCode);
-
-        returnMap.put("method", method);
-        mEventSink.success(returnMap);
-    }
-
-    @Override
-    public void onAudioLoad(int soundID,int errorCode) {
-        HashMap<String, Object> returnMap = new HashMap<>();
-        returnMap.put("type", ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
-
-        HashMap<String, Object> method = new HashMap<>();
-        method.put("name", "onAudioLoad");
-        method.put("soundID", soundID);
-        method.put("errorCode", errorCode);
-
-        returnMap.put("method", method);
-        mEventSink.success(returnMap);
-    }
-
-    @Override
-    public void onAudioLoadComplete(int soundID) {
-        HashMap<String,Object> returnMap = new HashMap<>();
-        returnMap.put("type",ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
-
-        HashMap<String,Object> method = new HashMap<>();
-        method.put("name","onAudioLoadComplete");
-        method.put("soundID",soundID);
-
-        returnMap.put("method",method);
-        mEventSink.success(returnMap);
-    }
+//    @Override
+//    public void onAudioLoadComplete(int soundID) {
+//        HashMap<String,Object> returnMap = new HashMap<>();
+//        returnMap.put("type",ZegoEventType.TYPE_AUDIO_PLAYER_EVENT);
+//
+//        HashMap<String,Object> method = new HashMap<>();
+//        method.put("name","onAudioLoadComplete");
+//        method.put("soundID",soundID);
+//
+//        returnMap.put("method",method);
+//        mEventSink.success(returnMap);
+//    }
 
     @Override
     public void onPlayEnd() {

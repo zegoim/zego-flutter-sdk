@@ -5,7 +5,6 @@ import 'package:zegoliveroom_plugin_example/config/zego_config.dart';
 import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
 
 class PlayStreamPage extends StatefulWidget {
-
   final int screenWidthPx;
   final int screenHeightPx;
 
@@ -16,7 +15,6 @@ class PlayStreamPage extends StatefulWidget {
 }
 
 class _PlayStreamPageState extends State<PlayStreamPage> {
-
   String _title = '';
   int _playTextureID = -1;
   bool _isPlaying = false;
@@ -37,7 +35,7 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
 
     _title = '第三步 发起拉流';
 
-    if(ZegoConfig.getInstance().streamID.isNotEmpty) {
+    if (ZegoConfig.getInstance().streamID.isNotEmpty) {
       _controller.text = ZegoConfig.getInstance().streamID;
     }
 
@@ -45,8 +43,6 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
       onPlayStateUpdate: onPlayStateUpdate,
       onPlayQualityUpdate: onPlayQualityUpdate,
     );
-
-
   }
 
   @override
@@ -54,30 +50,32 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
     // TODO: implement dispose
     super.dispose();
 
-    if(_isPlaying) {
-      ZegoLiveRoomPlayerPlugin.stopPlayingStream(ZegoConfig.getInstance().streamID);
+    if (_isPlaying) {
+      ZegoLiveRoomPlayerPlugin.stopPlayingStream(
+          ZegoConfig.getInstance().streamID);
     }
 
-    ZegoLiveRoomPlayerPlugin.destroyPlayViewRenderer(ZegoConfig.getInstance().streamID);
+    ZegoLiveRoomPlayerPlugin.destroyPlayViewRenderer(
+        ZegoConfig.getInstance().streamID);
     ZegoLiveRoomPlayerPlugin.unregisterPlayerCallback();
     ZegoLiveRoomPlugin.logoutRoom();
   }
 
   void onPlayButtonPressed() {
-
     String streamID = _controller.text.trim();
 
-    ZegoLiveRoomPlayerPlugin.createPlayViewRenderer(streamID, widget.screenWidthPx, widget.screenHeightPx).then((textureID) {
+    ZegoLiveRoomPlayerPlugin.createPlayViewRenderer(
+            streamID, widget.screenWidthPx, widget.screenHeightPx)
+        .then((textureID) {
       setState(() {
-
         _playTextureID = textureID;
       });
     });
 
     ZegoLiveRoomPlayerPlugin.startPlayingStream(streamID).then((success) {
-      ZegoLiveRoomPlayerPlugin.setViewMode(streamID, ZegoViewMode.ZegoRendererScaleAspectFill);
+      ZegoLiveRoomPlayerPlugin.setViewMode(
+          streamID, ZegoViewMode.ZegoRendererScaleAspectFill);
     });
-
   }
 
   void onSpeakerStateChanged() {
@@ -88,9 +86,7 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
   }
 
   void onPlayStateUpdate(int stateCode, String streamID) {
-
-    if(stateCode == 0) {
-
+    if (stateCode == 0) {
       setState(() {
         _isPlaying = true;
         _title = '拉流中';
@@ -99,7 +95,6 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
       ZegoConfig.getInstance().streamID = streamID;
       ZegoConfig.getInstance().saveConfig();
     } else {
-
       print('拉流失败，错误码: $stateCode');
     }
   }
@@ -113,13 +108,10 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
     });
   }
 
-
   Widget showPreviewToolPage() {
     return GestureDetector(
-
       behavior: HitTestBehavior.translucent,
       onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 30.0),
         child: Column(
@@ -129,8 +121,8 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
             ),
             Row(
               children: <Widget>[
-                Text('streamID: ',
-
+                Text(
+                  'streamID: ',
                 )
               ],
             ),
@@ -139,27 +131,20 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
             ),
             TextField(
               controller: _controller,
-
               decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.only(left: 10.0, top: 12.0, bottom: 12.0),
+                  contentPadding: const EdgeInsets.only(
+                      left: 10.0, top: 12.0, bottom: 12.0),
                   hintText: '请输入streamID',
                   enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Colors.grey
-                      )
-                  ),
+                      borderSide: BorderSide(color: Colors.grey)),
                   focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Color(0xff0e88eb)
-                      )
-                  )
-              ),
+                      borderSide: BorderSide(color: Color(0xff0e88eb)))),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 10.0),
             ),
-            Text('每个用户的流名必须保持唯一，也就是流名必须全局唯一，sdk推拉流都是基于流ID来标识。长度不超过 255 bytes, 且不要包含特殊字符。',
-
+            Text(
+              '每个用户的流名必须保持唯一，也就是流名必须全局唯一，sdk推拉流都是基于流ID来标识。长度不超过 255 bytes, 且不要包含特殊字符。',
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 30.0),
@@ -173,10 +158,9 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
               width: 240.0,
               height: 60.0,
               child: CupertinoButton(
-                child: Text('发起拉流',
-                  style: TextStyle(
-                      color: Colors.white
-                  ),
+                child: Text(
+                  '发起拉流',
+                  style: TextStyle(color: Colors.white),
                 ),
                 onPressed: onPlayButtonPressed,
               ),
@@ -189,7 +173,10 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
 
   Widget showPublishingToolPage() {
     return Container(
-      padding: EdgeInsets.only(left: 10.0, right: 10.0, bottom: MediaQuery.of(context).padding.bottom + 20.0),
+      padding: EdgeInsets.only(
+          left: 10.0,
+          right: 10.0,
+          bottom: MediaQuery.of(context).padding.bottom + 20.0),
       child: Column(
         children: <Widget>[
           Padding(
@@ -197,47 +184,41 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
           ),
           Row(
             children: <Widget>[
-              Text('roomID:  ${ZegoConfig.getInstance().roomID}',
-                style: TextStyle(
-                    color: Colors.white
-                ),
-              ),
-            ],
-          ),
-
-          Row(
-            children: <Widget>[
-              Text('streamID:  ${ZegoConfig.getInstance().streamID}',
-                style: TextStyle(
-                    color: Colors.white
-                ),
+              Text(
+                'roomID:  ${ZegoConfig.getInstance().roomID}',
+                style: TextStyle(color: Colors.white),
               ),
             ],
           ),
           Row(
             children: <Widget>[
-              Text('分辨率:  $_playWidth x $_playHeight',
-                style: TextStyle(
-                    color: Colors.white
-                ),
+              Text(
+                'streamID:  ${ZegoConfig.getInstance().streamID}',
+                style: TextStyle(color: Colors.white),
               ),
             ],
           ),
           Row(
             children: <Widget>[
-              Text('码率:  ${_playBitrate.toStringAsFixed(2)} kb/s',
-                style: TextStyle(
-                    color: Colors.white
-                ),
+              Text(
+                '分辨率:  $_playWidth x $_playHeight',
+                style: TextStyle(color: Colors.white),
               ),
             ],
           ),
           Row(
             children: <Widget>[
-              Text('帧率:  ${_playFps.toStringAsFixed(2)}',
-                style: TextStyle(
-                    color: Colors.white
-                ),
+              Text(
+                '码率:  ${_playBitrate.toStringAsFixed(2)} kb/s',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+          Row(
+            children: <Widget>[
+              Text(
+                '帧率:  ${_playFps.toStringAsFixed(2)}',
+                style: TextStyle(color: Colors.white),
               ),
             ],
           ),
@@ -249,13 +230,14 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
               CupertinoButton(
                 padding: const EdgeInsets.all(0.0),
                 pressedOpacity: 1.0,
-                borderRadius: BorderRadius.circular(
-                    0.0),
+                borderRadius: BorderRadius.circular(0.0),
                 child: Image(
                   width: 44.0,
                   image: _isUseSpeaker
-                      ? AssetImage('resources/images/bottom_microphone_on_icon.png')
-                      : AssetImage('resources/images/bottom_microphone_off_icon.png'),
+                      ? AssetImage(
+                          'resources/images/bottom_microphone_on_icon.png')
+                      : AssetImage(
+                          'resources/images/bottom_microphone_off_icon.png'),
                 ),
                 onPressed: onSpeakerStateChanged,
               ),
@@ -270,7 +252,7 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-        resizeToAvoidBottomPadding: false,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text(_title),
         ),
@@ -278,13 +260,16 @@ class _PlayStreamPageState extends State<PlayStreamPage> {
           children: <Widget>[
             Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
-              child: _playTextureID >= 0 ? Texture(textureId: _playTextureID,) : null,
+              height: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top,
+              child: _playTextureID >= 0
+                  ? Texture(
+                      textureId: _playTextureID,
+                    )
+                  : null,
             ),
             _isPlaying ? showPublishingToolPage() : showPreviewToolPage(),
           ],
-        )
-    );
+        ));
   }
-
 }

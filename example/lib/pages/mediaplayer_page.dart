@@ -56,7 +56,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-        resizeToAvoidBottomPadding: false,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text("mediaplayer"),
         ),

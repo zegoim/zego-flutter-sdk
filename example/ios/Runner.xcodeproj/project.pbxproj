@@ -10,12 +10,6 @@
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		77C66813BEABF4CB41FEDA7B /* libPods-Runner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 22FF02730549F69CBF12534F /* libPods-Runner.a */; };
-		861F8EE02410D1BB004AACC3 /* ZGVideoFilterSyncDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 861F8EC92410D1BB004AACC3 /* ZGVideoFilterSyncDemo.m */; };
-		861F8EE32410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 861F8ECE2410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.m */; };
-		861F8F0B24110299004AACC3 /* ZGPixelBufferUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 861F8F0A24110299004AACC3 /* ZGPixelBufferUtils.m */; };
-		861F8F1124110E31004AACC3 /* ZGVideoFilterFactoryDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = 861F8F1024110E31004AACC3 /* ZGVideoFilterFactoryDemo.m */; };
-		86B491452626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 86B491432626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m */; };
-		86B491B7262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 86B491B6262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm */; };
 		9740EEB41CF90195004384FC /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9740EEB21CF90195004384FC /* Debug.xcconfig */; };
 		978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AFFD8EE1D35381100E5BB4D /* AppDelegate.m */; };
 		97C146F31CF9000F007C117D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 97C146F21CF9000F007C117D /* main.m */; };
@@ -47,18 +41,6 @@
 		7AFFD8ED1D35381100E5BB4D /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7AFFD8EE1D35381100E5BB4D /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		80A2B399CC1F59B6C1111AAF /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
-		861F8EC82410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZGVideoFilterAsyncDemo.h; sourceTree = "<group>"; };
-		861F8EC92410D1BB004AACC3 /* ZGVideoFilterSyncDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZGVideoFilterSyncDemo.m; sourceTree = "<group>"; };
-		861F8ECD2410D1BB004AACC3 /* ZGVideoFilterSyncDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZGVideoFilterSyncDemo.h; sourceTree = "<group>"; };
-		861F8ECE2410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZGVideoFilterAsyncDemo.m; sourceTree = "<group>"; };
-		861F8F0924110299004AACC3 /* ZGPixelBufferUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZGPixelBufferUtils.h; sourceTree = "<group>"; };
-		861F8F0A24110299004AACC3 /* ZGPixelBufferUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZGPixelBufferUtils.m; sourceTree = "<group>"; };
-		861F8F0F24110E31004AACC3 /* ZGVideoFilterFactoryDemo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZGVideoFilterFactoryDemo.h; sourceTree = "<group>"; };
-		861F8F1024110E31004AACC3 /* ZGVideoFilterFactoryDemo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZGVideoFilterFactoryDemo.m; sourceTree = "<group>"; };
-		86B491432626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZGExternalVideoCaptureFactory.m; sourceTree = "<group>"; };
-		86B491442626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZGExternalVideoCaptureFactory.h; sourceTree = "<group>"; };
-		86B491B5262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZGVideoCaptureForMediaPlayer.h; sourceTree = "<group>"; };
-		86B491B6262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZGVideoCaptureForMediaPlayer.mm; sourceTree = "<group>"; };
 		917B0B80B2273A64D089C6FD /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
@@ -90,40 +72,6 @@
 				3446245F0B3344BA955E2269 /* Pods-Runner.profile.xcconfig */,
 			);
 			name = Pods;
-			sourceTree = "<group>";
-		};
-		861F8EC22410D1BB004AACC3 /* ExternalVideoFilter */ = {
-			isa = PBXGroup;
-			children = (
-				861F8EC72410D1BB004AACC3 /* VideoFilter */,
-				861F8F0924110299004AACC3 /* ZGPixelBufferUtils.h */,
-				861F8F0A24110299004AACC3 /* ZGPixelBufferUtils.m */,
-				861F8F0F24110E31004AACC3 /* ZGVideoFilterFactoryDemo.h */,
-				861F8F1024110E31004AACC3 /* ZGVideoFilterFactoryDemo.m */,
-			);
-			path = ExternalVideoFilter;
-			sourceTree = "<group>";
-		};
-		861F8EC72410D1BB004AACC3 /* VideoFilter */ = {
-			isa = PBXGroup;
-			children = (
-				861F8EC82410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.h */,
-				861F8ECE2410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.m */,
-				861F8ECD2410D1BB004AACC3 /* ZGVideoFilterSyncDemo.h */,
-				861F8EC92410D1BB004AACC3 /* ZGVideoFilterSyncDemo.m */,
-			);
-			path = VideoFilter;
-			sourceTree = "<group>";
-		};
-		86B4913C2626CF5E0041B0BC /* ExternalVideoCapture */ = {
-			isa = PBXGroup;
-			children = (
-				86B491B5262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.h */,
-				86B491B6262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm */,
-				86B491442626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.h */,
-				86B491432626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m */,
-			);
-			path = ExternalVideoCapture;
 			sourceTree = "<group>";
 		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
@@ -167,8 +115,6 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
-				86B4913C2626CF5E0041B0BC /* ExternalVideoCapture */,
-				861F8EC22410D1BB004AACC3 /* ExternalVideoFilter */,
 				7AFFD8ED1D35381100E5BB4D /* AppDelegate.h */,
 				7AFFD8EE1D35381100E5BB4D /* AppDelegate.m */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -317,9 +263,12 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh",
+				"${PODS_ROOT}/../.symlinks/plugins/zegoliveroom_plugin/ios/ZegoLiveRoom.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZegoLiveRoom.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -333,15 +282,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				861F8EE02410D1BB004AACC3 /* ZGVideoFilterSyncDemo.m in Sources */,
 				978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */,
-				86B491B7262D32470041B0BC /* ZGVideoCaptureForMediaPlayer.mm in Sources */,
-				86B491452626DAAD0041B0BC /* ZGExternalVideoCaptureFactory.m in Sources */,
 				97C146F31CF9000F007C117D /* main.m in Sources */,
-				861F8EE32410D1BB004AACC3 /* ZGVideoFilterAsyncDemo.m in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
-				861F8F0B24110299004AACC3 /* ZGPixelBufferUtils.m in Sources */,
-				861F8F1124110E31004AACC3 /* ZGVideoFilterFactoryDemo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

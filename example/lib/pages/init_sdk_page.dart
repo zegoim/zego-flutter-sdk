@@ -107,7 +107,7 @@ class _InitPageState extends State<InitPage> {
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text('第一步 初始化SDK'),
       ),
