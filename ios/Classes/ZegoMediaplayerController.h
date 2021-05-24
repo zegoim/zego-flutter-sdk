@@ -66,7 +66,7 @@
 
 - (void)setRenderController:(ZegoRendererController *)rndController;
 
-- (void)start:(NSString *)path repeat:(BOOL)repeat asset:(BOOL)asset reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result;
+- (void)start:(NSString *)path repeat:(BOOL)repeat pathMode:(int)pathMode reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result;
 
 - (void)stop:(FlutterResult)result;
 
@@ -82,7 +82,7 @@
 
 - (void)muteLocal:(BOOL)mute;
 
-- (void)load:(NSString *)path asset:(BOOL)asset reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result;
+- (void)load:(NSString *)path pathMode:(int)pathMode reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result;
 
 - (void)setVolume:(int)volume;
 

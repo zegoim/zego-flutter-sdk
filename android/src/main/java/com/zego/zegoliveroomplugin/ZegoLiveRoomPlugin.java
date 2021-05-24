@@ -1811,8 +1811,8 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             String path = call.argument("path");
             boolean isRepeat = numberToBoolValue((Boolean) call.argument("repeat"));
-            boolean isAsset = numberToBoolValue((Boolean) call.argument("asset"));
-            ZegoMediaPlayerController.getInstance().start(path, isRepeat, isAsset, this.registrar, result);
+            int pathMode = numberToIntValue((Number) call.argument("pathMode"));
+            ZegoMediaPlayerController.getInstance().start(path, isRepeat, pathMode, this.registrar, result);
 
         } else if (call.method.equals("mpStop")) {
             if (mZegoLiveRoom == null) {
@@ -1879,8 +1879,8 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             String path = call.argument("path");
-            boolean isAsset = numberToBoolValue((Boolean) call.argument("asset"));
-            ZegoMediaPlayerController.getInstance().preload(path, isAsset, registrar, result);
+            int pathMode = numberToIntValue((Number) call.argument("pathMode"));
+            ZegoMediaPlayerController.getInstance().preload(path, pathMode, registrar, result);
 
         } else if (call.method.equals("mpSetVolume")) {
             if (mZegoLiveRoom == null) {
@@ -2484,6 +2484,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             @Override
             public void onNetworkQuality(java.lang.String s, int i, int i1) {
+
+            }
+
+            @Override
+            public void onCustomTokenWillExpired(String s, int i) {
 
             }
 

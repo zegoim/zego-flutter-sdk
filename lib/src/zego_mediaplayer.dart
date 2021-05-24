@@ -14,9 +14,9 @@ class ZegoMediaplayer {
   ///@param isRepeat 是否循环播放
   ///@param isAsset 是否为 flutter 的 asset 资源
   static Future<void> start(String path,
-      {bool isRepeat = false, bool isAsset = true}) async {
+      {bool isRepeat = false, ZegoPathMode pathMode = ZegoPathMode.ASSET}) async {
     return await _channel.invokeMethod(
-        'mpStart', {'path': path, 'repeat': isRepeat, 'asset': isAsset});
+        'mpStart', {'path': path, 'repeat': isRepeat, 'pathMode': pathMode});
   }
 
   ///创建媒体播放器渲染器
@@ -80,9 +80,9 @@ class ZegoMediaplayer {
   ///预加载媒体文件
   ///
   ///@param path 本地路径，支持 flutter asset 资源路径和绝对路径
-  static Future<void> preload(String path, {bool isAsset = true}) async {
+  static Future<void> preload(String path, {ZegoPathMode pathMode = ZegoPathMode.ASSET}) async {
     return await _channel
-        .invokeMethod('mpLoad', {'path': path, 'asset': isAsset});
+        .invokeMethod('mpLoad', {'path': path, 'pathMode': pathMode});
   }
 
   ///获取播放器当前状态

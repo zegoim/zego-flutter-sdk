@@ -30,7 +30,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
       onPlayStop: onPlayStop,
     );
     ZegoMediaplayer.start("https://storage.zego.im/demo/201808270915.mp4",
-        isRepeat: true, isAsset: false);
+        isRepeat: true, pathMode: ZegoPathMode.LOCAL);
     ZegoMediaplayer.setPlayerType(
         ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM);
     ZegoMediaplayer.createMediaPlayerRenderer(

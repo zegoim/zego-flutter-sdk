@@ -1,5 +1,6 @@
 package com.zego.zegoliveroomplugin.module.mediaplayer;
 
+import android.net.Uri;
 import android.view.View;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -79,11 +80,11 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         return sInstance;
     }
 
-    public void start(String path, boolean isRepeat, boolean isAsset, Registrar registrar, Result result) {
+    public void start(String path, boolean isRepeat, int pathMode, Registrar registrar, Result result) {
 
         mResultMap.put(KEY_START, result);
 
-        if (isAsset) {
+        if (pathMode == 1) {
 
             if (path != null && !path.isEmpty()) {
                 String loopUpKey = registrar.lookupKeyForAsset(path);
@@ -92,7 +93,10 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
                 mPlayer.start("", isRepeat);
             }
 
-        } else {
+        } else if (pathMode == 2){
+            Uri uri = Uri.parse(path);
+            mPlayer.start(uri, 0);
+        }else {
             mPlayer.start(path, isRepeat);
         }
     }
@@ -115,13 +119,17 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         mPlayer.resume();
     }
 
-    public void preload(String path, boolean isAsset, Registrar registrar, Result result) {
+    public void preload(String path, int pathMode, Registrar registrar, Result result) {
 
         mResultMap.put(KEY_LOAD, result);
-        if (isAsset) {
+        if (pathMode == 1) {
             String loopUpKey = registrar.lookupKeyForAsset(path);
             preloadEffectAsync(registrar.context(), loopUpKey);
-        } else {
+        }
+        else if (pathMode == 2) {
+            Uri uri = Uri.parse(path);
+            mPlayer.load(uri);
+        }else {
             mPlayer.load(path);
         }
 

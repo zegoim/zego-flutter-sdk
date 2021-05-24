@@ -2754,8 +2754,8 @@ Byte toByte(NSString* c) {
 
         NSString *path = args[@"path"];
         BOOL repeat = [self numberToBoolValue:args[@"repeat"]];
-        BOOL isAsset = [self numberToBoolValue:args[@"asset"]];
-        [[ZegoMediaPlayerController instance] start:path repeat:repeat asset:isAsset reg:self.registrar result:result];
+        int pathMode = [self numberToIntValue:args[@"pathMode"]];
+        [[ZegoMediaPlayerController instance] start:path repeat:repeat pathMode:pathMode reg:self.registrar result:result];
 
         //result(nil);
 
@@ -2837,8 +2837,8 @@ Byte toByte(NSString* c) {
         }
 
         NSString *path = args[@"path"];
-        BOOL isAsset = [self numberToBoolValue:args[@"asset"]];
-        [[ZegoMediaPlayerController instance] load:path asset: isAsset reg:self.registrar result:result];
+        int pathMode = [self numberToIntValue:args[@"pathMode"]];
+        [[ZegoMediaPlayerController instance] load:path pathMode:pathMode reg:self.registrar result:result];
         //result(nil);
 
 

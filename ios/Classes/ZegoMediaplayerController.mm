@@ -110,13 +110,16 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     _mediaPlayer = nil;
 }*/
 
-- (void)start:(NSString *)path repeat:(BOOL)repeat asset:(BOOL)asset reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result{
+- (void)start:(NSString *)path repeat:(BOOL)repeat pathMode:(int)pathMode reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result{
     
     NSString *url;
-    if(asset) {
+    if(pathMode == 1) {
         NSString *realPath = [reg lookupKeyForAsset:path];
         url = [[NSBundle mainBundle] pathForResource:realPath ofType:nil];
         NSLog(@"[startMediaPlayer] bundlePath: %@", url);
+    } else if (pathMode == 2) {
+        result([FlutterError errorWithCode:@"%MEDIAPLAYER_START_ERROR" message:@"No URI path. It only be supported on Android." details:nil]);
+        return;
     } else {
         url = path;
     }
@@ -161,13 +164,16 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     [self.mediaPlayer muteLocal:mute];
 }
 
-- (void)load:(NSString *)path asset:(BOOL)asset reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result{
+- (void)load:(NSString *)path pathMode:(int)pathMode reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result{
     
     NSString *url;
-    if(asset) {
+    if(pathMode == 1) {
         NSString *realPath = [reg lookupKeyForAsset:path];
         url = [[NSBundle mainBundle] pathForResource:realPath ofType:nil];
         NSLog(@"[startMediaPlayer] bundlePath: %@", url);
+    } else if (pathMode == 2) {
+        result([FlutterError errorWithCode:@"%MEDIAPLAYER_LOAD_ERROR" message:@"No URI path. It only be supported on Android." details:nil]);
+        return;
     } else {
         url = path;
     }

@@ -904,3 +904,12 @@ class ZegoMediaplayerCacheResult {
 
   const ZegoMediaplayerCacheResult(this.time, this.size);
 }
+
+enum ZegoPathMode {
+  // local file
+  LOCAL,
+  // resource from flutter asset
+  ASSET,
+  // only for android
+  URI
+}
