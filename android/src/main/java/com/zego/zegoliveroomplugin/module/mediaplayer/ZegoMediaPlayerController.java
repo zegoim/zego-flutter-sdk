@@ -1,24 +1,18 @@
 package com.zego.zegoliveroomplugin.module.mediaplayer;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.media.MediaPlayer;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.View;
 
 import com.zego.zegoavkit2.IZegoMediaPlayerVideoPlayWithIndexCallback;
 import com.zego.zegoavkit2.IZegoMediaPlayerWithIndexCallback;
 import com.zego.zegoavkit2.ZegoMediaPlayer;
-import com.zego.zegoavkit2.ZegoVideoDataFormat;
+import com.zego.zegoliveroom.ZegoLiveRoom;
+import com.zego.zegoliveroomplugin.ZegoPlatformView;
+import com.zego.zegoliveroomplugin.ZegoViewRenderer;
 import com.zego.zegoliveroomplugin.utils.ZegoFileHelper;
 
-import java.io.IOException;
 import java.util.HashMap;
 
-import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
@@ -43,18 +37,39 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     private IZegoMediaPlayerControllerCallback mCallback = null;
     private IZegoMediaPlayerVideoPlayWithIndexCallback mPlayVideoCallback = null;
     private int mVideoDataFormat;
+    public int mediaPlayerIndex;
+    private ZegoPlatformView mZegoPlatformView = null;
+    private ZegoViewRenderer mZegoViewRenderer = null;
 
-    public ZegoMediaPlayerController() {
+    public ZegoMediaPlayerController(int playerIndex) {
         mResultMap = new HashMap<>();
+        mediaPlayerIndex = playerIndex;
+        init(playerIndex);
     }
 
-    public void init() {
+    public void init(int playerIndex) {
         mPlayer = new ZegoMediaPlayer();
-        mPlayer.init(ZegoMediaPlayer.PlayerTypeAux, 0);
+        mPlayer.init(ZegoMediaPlayer.PlayerTypeAux, playerIndex);
         mPlayer.setEventWithIndexCallback(this);
         if (mPlayVideoCallback != null) {
             mPlayer.setVideoPlayWithIndexCallback(mPlayVideoCallback, mVideoDataFormat);
         }
+    }
+
+    public void setZegoPlatformView(ZegoPlatformView platformView){
+        mZegoPlatformView = platformView;
+    }
+
+    public ZegoPlatformView getZegoPlatformView(){
+        return mZegoPlatformView;
+    }
+
+    public ZegoViewRenderer getZegoViewRenderer() {
+        return mZegoViewRenderer;
+    }
+
+    public void setZegoViewRenderer(ZegoViewRenderer zegoViewRenderer) {
+        mZegoViewRenderer = zegoViewRenderer;
     }
 
     public void uninit() {
@@ -75,12 +90,12 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         }
     }
 
-    public static ZegoMediaPlayerController getInstance() {
+    public static ZegoMediaPlayerController getInstance(int playerIndex) {
         if (sInstance == null) {
             Class var0 = ZegoMediaPlayerController.class;
             synchronized (ZegoMediaPlayerController.class) {
                 if (sInstance == null) {
-                    sInstance = new ZegoMediaPlayerController();
+                    sInstance = new ZegoMediaPlayerController(playerIndex);
                 }
             }
         }
@@ -259,7 +274,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onPlayEnd(int index) {
         if (mCallback != null) {
-            mCallback.onPlayEnd();
+            mCallback.onPlayEnd(mediaPlayerIndex);
         }
         isPlay = false;
     }
@@ -272,7 +287,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             mResultMap.remove(KEY_START);
         }
         if (mCallback!=null){
-            mCallback.onPlayBegin();
+            mCallback.onPlayBegin(mediaPlayerIndex);
         }
         isPlay = true;
     }
@@ -285,7 +300,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             mResultMap.remove(KEY_PAUSE);
         }
         if (mCallback != null){
-            mCallback.onPlayPause();
+            mCallback.onPlayPause(mediaPlayerIndex);
         }
         isPlay = false;
     }
@@ -296,7 +311,13 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
         if (result != null) {
             result.success(null);
             mResultMap.remove(KEY_STOP);
+
         }
+
+        if (mCallback != null){
+            mCallback.onPlayStop(mediaPlayerIndex);
+        }
+
         isPlay = false;
     }
 
@@ -308,7 +329,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             mResultMap.remove(KEY_RESUME);
         }
         if (mCallback != null){
-            mCallback.onPlayResume();
+            mCallback.onPlayResume(mediaPlayerIndex);
         }
         isPlay = true;
     }
@@ -316,7 +337,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onPlayError(int error, int index) {
         if (mCallback != null) {
-            mCallback.onPlayError(error);
+            mCallback.onPlayError(error, mediaPlayerIndex);
         }
         isPlay = false;
     }
@@ -324,7 +345,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onVideoBegin(int index) {
         if (mCallback != null){
-            mCallback.onVideoBegin();
+            mCallback.onVideoBegin(mediaPlayerIndex);
         }
         isPlay = true;
     }
@@ -332,7 +353,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onAudioBegin(int index) {
         if (mCallback != null){
-            mCallback.onAudioBegin();
+            mCallback.onAudioBegin(mediaPlayerIndex);
         }
         isPlay = true;
     }
@@ -340,14 +361,14 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onBufferBegin(int var1) {
         if (mCallback != null) {
-            mCallback.onBufferBegin();
+            mCallback.onBufferBegin(mediaPlayerIndex);
         }
     }
 
     @Override
     public void onBufferEnd(int var1) {
         if (mCallback != null) {
-            mCallback.onBufferEnd();
+            mCallback.onBufferEnd(mediaPlayerIndex);
         }
     }
 
@@ -363,7 +384,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
             mResultMap.remove(KEY_SEEK_TO);
         }
         if (mCallback != null){
-            mCallback.onSeekComplete(error,timestamp);
+            mCallback.onSeekComplete(error,timestamp, mediaPlayerIndex);
         }
         isPlay = true;
     }
@@ -386,7 +407,7 @@ public class ZegoMediaPlayerController implements IZegoMediaPlayerWithIndexCallb
     @Override
     public void onProcessInterval(long timestamp, int index) {
         if (mCallback != null) {
-            mCallback.onProcessInterval(timestamp);
+            mCallback.onProcessInterval(timestamp, mediaPlayerIndex);
         }
     }
 

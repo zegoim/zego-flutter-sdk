@@ -320,7 +320,7 @@ class _PublishStreamPlatformViewPageState extends State<PublishStreamPlatformVie
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-        resizeToAvoidBottomPadding: false,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text(_title),
         ),

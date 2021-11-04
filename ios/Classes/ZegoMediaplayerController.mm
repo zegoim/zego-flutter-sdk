@@ -44,30 +44,37 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
 
 @implementation ZegoMediaPlayerController
 
-+ (instancetype)instance {
-    static ZegoMediaPlayerController *instance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[self alloc] init];
-    });
-    
-    return instance;
-}
+//+ (instancetype)instance {
+//    static ZegoMediaPlayerController *instance = nil;
+//    static dispatch_once_t onceToken;
+//    dispatch_once(&onceToken, ^{
+//        instance = [[self alloc] init];
+//    });
+//
+//    return instance;
+//}
 
-- (instancetype)init {
+//- (instancetype)init {
+//    self = [super init];
+//    if(self) {
+//        _callbackMap = [[NSMutableDictionary alloc] init];
+//        _isPlaying = NO;
+//    }
+//
+//    return self;
+//}
+
+- (instancetype)initObjectWithIndex:(ZegoMediaPlayerIndex)playerIndex {
     self = [super init];
     if(self) {
         _callbackMap = [[NSMutableDictionary alloc] init];
         _isPlaying = NO;
+        _zegoPlayIndex = playerIndex;
+        _mediaPlayer = [[ZegoMediaPlayer alloc] initWithPlayerType:MediaPlayerTypeAux playerIndex:playerIndex];
+        
+        [_mediaPlayer setEventWithIndexDelegate:self];
     }
-    
     return self;
-}
-
-- (void)initObject {
-    _mediaPlayer = [[ZegoMediaPlayer alloc] initWithPlayerType:MediaPlayerTypeAux playerIndex:ZegoMediaPlayerIndexFirst];
-    
-    [_mediaPlayer setEventWithIndexDelegate:self];
 }
 
 - (void)uninitObject {
@@ -110,6 +117,13 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     _mediaPlayer = nil;
 }*/
 
+- (void)setPlatformView:(UIView *)view {
+    [self.mediaPlayer setView:view];
+    if (view == nil) {
+        [self.mediaPlayer clearView];
+    }
+}
+
 - (void)start:(NSString *)path repeat:(BOOL)repeat asset:(BOOL)asset reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result{
     
     NSString *url;
@@ -122,7 +136,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     }
     
     [self.callbackMap setObject:result forKey:KEY_START];
-    [self.mediaPlayer start:url repeat:repeat];
+    [self.mediaPlayer start:url startPosition:0];
+    [self.mediaPlayer setLoopCount:repeat? -1: 0];
 }
 
 - (void)stop:(FlutterResult)result {
@@ -226,7 +241,7 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
 }
 
 - (void)enableRepeatMode:(BOOL)enable {
-    [self.mediaPlayer enableRepeatMode:enable];
+    [self.mediaPlayer setLoopCount:enable? -1: 0];
 }
 
 - (void)setProcessInterval:(long)interval {
@@ -251,8 +266,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
     }
     
     if (_delegate) {
-        if ([self.delegate respondsToSelector:@selector(onPlayBegin)]) {
-            [self.delegate onPlayBegin];
+        if ([self.delegate respondsToSelector:@selector(onPlayBegin:)]) {
+            [self.delegate onPlayBegin:index];
         }
     }
     
@@ -273,8 +288,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
        }
     
     if (_delegate) {
-        if ([_delegate respondsToSelector:@selector(onPlayPause)]) {
-            [_delegate onPlayPause];
+        if ([_delegate respondsToSelector:@selector(onPlayPause:)]) {
+            [_delegate onPlayPause:index];
         }
     }
     
@@ -295,8 +310,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
        }
     
     if (_delegate) {
-        if ([_delegate respondsToSelector:@selector(onPlayResume)]) {
-            [_delegate onPlayResume];
+        if ([_delegate respondsToSelector:@selector(onPlayResume:)]) {
+            [_delegate onPlayResume:index];
         }
     }
     
@@ -317,8 +332,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  */
 - (void)onPlayError:(int)code playerIndex:(ZegoMediaPlayerIndex)index {
     if(_delegate) {
-        if([_delegate respondsToSelector:@selector(onPlayError:)])
-        [_delegate onPlayError:code];
+        if([_delegate respondsToSelector:@selector(onPlayError:index:)])
+        [_delegate onPlayError:code index:index];
     }
     
     self.isPlaying = NO;
@@ -331,8 +346,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  */
 - (void)onVideoBegin:(ZegoMediaPlayerIndex)index {
     if (_delegate) {
-        if ([_delegate respondsToSelector:@selector(onVideoBegin)]) {
-            [_delegate onVideoBegin];
+        if ([_delegate respondsToSelector:@selector(onVideoBegin:)]) {
+            [_delegate onVideoBegin:index];
         }
     }
     
@@ -347,8 +362,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  */
 - (void)onAudioBegin:(ZegoMediaPlayerIndex)index {
     if (_delegate) {
-        if ([_delegate respondsToSelector:@selector(onAudioBegin)]) {
-            [_delegate onAudioBegin];
+        if ([_delegate respondsToSelector:@selector(onAudioBegin:)]) {
+            [_delegate onAudioBegin:index];
         }
     }
     
@@ -363,8 +378,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  */
 - (void)onPlayEnd:(ZegoMediaPlayerIndex)index {
     if(_delegate) {
-        if([_delegate respondsToSelector:@selector(onPlayEnd)])
-        [_delegate onPlayEnd];
+        if([_delegate respondsToSelector:@selector(onPlayEnd:)])
+        [_delegate onPlayEnd:index];
     }
     
     self.isPlaying = NO;
@@ -384,8 +399,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
        }
     
     if (_delegate) {
-        if ([_delegate respondsToSelector:@selector(onPlayStop)]) {
-            [_delegate onPlayStop];
+        if ([_delegate respondsToSelector:@selector(onPlayStop:)]) {
+            [_delegate onPlayStop:index];
         }
     }
     
@@ -400,8 +415,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  */
 - (void)onBufferBegin:(ZegoMediaPlayerIndex)index {
     if(_delegate) {
-        if([_delegate respondsToSelector:@selector(onBufferBegin)])
-        [_delegate onBufferBegin];
+        if([_delegate respondsToSelector:@selector(onBufferBegin:)])
+        [_delegate onBufferBegin:index];
     }
 }
 
@@ -413,8 +428,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  */
 - (void)onBufferEnd:(ZegoMediaPlayerIndex)index {
     if(_delegate) {
-        if([_delegate respondsToSelector:@selector(onBufferEnd)])
-        [_delegate onBufferEnd];
+        if([_delegate respondsToSelector:@selector(onBufferEnd:)])
+        [_delegate onBufferEnd:index];
     }
 }
 
@@ -434,8 +449,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
        }
     
     if (_delegate) {
-        if ([_delegate respondsToSelector:@selector(onSeekComplete:when:)]) {
-            [_delegate onSeekComplete:code when:millisecond];
+        if ([_delegate respondsToSelector:@selector(onSeekComplete:when:index:)]) {
+            [_delegate onSeekComplete:code when:millisecond index:index];
         }
     }
     
@@ -445,7 +460,7 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
 /**
  截图
  
- @param image
+ @param image 图片
  @param index 播放器序号
  */
 - (void)onSnapshot:(ZEGOImage *)image playerIndex:(ZegoMediaPlayerIndex)index {
@@ -478,8 +493,8 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
  */
 - (void)onProcessInterval:(long)timestamp playerIndex:(ZegoMediaPlayerIndex)index {
     if(_delegate) {
-        if([_delegate respondsToSelector:@selector(onProcessInterval:)])
-        [_delegate onProcessInterval:timestamp];
+        if([_delegate respondsToSelector:@selector(onProcessInterval: index:)])
+        [_delegate onProcessInterval:timestamp index:index];
     }
 }
 
@@ -529,8 +544,8 @@ typedef void (*CFTypeDeleter)(CFTypeRef cf);
     [renderer setSrcFrameBuffer:pixelBuffer processBuffer:nil];
     
     // 回调出去
-    if ([self.mVideoDataDelegate respondsToSelector:@selector(onPlayerVideoFrame:timeStamp:)]) {
-        [self.mVideoDataDelegate onPlayerVideoFrame:pixelBuffer timeStamp:timeMS];
+    if ([self.mVideoDataDelegate respondsToSelector:@selector(onPlayerVideoFrame:timeStamp: index:)]) {
+        [self.mVideoDataDelegate onPlayerVideoFrame:pixelBuffer timeStamp:timeMS index:index];
     }
 }
 

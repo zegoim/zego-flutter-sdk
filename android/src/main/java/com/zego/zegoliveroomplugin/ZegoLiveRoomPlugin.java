@@ -3,10 +3,13 @@ package com.zego.zegoliveroomplugin;
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.view.Surface;
 import android.os.Looper;
 import android.os.Handler;
 
+
+import androidx.annotation.RequiresApi;
 
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
@@ -23,6 +26,7 @@ import java.util.*;
 import java.lang.*;
 
 import com.zego.zegoavkit2.ZegoExternalVideoCapture;
+import com.zego.zegoavkit2.ZegoMediaPlayer;
 import com.zego.zegoavkit2.ZegoStreamExtraPlayInfo;
 import com.zego.zegoavkit2.ZegoVideoCaptureFactory;
 import com.zego.zegoavkit2.audioprocessing.ZegoAudioProcessing;
@@ -99,7 +103,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     private int mLogSize = 5 * 1024 * 1024;
     private String mLogPath = null;
-    private ZegoViewRenderer mMediaPlayerRenderer = null;
+//    private ZegoViewRenderer mMediaPlayerRenderer = null;
+
+    private List<ZegoMediaPlayerController> mMediaPlayerControllers = new ArrayList<>();
+
 
     private ZegoLiveRoomPlugin(Registrar registrar) {
         this.registrar = registrar;
@@ -151,6 +158,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         registrar.platformViewRegistry().registerViewFactory("plugins.zego.im/zego_view", ZegoPlatformViewFactory.shareInstance());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onMethodCall(MethodCall call, final Result result) {
 
@@ -190,6 +198,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             long appID = numberToLongValue((Number) call.argument("appID"));
             String strAppSign = call.argument("appSign");
+            int playerCount = numberToIntValue((Number) call.argument("playerCount"));
 
             initSDKWithAppID(appID, strAppSign, result);
 
@@ -207,7 +216,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 }
 
                 ZegoAudioPlayerController.getInstance().uninit();
-                ZegoMediaPlayerController.getInstance().uninit();
+
+                //
+                if (mMediaPlayerControllers.size()>0){
+                    mMediaPlayerControllers.forEach(ZegoMediaPlayerController::uninit);
+                    mMediaPlayerControllers.clear();
+                }
 
                 ZegoLogJNI.logNotice("[Flutter-Native] unInitSDK");
                 //反初始化SDK里面会做回调的销毁处理
@@ -1811,7 +1825,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             String path = call.argument("path");
             boolean isRepeat = numberToBoolValue((Boolean) call.argument("repeat"));
             boolean isAsset = numberToBoolValue((Boolean) call.argument("asset"));
-            ZegoMediaPlayerController.getInstance().start(path, isRepeat, isAsset, this.registrar, result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).start(path, isRepeat, isAsset, this.registrar, result);
+            }
 
         } else if (call.method.equals("mpStop")) {
             if (mZegoLiveRoom == null) {
@@ -1819,7 +1838,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
-            ZegoMediaPlayerController.getInstance().stop(result);
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).stop(result);
+            }
 
         } else if (call.method.equals("mpPause")) {
             if (mZegoLiveRoom == null) {
@@ -1827,7 +1850,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
-            ZegoMediaPlayerController.getInstance().pause(result);
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).pause(result);
+            }
 
         } else if (call.method.equals("mpResume")) {
             if (mZegoLiveRoom == null) {
@@ -1835,7 +1862,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
-            ZegoMediaPlayerController.getInstance().resume(result);
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).resume(result);
+            }
 
         } else if (call.method.equals("mpSeekTo")) {
             if (mZegoLiveRoom == null) {
@@ -1844,7 +1875,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             long timestamp = numberToLongValue((Number) call.argument("timestamp"));
-            ZegoMediaPlayerController.getInstance().seekTo(timestamp, result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).seekTo(timestamp,result);
+            }
 
         } else if (call.method.equals("mpGetDuration")) {
             if (mZegoLiveRoom == null) {
@@ -1852,7 +1887,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
-            ZegoMediaPlayerController.getInstance().getTotalDuration(result);
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).getTotalDuration(result);
+            }
 
         } else if (call.method.equals("mpGetCurrentDuration")) {
             if (mZegoLiveRoom == null) {
@@ -1860,7 +1898,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
-            ZegoMediaPlayerController.getInstance().getCurrentDuration(result);
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).getCurrentDuration(result);
+            }
 
         } else if (call.method.equals("mpMuteLocal")) {
             if (mZegoLiveRoom == null) {
@@ -1869,7 +1910,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             boolean mute = numberToBoolValue((Boolean) call.argument("mute"));
-            ZegoMediaPlayerController.getInstance().muteLocal(mute, result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).muteLocal(mute,result);
+            }
 
         } else if (call.method.equals("mpLoad")) {
             if (mZegoLiveRoom == null) {
@@ -1879,7 +1924,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             String path = call.argument("path");
             boolean isAsset = numberToBoolValue((Boolean) call.argument("asset"));
-            ZegoMediaPlayerController.getInstance().preload(path, isAsset, registrar, result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).preload(path, isAsset, registrar, result);
+            }
 
         } else if (call.method.equals("mpSetVolume")) {
             if (mZegoLiveRoom == null) {
@@ -1888,7 +1937,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             int vol = numberToIntValue((Number) call.argument("volume"));
-            ZegoMediaPlayerController.getInstance().setVolume(vol, result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setVolume(vol,result);
+            }
 
         } else if (call.method.equals("mpSetPlayerType")) {
             if (mZegoLiveRoom == null) {
@@ -1897,7 +1950,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             int type = numberToIntValue((Number) call.argument("type"));
-            ZegoMediaPlayerController.getInstance().setPlayerType(type, result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setPlayerType(type,result);
+            }
 
         } else if (call.method.equals("mpEnableRepeatMode")) {
 
@@ -1907,7 +1964,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
-            ZegoMediaPlayerController.getInstance().enableRepeatMode(enable, result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).enableRepeatMode(enable,result);
+            }
 
         } else if (call.method.equals("mpSetProcessInterval")) {
             if (mZegoLiveRoom == null) {
@@ -1916,7 +1977,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             long interval = numberToLongValue((Number) call.argument("interval"));
-            ZegoMediaPlayerController.getInstance().setProcessInterval(interval, result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setProcessInterval(interval,result);
+            }
 
         } else if (call.method.equals("setOnlineResourceCache")) {
             if (mZegoLiveRoom == null) {
@@ -1926,7 +1991,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             int time = numberToIntValue((Number) call.argument("time"));
             int size = numberToIntValue((Number) call.argument("size"));
-            ZegoMediaPlayerController.getInstance().setOnlineResourceCache(time, size);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setOnlineResourceCache(time,size);
+            }
+
             result.success(null);
 
         } else if (call.method.equals("getOnlineResourceCache")) {
@@ -1935,7 +2005,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
-            ZegoMediaPlayerController.getInstance().getOnlineResourceCache(result);
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).getOnlineResourceCache(result);
+            }
 
         }
          else if (call.method.equals("mpSetAudioStream")) {
@@ -1944,7 +2017,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
             int streamIndex = numberToIntValue((Number) call.argument("streamIndex"));
-            ZegoMediaPlayerController.getInstance().setAudioStream(streamIndex);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setAudioStream(streamIndex);
+            }
+
             result.success(null);
         }
          else if (call.method.equals("mpGetAudioStreamCount")) {
@@ -1952,7 +2030,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 throwSdkNotInitError(result, call.method);
                 return;
             }
-            ZegoMediaPlayerController.getInstance().getAudioStreamCount(result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).getAudioStreamCount(result);
+            }
 
         }
          else if (call.method.equals("mpGetPublishVolume")) {
@@ -1960,7 +2042,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 throwSdkNotInitError(result, call.method);
                 return;
             }
-            ZegoMediaPlayerController.getInstance().getPublishVolume(result);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).getPublishVolume(result);
+            }
 
         }
          else if (call.method.equals("mpGetPlayVolume")) {
@@ -1968,7 +2054,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 throwSdkNotInitError(result, call.method);
                 return;
             }
-            ZegoMediaPlayerController.getInstance().getPlayVolume(result);
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).getPlayVolume(result);
+            }
 
         }
          else if (call.method.equals("mpSetPublishVolume")) {
@@ -1977,7 +2066,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
             int volume = numberToIntValue((Number) call.argument("volume"));
-            ZegoMediaPlayerController.getInstance().setPublishVolume(volume);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setPublishVolume(volume);
+            }
 
         }
 
@@ -1987,7 +2080,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
             int volume = numberToIntValue((Number) call.argument("volume"));
-            ZegoMediaPlayerController.getInstance().setPlayVolume(volume);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setPlayVolume(volume);
+            }
 
         }
 
@@ -1999,7 +2096,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             int threshold = numberToIntValue((Number) call.argument("threshold"));
-            ZegoMediaPlayerController.getInstance().setBufferThreshold(threshold);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setBufferThreshold(threshold);
+            }
             result.success(null);
 
         } else if (call.method.equals("setLoadResourceTimeout")) {
@@ -2009,17 +2110,30 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             int timeout = numberToIntValue((Number) call.argument("timeout"));
-            ZegoMediaPlayerController.getInstance().setLoadResourceTimeout(timeout);
+
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setLoadResourceTimeout(timeout);
+            }
+
             result.success(null);
 
         } else if (call.method.equals("registerMediaPlayerCallback")) {
 
-            ZegoMediaPlayerController.getInstance().setMediaPlayerEventCallback(this);
+            if (mMediaPlayerControllers.size()>0){
+                mMediaPlayerControllers.forEach((mMediaPlayerController)->{
+                    mMediaPlayerController.setMediaPlayerEventCallback(this);
+                });
+            }
             result.success(null);
 
         } else if (call.method.equals("unregisterMediaPlayerCallback")) {
 
-            ZegoMediaPlayerController.getInstance().setMediaPlayerEventCallback(null);
+            if (mMediaPlayerControllers.size()>0){
+                mMediaPlayerControllers.forEach((mMediaPlayerController)->{
+                    mMediaPlayerController.setMediaPlayerEventCallback(null);
+                });
+            }
             result.success(null);
         } else if (call.method.equals("createMediaPlayerRenderer")) {
             if (mZegoLiveRoom == null) {
@@ -2032,19 +2146,94 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
+            //废弃创建 PlayerRenderer
+            if(!mIsEnablePlatformView){
+                throwNoTextureError(result, call.method);
+                return;
+            }
+
             int width = numberToIntValue((Number) call.argument("width"));
             int height = numberToIntValue((Number) call.argument("height"));
 
-            if(mMediaPlayerRenderer == null) {
-                mMediaPlayerRenderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
-                ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
+//            if(mMediaPlayerRenderer == null) {
+                ZegoViewRenderer mMediaPlayerRenderer = new ZegoViewRenderer(textures.createSurfaceTexture(), width, height);
+                int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+
+                if (mMediaPlayerControllers.size() >= playerIndex){
+                    mMediaPlayerControllers.get(playerIndex).setZegoViewRenderer(mMediaPlayerRenderer);
+                    mMediaPlayerControllers.get(playerIndex).setView(mMediaPlayerRenderer.getSurface());
+                }
                 ZegoLogJNI.logNotice("[createMediaPlayerRenderer] view size: " + "(" + width + ", " + height + ")" + " textureID:" + mMediaPlayerRenderer.getTextureID());
                 result.success(mMediaPlayerRenderer.getTextureID());
-            } else {
-                result.success(mMediaPlayerRenderer.getTextureID());
+//            } else {
+//                result.success(mMediaPlayerRenderer.getTextureID());
+//            }
+
+        }else if (call.method.equals("createMediaPlayerPlatformView")){
+            if (mZegoLiveRoom == null){
+                throwSdkNotInitError(result,call.method);
+                return;
             }
 
-        } else if (call.method.equals("destroyMediaPlayerRenderer")) {
+            if (mIsEnablePlatformView){
+                if (call.argument("viewID") != null) {
+                    int viewID = numberToIntValue((Number) call.argument("viewID"));
+                    int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+                    ZegoPlatformView platformView = ZegoPlatformViewFactory.shareInstance().getPlatformView(viewID);
+                    if (platformView != null) {
+                        int width = platformView.getSurfaceView().getHolder().getSurfaceFrame().width();
+                        int height = platformView.getSurfaceView().getHolder().getSurfaceFrame().height();
+
+                        if (mMediaPlayerControllers.size() >= playerIndex){
+
+                            mMediaPlayerControllers.get(playerIndex).setZegoPlatformView(platformView);
+                            mMediaPlayerControllers.get(playerIndex).setView(platformView.getView());
+                        }
+
+                        if (width == 0 && height == 0) {
+                            reportInnerError("[createMediaPlayerPlatformView UnexpectedException] view size is zero");
+                        }
+                        ZegoLogJNI.logNotice("[createMediaPlayerPlatformView - ZegoPlatformView] view size: " + "(" + width + ", " + height + ")" + "viewID: " + viewID);
+                        result.success(platformView.getView());
+                    } else {
+                        ZegoLogJNI.logNotice("[createMediaPlayerPlatformView - ZegoPlatformView] no such view");
+                    }
+                    //传入错误的view id
+                    if (platformView == null) {
+                        result.success(false);
+                        return;
+                    }
+                }
+
+            }else {
+                result.success(null);
+            }
+
+        }else if (call.method.equals("destroyMediaPlayerPlatformView")){
+            if (mZegoLiveRoom == null){
+                throwSdkNotInitError(result,call.method);
+                return;
+            }
+
+            if (mIsEnablePlatformView){
+                int viewID = numberToIntValue((Number) call.argument("viewID"));
+
+                int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+                boolean success = ZegoPlatformViewFactory.shareInstance().removeView(viewID);
+                if (mMediaPlayerControllers.size() >= playerIndex){
+                    mMediaPlayerControllers.get(playerIndex).setZegoPlatformView(null);
+                    mMediaPlayerControllers.get(playerIndex).setView(null);
+                }
+                ZegoLogJNI.logNotice("[destroyMediaPlayerPlatformView] viewID: " + viewID);
+                result.success(success);
+
+            }else {
+                result.success(null);
+            }
+
+
+
+        }else if (call.method.equals("destroyMediaPlayerRenderer")) {
             if (mZegoLiveRoom == null) {
                 throwSdkNotInitError(result, call.method);
                 return;
@@ -2054,11 +2243,18 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 throwNoTextureError(result, call.method);
                 return;
             }
+            if (!mIsEnablePlatformView) {
+                throwNoTextureError(result, call.method);
+                return;
+            }
 
-            if (mMediaPlayerRenderer != null) {
-                ZegoMediaPlayerController.getInstance().setView(null);
-                mMediaPlayerRenderer.release();
-                mMediaPlayerRenderer = null;
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.get(playerIndex).getZegoViewRenderer() != null) {
+                if (mMediaPlayerControllers.size() >= playerIndex){
+                    mMediaPlayerControllers.get(playerIndex).setView(null);
+                }
+                mMediaPlayerControllers.get(playerIndex).getZegoViewRenderer().release();
+                mMediaPlayerControllers.get(playerIndex).setZegoViewRenderer(null);
             }
         } else if (call.method.equals("updateMediaPlayRenderSize")) {
             if (mZegoLiveRoom == null) {
@@ -2066,7 +2262,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
+
             if (mIsEnablePlatformView) {
+                throwNoTextureError(result, call.method);
+                return;
+            }
+            if (!mIsEnablePlatformView) {
                 throwNoTextureError(result, call.method);
                 return;
             }
@@ -2074,18 +2275,25 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             int width = numberToIntValue((Number) call.argument("width"));
             int height = numberToIntValue((Number) call.argument("height"));
 
-            if (mMediaPlayerRenderer == null) {
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+
+            if (mMediaPlayerControllers.get(playerIndex).getZegoViewRenderer() == null) {
                 throwNoRendererError(result, call.method);
                 return;
             }
-            ZegoMediaPlayerController.getInstance().setView(null);
-            boolean success = mMediaPlayerRenderer.updateRenderSize(width, height);
-            //if(success) {
-            ZegoMediaPlayerController.getInstance().setView(mMediaPlayerRenderer.getSurface());
-            //}
-            ZegoLogJNI.logNotice("[updateMediaPlayRenderSize] width: " + width + " height: " + height + ", textureID: " + mMediaPlayerRenderer.getTextureID());
 
-            result.success(success);
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                mMediaPlayerControllers.get(playerIndex).setView(null);
+                boolean success = mMediaPlayerControllers.get(playerIndex).getZegoViewRenderer().updateRenderSize(width, height);
+                //if(success) {
+                mMediaPlayerControllers.get(playerIndex).setView(mMediaPlayerControllers.get(playerIndex).getZegoViewRenderer().getSurface());
+                //}
+                ZegoLogJNI.logNotice("[updateMediaPlayRenderSize] width: " + width + " height: " + height + ", textureID: " + mMediaPlayerControllers.get(playerIndex).getZegoViewRenderer().getTextureID());
+                result.success(success);
+
+            }else {
+                result.success(null);
+            }
 
         }
 
@@ -2353,8 +2561,13 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         } else if (call.method.equals("mpIsPlaying")) {
 
-            boolean isPlay = ZegoMediaPlayerController.getInstance().getMediaPlayerState();
-            result.success(isPlay);
+            int playerIndex = numberToIntValue((Number) call.argument("playerIndex"));
+            if (mMediaPlayerControllers.size() >= playerIndex){
+                boolean isPlay = mMediaPlayerControllers.get(playerIndex).getMediaPlayerState();
+                result.success(isPlay);
+            }else {
+                result.success(null);
+            }
 
         } else {
 
@@ -3185,7 +3398,13 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             result.success(false);
 
         ZegoAudioPlayerController.getInstance().init();
-        ZegoMediaPlayerController.getInstance().init();
+//        ZegoMediaPlayerController.getInstance().init();
+
+        mMediaPlayerControllers.clear();
+        for (int i=0;i<=3;i++){
+            ZegoMediaPlayerController mediaPlayerController = new ZegoMediaPlayerController(i);
+            mMediaPlayerControllers.add(mediaPlayerController);
+        }
 
         mZegoMediaSideInfo = new ZegoMediaSideInfo();
         mZegoMediaSideInfo.setZegoMediaSideCallback(new IZegoMediaSideCallback() {
@@ -3301,7 +3520,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     }
 
     @Override
-    public void onPlayEnd() {
+    public void onPlayEnd(int playerIndex) {
         if (mEventSink != null) {
 
             HashMap<String, Object> returnMap = new HashMap<>();
@@ -3309,6 +3528,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             HashMap<String, Object> method = new HashMap<>();
             method.put("name", "onPlayEnd");
+            method.put("playerIndex", playerIndex);
 
             returnMap.put("method", method);
             mEventSink.success(returnMap);
@@ -3316,7 +3536,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     }
 
     @Override
-    public void onPlayError(int errorCode) {
+    public void onPlayError(int errorCode,int playerIndex) {
         if (mEventSink != null) {
 
             HashMap<String, Object> returnMap = new HashMap<>();
@@ -3325,6 +3545,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             HashMap<String, Object> method = new HashMap<>();
             method.put("name", "onPlayError");
             method.put("errorCode", errorCode);
+            method.put("playerIndex", playerIndex);
 
             returnMap.put("method", method);
             mEventSink.success(returnMap);
@@ -3332,7 +3553,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     }
 
     @Override
-    public void onBufferBegin() {
+    public void onBufferBegin(int playerIndex) {
         if (mEventSink != null) {
 
             HashMap<String, Object> returnMap = new HashMap<>();
@@ -3340,6 +3561,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             HashMap<String, Object> method = new HashMap<>();
             method.put("name", "onBufferBegin");
+            method.put("playerIndex", playerIndex);
 
             returnMap.put("method", method);
             mEventSink.success(returnMap);
@@ -3347,7 +3569,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     }
 
     @Override
-    public void onBufferEnd() {
+    public void onBufferEnd(int playerIndex) {
         if (mEventSink != null) {
 
             HashMap<String, Object> returnMap = new HashMap<>();
@@ -3355,6 +3577,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             HashMap<String, Object> method = new HashMap<>();
             method.put("name", "onBufferEnd");
+            method.put("playerIndex", playerIndex);
 
             returnMap.put("method", method);
             mEventSink.success(returnMap);
@@ -3362,7 +3585,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     }
 
     @Override
-    public void onProcessInterval(long timestamp) {
+    public void onProcessInterval(long timestamp,int playerIndex) {
         if (mEventSink != null) {
 
             final HashMap<String, Object> returnMap = new HashMap<>();
@@ -3371,6 +3594,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             HashMap<String, Object> method = new HashMap<>();
             method.put("name", "onProcessInterval");
             method.put("timestamp", timestamp);
+            method.put("playerIndex", playerIndex);
 
             returnMap.put("method", method);
             Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -3385,42 +3609,58 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
     }
 
     @Override
-    public void onPlayBegin() {
+    public void onPlayBegin(int playerIndex) {
         HashMap<String, Object> returnMap = new HashMap<>();
         returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
 
         HashMap<String, Object> method = new HashMap<>();
         method.put("name", "onPlayBegin");
+        method.put("playerIndex", playerIndex);
 
         returnMap.put("method", method);
         mEventSink.success(returnMap);
     }
 
     @Override
-    public void onPlayPause() {
+    public void onPlayStop(int playerIndex) {
+        HashMap<String, Object> returnMap = new HashMap<>();
+        returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
+
+        HashMap<String, Object> method = new HashMap<>();
+        method.put("name", "onPlayStop");
+        method.put("playerIndex", playerIndex);
+
+        returnMap.put("method", method);
+        mEventSink.success(returnMap);
+    }
+
+    @Override
+    public void onPlayPause(int playerIndex) {
         HashMap<String, Object> returnMap = new HashMap<>();
         returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
 
         HashMap<String, Object> method = new HashMap<>();
         method.put("name", "onPlayPause");
+        method.put("playerIndex", playerIndex);
 
         returnMap.put("method", method);
         mEventSink.success(returnMap);
     }
 
     @Override
-    public void onPlayResume() {
+    public void onPlayResume(int playerIndex) {
         HashMap<String, Object> returnMap = new HashMap<>();
         returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
 
         HashMap<String, Object> method = new HashMap<>();
         method.put("name", "onPlayResume");
+        method.put("playerIndex", playerIndex);
         returnMap.put("method", method);
         mEventSink.success(returnMap);
     }
 
     @Override
-    public void onSeekComplete(int error, long millisecond) {
+    public void onSeekComplete(int error, long millisecond,int playerIndex) {
         HashMap<String, Object> returnMap = new HashMap<>();
         returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
 
@@ -3428,30 +3668,33 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         method.put("name", "onSeekComplete");
         method.put("error",error);
         method.put("millisecond", millisecond);
+        method.put("playerIndex", playerIndex);
 
         returnMap.put("method", method);
         mEventSink.success(returnMap);
     }
 
     @Override
-    public void onAudioBegin() {
+    public void onAudioBegin(int playerIndex) {
         HashMap<String, Object> returnMap = new HashMap<>();
         returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
 
         HashMap<String, Object> method = new HashMap<>();
         method.put("name", "onAudioBegin");
+        method.put("playerIndex", playerIndex);
 
         returnMap.put("method", method);
         mEventSink.success(returnMap);
     }
 
     @Override
-    public void onVideoBegin() {
+    public void onVideoBegin(int playerIndex) {
         HashMap<String, Object> returnMap = new HashMap<>();
         returnMap.put("type", ZegoEventType.TYPE_MEDIA_PLAYER_EVENT);
 
         HashMap<String, Object> method = new HashMap<>();
         method.put("name", "onVideoBegin");
+        method.put("playerIndex", playerIndex);
 
         returnMap.put("method", method);
         mEventSink.success(returnMap);

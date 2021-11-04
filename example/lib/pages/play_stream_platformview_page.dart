@@ -273,7 +273,7 @@ class _PlayStreamPlatformViewPageState extends State<PlayStreamPlatformViewPage>
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-        resizeToAvoidBottomPadding: false,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text(_title),
         ),

@@ -39,7 +39,7 @@ public class VideoCaptureFactory extends ZegoVideoCaptureFactory {
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
-                ZegoMediaPlayerController.getInstance().setVideoDataCallback(mDevice, PIXEL_FORMAT_BGRA32);
+                ZegoMediaPlayerController.getInstance(0).setVideoDataCallback(mDevice, PIXEL_FORMAT_BGRA32);
             }
         });
         return mDevice;
@@ -50,7 +50,7 @@ public class VideoCaptureFactory extends ZegoVideoCaptureFactory {
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
-                ZegoMediaPlayerController.getInstance().setVideoDataCallback(null, PIXEL_FORMAT_BGRA32);
+                ZegoMediaPlayerController.getInstance(0).setVideoDataCallback(null, PIXEL_FORMAT_BGRA32);
             }
         });
     }

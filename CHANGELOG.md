@@ -3,6 +3,8 @@
 ## ⚠️❗️ This project is a **legacy** SDK and and will be deprecated in the future, only used to support the maintenance for existing users, it is recommended to migrate and upgrade to the new SDK as soon as possible
 
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
+## 1.7.0
+1. Support max 4 mediaplayers
 
 ## 1.5.7
 1. Fix iOS Objective-C++ compatible strict

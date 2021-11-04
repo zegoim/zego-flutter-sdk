@@ -16,47 +16,51 @@
 
 @protocol ZegoMediaPlayerControllerVideoDataDelegate <NSObject>
 
-- (void)onPlayerVideoFrame: (CVPixelBufferRef)buffer timeStamp: (unsigned long long)timeStamp;
+- (void)onPlayerVideoFrame: (CVPixelBufferRef)buffer timeStamp: (unsigned long long)timeStamp index:(ZegoMediaPlayerIndex)playerIndex;
 
 @end
 
 @protocol ZegoMediaPlayerControllerDelegate <NSObject>
 
-- (void)onPlayBegin;
+- (void)onPlayBegin:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onPlayPause;
+- (void)onPlayPause:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onPlayResume;
+- (void)onPlayResume:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onPlayEnd;
+- (void)onPlayEnd:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onPlayStop;
+- (void)onPlayStop:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onPlayError:(int)errorCode;
+- (void)onPlayError:(int)errorCode index:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onBufferBegin;
+- (void)onBufferBegin:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onBufferEnd;
+- (void)onBufferEnd:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onAudioBegin;
+- (void)onAudioBegin:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onVideoBegin;
+- (void)onVideoBegin:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onProcessInterval:(long)timestamp;
+- (void)onProcessInterval:(long)timestamp index:(ZegoMediaPlayerIndex)playerIndex;
 
-- (void)onSeekComplete:(int)errorCode when:(long)millisecond;
+- (void)onSeekComplete:(int)errorCode when:(long)millisecond index:(ZegoMediaPlayerIndex)playerIndex;
 
 @end
 
 @interface ZegoMediaPlayerController : NSObject
 
-+ (instancetype)instance;
+//+ (instancetype)instance;
 
 //- (void)initPlayerWithType:(MediaPlayerType)type;
 
 //- (void)uninit;
 
-- (void)initObject;
+
+/// 播放器的 id
+@property (nonatomic, assign) ZegoMediaPlayerIndex zegoPlayIndex;
+
+- (instancetype)initObjectWithIndex:(ZegoMediaPlayerIndex)playerIndex;
 
 - (void)uninitObject;
 
@@ -65,6 +69,8 @@
 - (void)setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)delegate;
 
 - (void)setRenderController:(ZegoRendererController *)rndController;
+
+- (void)setPlatformView:(UIView *)view;
 
 - (void)start:(NSString *)path repeat:(BOOL)repeat asset:(BOOL)asset reg:(NSObject<FlutterPluginRegistrar>*)reg result:(FlutterResult)result;
 

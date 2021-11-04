@@ -1,25 +1,27 @@
 package com.zego.zegoliveroomplugin.module.mediaplayer;
 
 public interface IZegoMediaPlayerControllerCallback {
-    void onPlayEnd();
+    void onPlayEnd(int playerIndex);
 
-    void onPlayError(int errorCode);
+    void onPlayError(int errorCode,int playerIndex);
 
-    void onBufferBegin();
+    void onBufferBegin(int playerIndex);
 
-    void onBufferEnd();
+    void onBufferEnd(int playerIndex);
 
-    void onProcessInterval(long timestamp);
+    void onProcessInterval(long timestamp,int playerIndex);
 
-    void onPlayBegin();
+    void onPlayBegin(int playerIndex);
 
-    void onPlayPause();
+    void onPlayStop(int playerIndex);
 
-    void onPlayResume();
+    void onPlayPause(int playerIndex);
 
-    void onSeekComplete(int errorCode, long millisecond);
+    void onPlayResume(int playerIndex);
 
-    void onAudioBegin();
+    void onSeekComplete(int errorCode, long millisecond,int playerIndex);
 
-    void onVideoBegin();
+    void onAudioBegin(int playerIndex);
+
+    void onVideoBegin(int playerIndex);
 }

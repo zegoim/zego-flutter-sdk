@@ -28,6 +28,8 @@ dependencies:
   zego_permission:
     git:
       url: git://github.com/zegoim/zego-flutter-permission.git
+  flutter_seekbar:
+    git: https://github.com/LiuC520/flutter_seekbar.git
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
