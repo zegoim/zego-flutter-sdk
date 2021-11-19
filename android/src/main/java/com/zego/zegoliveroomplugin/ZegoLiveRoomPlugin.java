@@ -50,6 +50,7 @@ import com.zego.zegoliveroom.callback.IZegoDeviceEventCallback;
 import com.zego.zegoliveroom.callback.IZegoEndJoinLiveCallback;
 import com.zego.zegoliveroom.callback.IZegoInitSDKCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoLiveEventCallback;
+import com.zego.zegoliveroom.callback.IZegoLivePublisherCallback2;
 import com.zego.zegoliveroom.callback.IZegoLivePublisherExCallback;
 import com.zego.zegoliveroom.callback.IZegoSnapshotCompletionCallback;
 import com.zego.zegoliveroom.callback.IZegoUpdatePublishTargetCallback;
@@ -65,6 +66,7 @@ import com.zego.zegoliveroom.constants.ZegoAvConfig;
 import com.zego.zegoliveroom.constants.ZegoConstants;
 import com.zego.zegoliveroom.constants.ZegoIM;
 import com.zego.zegoliveroom.entity.ZegoBigRoomMessage;
+import com.zego.zegoliveroom.entity.ZegoPlayStats;
 import com.zego.zegoliveroom.entity.ZegoRoomInfo;
 import com.zego.zegoliveroom.entity.ZegoRoomMessage;
 import com.zego.zegoliveroom.entity.ZegoStreamInfo;
@@ -262,7 +264,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             ZegoLogJNI.logNotice("[Flutter-Native] loginRoom enter, roomID: " + roomID + " roomName: " + roomName + " role: " + role);
             boolean success = mZegoLiveRoom.loginRoom(roomID, roomName, role, new IZegoLoginCompletionCallback() {
                 @Override
-                public void onLoginCompletion(int i, ZegoStreamInfo[] zegoStreamInfos) {
+                public void onLoginCompletion(int errorCode, ZegoStreamInfo[] zegoStreamInfos) {
 
                     ArrayList<HashMap<String, Object>> streamList = new ArrayList<>();
                     for (ZegoStreamInfo streamInfo : zegoStreamInfos) {
@@ -275,7 +277,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                     }
 
                     HashMap<String, Object> returnMap = new HashMap<>();
-                    returnMap.put("errorCode", i);
+                    returnMap.put("errorCode", errorCode);
                     returnMap.put("streamList", streamList);
                     ZegoLogJNI.logNotice("[Flutter-Native] onLoginRoom, return map: " + returnMap);
                     result.success(returnMap);
@@ -300,7 +302,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             ZegoLogJNI.logNotice("[Flutter-Native] switchRoom enter, roomID: " + roomID + " roomName: " + roomName + " role: " + role);
             boolean success = mZegoLiveRoom.switchRoom(roomID, roomName, role, new IZegoLoginCompletionCallback() {
                 @Override
-                public void onLoginCompletion(int i, ZegoStreamInfo[] zegoStreamInfos) {
+                public void onLoginCompletion(int errorCode, ZegoStreamInfo[] zegoStreamInfos) {
 
                     ArrayList<HashMap<String, Object>> streamList = new ArrayList<>();
                     for (ZegoStreamInfo streamInfo : zegoStreamInfos) {
@@ -313,7 +315,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                     }
 
                     HashMap<String, Object> returnMap = new HashMap<>();
-                    returnMap.put("errorCode", i);
+                    returnMap.put("errorCode", errorCode);
                     returnMap.put("streamList", streamList);
                     ZegoLogJNI.logNotice("[Flutter-Native] onSwitchRoom, return map: " + returnMap);
                     result.success(returnMap);
@@ -619,6 +621,24 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             boolean require = numberToBoolValue((Boolean) call.argument("bRequire"));
             boolean success = ZegoLiveRoom.requireHardwareEncoder(require);
+            result.success(success);
+
+        } else if (call.method.equals("isVideoEncoderSupported")) {
+
+            int codecID = numberToIntValue((Number) call.argument("codecID"));
+            boolean success = mZegoLiveRoom.isVideoEncoderSupported(codecID);
+            result.success(success);
+
+        } else if (call.method.equals("isVideoDecoderSupported")) {
+
+            int codecID = numberToIntValue((Number) call.argument("codecID"));
+            boolean success = mZegoLiveRoom.isVideoDecoderSupported(codecID);
+            result.success(success);
+
+        } else if (call.method.equals("enableH265EncodeFallback")) {
+
+            boolean enable = numberToBoolValue((Boolean) call.argument("enable"));
+            boolean success = mZegoLiveRoom.enableH265EncodeFallback(enable);
             result.success(success);
 
         } else if (call.method.equals("enableBeautifying")) {
@@ -2841,19 +2861,54 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                     mEventSink.success(returnMap);
                 }
             }
+
+            @Override
+            public void onNetworkQuality(String userID, int txQuality, int rxQuality) {
+                if (mEventSink != null) {
+
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onNetworkQuality");
+                    method.put("userID", userID);
+                    method.put("txQuality", txQuality);
+                    method.put("rxQuality", rxQuality);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
+
+            @Override
+            public void onTokenWillExpired(String roomID, int remainTimeInSecond) {
+                if (mEventSink != null) {
+
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onTokenWillExpired");
+                    method.put("roomID", roomID);
+                    method.put("remainTimeInSecond", remainTimeInSecond);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
         });
 
         mZegoLiveRoom.setZegoDeviceEventCallback(new IZegoDeviceEventCallback() {
             @Override
-            public void onDeviceError(String s, int i) {
+            public void onDeviceError(String deviceName, int errorCode) {
                 if (mEventSink != null) {
                     HashMap<String, Object> returnMap = new HashMap<>();
                     returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
 
                     HashMap<String, Object> method = new HashMap<>();
                     method.put("name", "onDeviceError");
-                    method.put("deviceName", s);
-                    method.put("errorCode", i);
+                    method.put("deviceName", deviceName);
+                    method.put("errorCode", errorCode);
 
                     returnMap.put("method", method);
                     mEventSink.success(returnMap);
@@ -2863,7 +2918,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         mZegoLiveRoom.setZegoIMCallback(new IZegoIMCallback() {
             @Override
-            public void onUserUpdate(ZegoUserState[] zegoUserStates, int type) {
+            public void onUserUpdate(ZegoUserState[] zegoUserStates, int type, String roomID) {
                 if (mEventSink != null) {
 
                     ArrayList<HashMap<String, Object>> userList = new ArrayList<>();
@@ -3035,6 +3090,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                     method.put("pktLostRate", zegoStreamQuality.pktLostRate);
 
                     method.put("isHardwareVenc", zegoStreamQuality.isHardwareVenc);
+                    method.put("videoCodecId", zegoStreamQuality.videoCodecId);
 
                     method.put("width", zegoStreamQuality.width);
                     method.put("height", zegoStreamQuality.height);
@@ -3086,6 +3142,126 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
                     HashMap<String, Object> method = new HashMap<>();
                     method.put("name", "onCaptureAudioFirstFrame");
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
+        });
+
+        mZegoLiveRoom.setZegoLivePublisherCallback2(new IZegoLivePublisherCallback2() {
+            @Override
+            public void onCaptureVideoSizeChangedTo(int channelIndex, int width, int height) {
+                ZegoLogJNI.logNotice("[Flutter-Native] onCaptureVideoSizeChangedTo enter, sink: " + mEventSink);
+                if (mEventSink != null) {
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onCaptureVideoSizeChangedTo");
+                    method.put("channelIndex", channelIndex);
+                    method.put("width", width);
+                    method.put("height", height);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
+
+            @Override
+            public void onCaptureVideoFirstFrame(int channelIndex) {
+                ZegoLogJNI.logNotice("[Flutter-Native] onCaptureVideoFirstFrame enter, sink: " + mEventSink);
+                if (mEventSink != null) {
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onCaptureVideoFirstFrame");
+                    method.put("channelIndex", channelIndex);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
+
+            @Override
+            public void onPreviewVideoFirstFrame(int channelIndex) {
+                ZegoLogJNI.logNotice("[Flutter-Native] onPreviewVideoFirstFrame enter, sink: " + mEventSink);
+                if (mEventSink != null) {
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onPreviewVideoFirstFrame");
+                    method.put("channelIndex", channelIndex);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
+
+            @Override
+            public void onSendLocalAudioFirstFrame(int channelIndex) {
+                ZegoLogJNI.logNotice("[Flutter-Native] onSendLocalAudioFirstFrame enter, sink: " + mEventSink);
+                if (mEventSink != null) {
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onSendLocalAudioFirstFrame");
+                    method.put("channelIndex", channelIndex);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
+
+            @Override
+            public void onSendLocalVideoFirstFrame(int channelIndex) {
+                ZegoLogJNI.logNotice("[Flutter-Native] onSendLocalVideoFirstFrame enter, sink: " + mEventSink);
+                if (mEventSink != null) {
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onSendLocalVideoFirstFrame");
+                    method.put("channelIndex", channelIndex);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
+
+            @Override
+            public void onVideoEncoderError(int codecID, int errorCode, int channelIndex) {
+                ZegoLogJNI.logNotice("[Flutter-Native] onVideoEncoderError enter, sink: " + mEventSink);
+                if (mEventSink != null) {
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onVideoEncoderError");
+                    method.put("codecID", codecID);
+                    method.put("errorCode", errorCode);
+                    method.put("channelIndex", channelIndex);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
+
+            @Override
+            public void onVideoEncoderChanged(int fromCodecID, int toCodecID, int channelIndex) {
+                ZegoLogJNI.logNotice("[Flutter-Native] onVideoEncoderChanged enter, sink: " + mEventSink);
+                if (mEventSink != null) {
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_PUBLISH_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onVideoEncoderChanged");
+                    method.put("fromCodecID", fromCodecID);
+                    method.put("toCodecID", toCodecID);
+                    method.put("channelIndex", channelIndex);
 
                     returnMap.put("method", method);
                     mEventSink.success(returnMap);
@@ -3279,6 +3455,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             @Override
+            public void onRemoteSpeakerStatusUpdate(String streamID, int status, int reason) {
+
+            }
+
+            @Override
             public void onRecvRemoteAudioFirstFrame(String streamID) {
 
                 if (mEventSink != null) {
@@ -3327,7 +3508,12 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
 
             @Override
-            public void onVideoDecoderError(int i, int i1, String s) {
+            public void onVideoDecoderError(int codecID, int errorCode, String streamID) {
+
+            }
+
+            @Override
+            public void onPlayStatsUpdate(ZegoPlayStats stats) {
 
             }
         });
@@ -3387,10 +3573,10 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
         boolean success = mZegoLiveRoom.initSDK(appID, appSign, new IZegoInitSDKCompletionCallback() {
 
             @Override
-            public void onInitSDK(int i) {
+            public void onInitSDK(int errorCode) {
 
-                ZegoLogJNI.logNotice("[Flutter-Native] on init sdk, errorCode: " + i);
-                result.success(i);
+                ZegoLogJNI.logNotice("[Flutter-Native] on init sdk, errorCode: " + errorCode);
+                result.success(errorCode);
             }
         });
 

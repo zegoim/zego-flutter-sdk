@@ -26,6 +26,7 @@ class _PublishStreamPageState extends State<PublishStreamPage> {
   int _publishHeight = 0;
   double _publishFps = 0.0;
   double _publishBitrate = 0.0;
+  int _videoCodecID = 0;
 
   bool _isUseMic = true;
   bool _isUseFrontCamera = true;
@@ -131,6 +132,7 @@ class _PublishStreamPageState extends State<PublishStreamPage> {
       _publishHeight = quality.height;
       _publishFps = quality.fps;
       _publishBitrate = quality.kbps;
+      _videoCodecID = quality.videoCodecId;
     });
   }
 
@@ -264,6 +266,15 @@ class _PublishStreamPageState extends State<PublishStreamPage> {
           Row(
             children: <Widget>[
               Text('帧率:  ${_publishFps.toStringAsFixed(2)}',
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: <Widget>[
+              Text('视频编码格式:  $_videoCodecID',
                 style: TextStyle(
                     color: Colors.white
                 ),

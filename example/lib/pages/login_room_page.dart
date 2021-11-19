@@ -30,6 +30,7 @@ class LoginRoomPage extends StatefulWidget {
 class _LoginRoomPageState extends State<LoginRoomPage> {
   final TextEditingController _controller = new TextEditingController();
   bool isExternalVideoCapture = false;
+  bool isH265Publish = false;
 
   @override
   void initState() {
@@ -75,6 +76,32 @@ class _LoginRoomPageState extends State<LoginRoomPage> {
     String roomID = _controller.text.trim();
     ZegoLiveRoomPlugin.enableExternalVideoCaptureFactory(
         isExternalVideoCapture);
+
+    if(isH265Publish) {
+      // 移动端使用 H.265 编码需要开启硬件编码
+      ZegoLiveRoomPublisherPlugin.requireHardwareEncoder(true);
+
+      // 查询是否支持 H.265 编码
+      ZegoLiveRoomPublisherPlugin.isVideoEncoderSupported(ZegoVideoCodecAvc.VIDEO_CODEC_H265).then((h265EncoderSupport){
+        print("h265EncoderSupport:$h265EncoderSupport");
+
+        if (h265EncoderSupport) {
+          // 支持 H.265 编码
+          ZegoLiveRoomPublisherPlugin.setVideoCodecId(ZegoVideoCodecAvc.VIDEO_CODEC_H265);
+        } else {
+          // 不支持 H.265 编码
+          ZegoLiveRoomPublisherPlugin.setVideoCodecId(ZegoVideoCodecAvc.VIDEO_CODEC_DEFAULT);
+        }
+
+        if (h265EncoderSupport) {
+          // 通过 enableH265EncodeFallback 选择是否开启 H.265 编码失败自动降级能力。
+          ZegoLiveRoomPublisherPlugin.enableH265EncodeFallback(true);
+        }
+      });
+    } else{
+      ZegoLiveRoomPublisherPlugin.setVideoCodecId(ZegoVideoCodecAvc.VIDEO_CODEC_DEFAULT);
+    }
+
     // 调用登录房间之前，必须先调用setUser
     ZegoLiveRoomPlugin.setUser(
         ZegoConfig.getInstance().userID, ZegoConfig.getInstance().userName);
@@ -263,6 +290,19 @@ class _LoginRoomPageState extends State<LoginRoomPage> {
                       },
                     ),
                     Text('是否使用外部采集'),
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Checkbox(
+                      value: isH265Publish,
+                      onChanged: (value) {
+                        setState(() {
+                          isH265Publish = value;
+                        });
+                      },
+                    ),
+                    Text('是否使用H265推流'),
                   ],
                 ),
               ],

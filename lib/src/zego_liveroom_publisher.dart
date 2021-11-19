@@ -387,6 +387,43 @@ class ZegoLiveRoomPublisherPlugin {
     return success;
   }
 
+  ///获取是否支持指定编码能力
+  ///
+  ///@param codecID 编码器 ID，参考 [ZegoVideoCodecAvc] 定义
+  ///@return true: 支持, false: 不支持
+  ///@discussion 获取是否支持指定编码能力,在 InitSDK 后，推流前调用
+  static Future<bool> isVideoEncoderSupported(int codecID) async {
+    final bool success = await _channel
+        .invokeMethod('isVideoEncoderSupported', {'codecID': codecID});
+    print("isVideoEncoderSupported:$success");
+    return success;
+  }
+
+  ///获取 SDK 是否支持指定解码能力
+  ///
+  ///@param codecID 解码器 ID，参考 [ZegoVideoCodecAvc] 定义
+  ///@return true: 支持, false: 不支持
+  ///@discussion 获取是否支持指定编码能力,在 InitSDK 后，拉流前调用
+  static Future<bool> isVideoDecoderSupported(int codecID) async {
+    final bool success = await _channel
+        .invokeMethod('isVideoDecoderSupported', {'codecID': codecID});
+
+    return success;
+  }
+
+  ///设置开启 H.265 编码自动降级到 H.264 编码
+  ///
+  ///@param enable true 开启，false 关闭
+  ///@return true 设置成功, false 设置失败
+  ///@discussion 开启后，当不支持 H.265 编码或 H.265 编码失败时，SDK 内部会尝试降级使用 H.264 编码进行推流,并通过[_onVideoEncoderChanged]回调通知；
+  ///@discussion 关闭后，当不支持 H.265 编码或 H.265 编码失败时，直接推流失败。
+  static Future<bool> enableH265EncodeFallback(bool enable) async {
+    final bool success = await _channel
+        .invokeMethod('enableH265EncodeFallback', {'enable': enable});
+
+    return success;
+  }
+
   ///是否开启流量控制
   ///
   ///@param enable true 开启；false 关闭。默认开启流量控制，property 为 [ZegoTrafficControlProperty.ZEGOAPI_TRAFFIC_CONTROL_ADAPTIVE_FPS]
@@ -637,6 +674,8 @@ class ZegoLiveRoomPublisherPlugin {
     Function() onCaptureVideoFirstFrame,
     Function(int seq, String fromUserID, String fromUserName, String roomID)
         onJoinLiveRequest,
+    Function(int fromCodecID, int toCodecID, int channelIndex) onVideoEncoderChanged,
+    Function(int codecID, int errorCode, int channelIndex) onVideoEncoderError,
   }) {
     _onPublishStateUpdate = onPublishStateUpdate;
     _onPublishQualityUpdate = onPublishQualityUpdate;
@@ -645,6 +684,8 @@ class ZegoLiveRoomPublisherPlugin {
     _onCaptureAudioFirstFrame = onCaptureAudioFirstFrame;
     _onCaptureVideoFirstFrame = onCaptureVideoFirstFrame;
     _onJoinLiveRequest = onJoinLiveRequest;
+    _onVideoEncoderChanged = onVideoEncoderChanged;
+    _onVideoEncoderError = onVideoEncoderError;
 
     _addRoomNoticeLog(
         '[Flutter-Dart] registerPublisherCallback, init publisher stream subscription');
@@ -669,6 +710,8 @@ class ZegoLiveRoomPublisherPlugin {
     _onCaptureAudioFirstFrame = null;
     _onCaptureVideoFirstFrame = null;
     _onJoinLiveRequest = null;
+    _onVideoEncoderChanged = null;
+    _onVideoEncoderError = null;
 
     _streamSubscription.cancel().then((_) {
       _streamSubscription = null;
@@ -742,6 +785,24 @@ class ZegoLiveRoomPublisherPlugin {
           int seq, String fromUserID, String fromUserName, String roomID)
       _onJoinLiveRequest;
 
+  ///视频编码器错误
+  ///
+  /// @param codecID 编码器 ID,参考 [ZegoVideoCodecAvc] 定义
+  /// @param errorCode 错误码
+  /// @param channelIndex 推流通道 index
+  static void Function(int codecID, int errorCode, int channelIndex)
+      _onVideoEncoderError;
+
+  ///视频编码器变更通知
+  ///
+  /// @param fromCodecID 变更前编码器 ID,参考 [ZegoVideoCodecAvc] 定义
+  /// @param toCodecID 变更后编码器 ID,参考 [ZegoVideoCodecAvc] 定义
+  /// @param channelIndex 推流通道 index
+  /// @discussion 当通过 enableH265EncodeFallback(boolean) 开启 H.265 自动降级，且设置了 H.265 编码进行推流时，
+  /// @discussion 如果本机无法满足 H.265 编码要求，SDK 内部会自动降级为指定编码（H.264），此时会回调本通知。
+  static void Function(int fromCodecID, int toCodecID, int channelIndex)
+      _onVideoEncoderChanged;
+
   /// SDK内置日志，开发者无需关注
   static void _addRoomNoticeLog(String content) {
     _channel.invokeMethod('addNoticeLog', {'content': content});
@@ -787,7 +848,7 @@ class ZegoLiveRoomPublisherPlugin {
           int pktLostRate = args['pktLostRate'];
 
           bool isHardwareVenc = args['isHardwareVenc'];
-
+          int videoCodecId = args['videoCodecId'];
           int width = args['width'];
           int height = args['height'];
 
@@ -806,6 +867,7 @@ class ZegoLiveRoomPublisherPlugin {
                   pktLostRate * 1.0 / 255.0,
                   quality,
                   isHardwareVenc,
+                  videoCodecId,
                   width,
                   height);
 
@@ -852,6 +914,24 @@ class ZegoLiveRoomPublisherPlugin {
           String roomID = args['roomID'];
 
           _onJoinLiveRequest(seq, fromUserID, fromUserName, roomID);
+        }
+        break;
+      case 'onVideoEncoderChanged':
+        if (_onVideoEncoderChanged != null) {
+          int fromCodecID = args['fromCodecID'];
+          int toCodecID = args['toCodecID'];
+          int channelIndex = args['channelIndex'];
+
+          _onVideoEncoderChanged(fromCodecID, toCodecID, channelIndex);
+        }
+        break;
+      case 'onVideoEncoderError':
+        if (_onVideoEncoderError != null) {
+          int codecID = args['codecID'];
+          int errorCode = args['errorCode'];
+          int channelIndex = args['channelIndex'];
+
+          _onVideoEncoderError(codecID, errorCode, channelIndex);
         }
         break;
       default:
