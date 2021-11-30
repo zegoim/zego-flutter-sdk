@@ -76,19 +76,19 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
     if(ZegoConfig.getInstance().enablePlatformView){
 
       for(int i=0;i<MediaPlayerCout;i++){
-        mediaFirstView = ZegoMediaplayer.createMediaPlayerPlatformView(i, (viewID) => {
+        mediaFirstView = ZegoMediaplayer.createMediaPlayerPlatformView((viewID) => {
           {
             print("platformViewID:$viewID"),
             setState(() {
-              ZegoMediaplayer.startRenderPlatformView(i, viewID: viewID);
+              ZegoMediaplayer.startRenderPlatformView(playerIndex: i, viewID: viewID);
             })
           }
-        });
+        }, playerIndex: i);
 
-        ZegoMediaplayer.start(urls[i], i,isRepeat: false,isAsset: false);
+        ZegoMediaplayer.start(urls[i], playerIndex: i,isRepeat: false,isAsset: false);
         ZegoMediaplayer.setPlayerType(
-            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM,i);
-        ZegoMediaplayer.setProcessInterval(1000, i);
+            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM, playerIndex: i);
+        ZegoMediaplayer.setProcessInterval(1000, playerIndex: i);
 
         mediaViews.add(mediaFirstView);
         MediaPlayerInfo mediaPlayerInfo = MediaPlayerInfo(i, PlayerState.play,
@@ -102,7 +102,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
       }
 
     }else {
-      ZegoMediaplayer.createMediaPlayerRenderer(400, 250,0).then((value) => {
+      ZegoMediaplayer.createMediaPlayerRenderer(400, 250).then((value) => {
         mediaViews2.add(value),
         mediaPlayerInfos.add(MediaPlayerInfo(0, PlayerState.play,
           preView: Container(
@@ -111,13 +111,13 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
               child: mediaViews2[0]!=null ? Texture(textureId: mediaViews2[0]) : Container(child: Text("视图未创建"))
           ),
         )),
-        ZegoMediaplayer.start(urls[0], 0,isRepeat: false,isAsset: false),
+        ZegoMediaplayer.start(urls[0], isRepeat: false,isAsset: false),
         ZegoMediaplayer.setPlayerType(
-            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM,0),
-        ZegoMediaplayer.setProcessInterval(1000, 0),
+            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM),
+        ZegoMediaplayer.setProcessInterval(1000),
       });
 
-      ZegoMediaplayer.createMediaPlayerRenderer(400, 250,1).then((value) => {
+      ZegoMediaplayer.createMediaPlayerRenderer(400, 250, playerIndex: 1).then((value) => {
         mediaViews2.add(value),
         mediaPlayerInfos.add(MediaPlayerInfo(1, PlayerState.play,
           preView: Container(
@@ -126,13 +126,13 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
               child: mediaViews2[1]!=null ? Texture(textureId: mediaViews2[1]) : Container(child: Text("视图未创建"))
           ),
         )),
-        ZegoMediaplayer.start(urls[1], 1,isRepeat: false,isAsset: false),
+        ZegoMediaplayer.start(urls[1], playerIndex: 1,isRepeat: false,isAsset: false),
         ZegoMediaplayer.setPlayerType(
-            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM,1),
-        ZegoMediaplayer.setProcessInterval(1000, 1),
+            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM,playerIndex: 1),
+        ZegoMediaplayer.setProcessInterval(1000, playerIndex: 1),
       });
 
-      ZegoMediaplayer.createMediaPlayerRenderer(400, 250,2).then((value) => {
+      ZegoMediaplayer.createMediaPlayerRenderer(400, 250, playerIndex: 2).then((value) => {
         mediaViews2.add(value),
         mediaPlayerInfos.add(MediaPlayerInfo(2, PlayerState.play,
           preView: Container(
@@ -141,13 +141,13 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
               child: mediaViews2[2]!=null ? Texture(textureId: mediaViews2[2]) : Container(child: Text("视图未创建"))
           ),
         )),
-        ZegoMediaplayer.start(urls[2], 2,isRepeat: false,isAsset: false),
+        ZegoMediaplayer.start(urls[2], playerIndex: 2,isRepeat: false,isAsset: false),
         ZegoMediaplayer.setPlayerType(
-            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM,1),
-        ZegoMediaplayer.setProcessInterval(1000, 2),
+            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM,playerIndex: 1),
+        ZegoMediaplayer.setProcessInterval(1000, playerIndex: 2),
       });
 
-      ZegoMediaplayer.createMediaPlayerRenderer(400, 250,3).then((value) => {
+      ZegoMediaplayer.createMediaPlayerRenderer(400, 250,playerIndex: 3).then((value) => {
         mediaViews2.add(value),
         mediaPlayerInfos.add(MediaPlayerInfo(3, PlayerState.play,
           preView: Container(
@@ -156,10 +156,10 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
               child: mediaViews2[3]!=null ? Texture(textureId: mediaViews2[3]) : Container(child: Text("视图未创建"))
           ),
         )),
-        ZegoMediaplayer.start(urls[3], 3,isRepeat: false,isAsset: false),
+        ZegoMediaplayer.start(urls[3], playerIndex: 3,isRepeat: false,isAsset: false),
         ZegoMediaplayer.setPlayerType(
-            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM,3),
-        ZegoMediaplayer.setProcessInterval(1000, 3),
+            ZegoMediaPlayerType.ZEGO_MEDIA_PLAYER_TYPE_AUX_WITH_STREAM, playerIndex: 3),
+        ZegoMediaplayer.setProcessInterval(1000, playerIndex: 3),
       });
     }
 
@@ -173,15 +173,15 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
     // TODO: implement dispose
     super.dispose();
     if(ZegoConfig.getInstance().enablePlatformView){
-      ZegoMediaplayer.destroyMediaplayerPlatformView(0);
-      ZegoMediaplayer.destroyMediaplayerPlatformView(1);
-      ZegoMediaplayer.destroyMediaplayerPlatformView(2);
-      ZegoMediaplayer.destroyMediaplayerPlatformView(3);
+      ZegoMediaplayer.destroyMediaplayerPlatformView();
+      ZegoMediaplayer.destroyMediaplayerPlatformView(playerIndex: 1);
+      ZegoMediaplayer.destroyMediaplayerPlatformView(playerIndex: 2);
+      ZegoMediaplayer.destroyMediaplayerPlatformView(playerIndex: 3);
     }else{
-      ZegoMediaplayer.destroyMediaPlayerRenderer(0);
-      ZegoMediaplayer.destroyMediaPlayerRenderer(1);
-      ZegoMediaplayer.destroyMediaPlayerRenderer(2);
-      ZegoMediaplayer.destroyMediaPlayerRenderer(3);
+      ZegoMediaplayer.destroyMediaPlayerRenderer();
+      ZegoMediaplayer.destroyMediaPlayerRenderer(playerIndex: 1);
+      ZegoMediaplayer.destroyMediaPlayerRenderer(playerIndex: 2);
+      ZegoMediaplayer.destroyMediaPlayerRenderer(playerIndex: 3);
     }
     ZegoMediaplayer.unregisterMediaPlayerCallback();
     ZegoLiveRoomPlugin.logoutRoom();
@@ -222,7 +222,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
                             max: mediaPlayerInfos[0].getDuration,
                             onValueChanged: (value){
                               mediaPlayerInfos[0].isSeek = true;
-                              ZegoMediaplayer.seekTo((value.progress*mediaPlayerInfos[0].getDuration).toInt(), 0).then((value) =>
+                              ZegoMediaplayer.seekTo((value.progress*mediaPlayerInfos[0].getDuration).toInt()).then((value) =>
                               {
                                 mediaPlayerInfos[0].isSeek = false
                               });
@@ -274,7 +274,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
                             max: mediaPlayerInfos[1].getDuration,
                             onValueChanged: (value){
                               mediaPlayerInfos[3].isSeek = true;
-                              ZegoMediaplayer.seekTo((value.progress*mediaPlayerInfos[1].getDuration).toInt(), 1).then((value) => {
+                              ZegoMediaplayer.seekTo((value.progress*mediaPlayerInfos[1].getDuration).toInt(), playerIndex: 1).then((value) => {
                                 mediaPlayerInfos[3].isSeek = false
                               });
 
@@ -325,7 +325,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
                             max: mediaPlayerInfos[2].getDuration,
                             onValueChanged: (value){
                               mediaPlayerInfos[2].isSeek = true;
-                              ZegoMediaplayer.seekTo((value.progress*mediaPlayerInfos[2].getDuration).toInt(), 2).then((value) =>
+                              ZegoMediaplayer.seekTo((value.progress*mediaPlayerInfos[2].getDuration).toInt(), playerIndex: 2).then((value) =>
                               {
                                 mediaPlayerInfos[2].isSeek = false
                               });
@@ -379,7 +379,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
 
                               mediaPlayerInfos[3].isSeek = true;
                               print("onValueChanged${value}  mediaPlayerInfos[3].getDuration:${mediaPlayerInfos[3].getDuration}");
-                              ZegoMediaplayer.seekTo((value.progress * mediaPlayerInfos[3].getDuration).toInt(), 3).then((value) =>
+                              ZegoMediaplayer.seekTo((value.progress * mediaPlayerInfos[3].getDuration).toInt(), playerIndex: 3).then((value) =>
                               {
                                 mediaPlayerInfos[3].isSeek = false
                               });
@@ -425,7 +425,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
 
   void onPlayBegin(int playerIndex) {
     print("onPlayBegin $playerIndex");
-    ZegoMediaplayer.seekTo(5000,playerIndex);
+    ZegoMediaplayer.seekTo(5000,playerIndex: playerIndex);
   }
 
   void onSeekComplete(int errorCode, int millisecond,int playerIndex) {
@@ -488,7 +488,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
   void onVideoBegin(int playerIndex){
     print("onVideoBegin $playerIndex");
 
-    ZegoMediaplayer.getTotalDuration(playerIndex).then((value) => {
+    ZegoMediaplayer.getTotalDuration(playerIndex: playerIndex).then((value) => {
       print("时长$value"),
       setState(() {
         mediaPlayerInfos[playerIndex].setToatalDuration(value.toDouble());
@@ -500,10 +500,10 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
   void stopMediaPlayer(int playerIndex){
     setState(() {
       if(mediaPlayerInfos[playerIndex].playerState == PlayerState.stop){
-        ZegoMediaplayer.start(urls[playerIndex],playerIndex,isRepeat: false,isAsset: false);
+        ZegoMediaplayer.start(urls[playerIndex],playerIndex: playerIndex,isRepeat: false,isAsset: false);
         mediaPlayerInfos[playerIndex].playerState = PlayerState.play;
       }else{
-        ZegoMediaplayer.stop(playerIndex);
+        ZegoMediaplayer.stop(playerIndex: playerIndex);
         mediaPlayerInfos[playerIndex].playerState = PlayerState.stop;
       }
     });
@@ -511,10 +511,10 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
   void playMediaPlayer(int playerIndex){
     setState(() {
       if(mediaPlayerInfos[playerIndex].playerState == PlayerState.play){
-        ZegoMediaplayer.pause(playerIndex);
+        ZegoMediaplayer.pause(playerIndex: playerIndex);
         mediaPlayerInfos[playerIndex].playerState = PlayerState.puase;
       }else{
-        ZegoMediaplayer.resume(playerIndex);
+        ZegoMediaplayer.resume(playerIndex: playerIndex);
         mediaPlayerInfos[playerIndex].playerState = PlayerState.play;
       }
     });
