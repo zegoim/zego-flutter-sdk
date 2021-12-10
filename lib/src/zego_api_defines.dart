@@ -371,6 +371,11 @@ class ZegoVideoCodecAvc {
   /// 分层编码 要达到和 VIDEO_CODEC_DEFAULT 相同的编码质量，建议码率和 VIDEO_CODEC_DEFAULT 相比增加20%左右
   static const int VIDEO_CODEC_MULTILAYER = 1;
 
+  /// VP8编码
+  static const int VIDEO_CODEC_VP8 = 2;
+
+  /// H265编码
+  static const int VIDEO_CODEC_H265 = 3;
 }
 
 /// 视频分层类型
@@ -568,6 +573,9 @@ class ZegoPublishStreamQuality {
   /// 是否硬编
   final bool isHardwareVenc;
 
+  /// 视频编码格式
+  final int videoCodecId;
+
   /// 视频宽度
   final int width;
 
@@ -586,6 +594,7 @@ class ZegoPublishStreamQuality {
       this.pktLostRate,
       this.quality,
       this.isHardwareVenc,
+      this.videoCodecId,
       this.width,
       this.height
       );
@@ -650,6 +659,9 @@ class ZegoPlayStreamQuality {
   /// 是否硬解
   final bool isHardwareVdec;
 
+  //编码格式
+  final int videoCodecId;
+
   /// 视频宽度
   final int width;
 
@@ -676,6 +688,7 @@ class ZegoPlayStreamQuality {
       this.quality,
       this.delay,
       this.isHardwareVdec,
+      this.videoCodecId,
       this.width,
       this.height
       );

@@ -20,7 +20,20 @@ static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
 static id<ZegoVideoCaptureFactory> videoCaptureFactory = nil;
 
 @interface ZegoLiveRoomPlugin()
-<ZegoRoomDelegate, ZegoIMDelegate, ZegoLiveEventDelegate, ZegoLivePublisherDelegate, ZegoDeviceEventDelegate, ZegoLivePlayerDelegate, ZegoMediaSideDelegate, ZegoVideoRenderCVPixelBufferDelegate, ZegoSoundLevelDelegate, ZegoAudioPlayerControllerDelegate, ZegoMediaPlayerControllerDelegate, FlutterStreamHandler>
+<
+ZegoRoomDelegate,
+ZegoIMDelegate,
+ZegoLiveEventDelegate,
+ZegoLivePublisherDelegate,
+ZegoDeviceEventDelegate,
+ZegoLivePlayerDelegate,
+ZegoMediaSideDelegate,
+ZegoVideoRenderCVPixelBufferDelegate,
+ZegoSoundLevelDelegate,
+ZegoAudioPlayerControllerDelegate,
+ZegoMediaPlayerControllerDelegate,
+FlutterStreamHandler
+>
 
 @property (nonatomic, strong) ZegoLiveRoomApi *zegoApi;
 @property (nonatomic, strong) ZegoMediaSideInfo * mediaSideInfoApi;
@@ -381,6 +394,29 @@ Byte toByte(NSString* c) {
     }
 }
 
+- (void)onNetworkQuality:(NSString *)userID txQuality:(int)txQuality rxQuality:(int)rxQuality {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onNetworkQuality",
+                           @"userID": userID,
+                           @"txQuality": @(txQuality),
+                           @"rxQuality": @(rxQuality)}
+             });
+    }
+}
+
+- (void)onTokenWillExpired:(NSString *)roomID remainTime:(int)timeInSecond {
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onTokenWillExpired",
+                           @"roomID": roomID,
+                           @"remainTimeInSecond": @(timeInSecond)}
+             });
+    }
+}
+
 - (void)onUserUpdate:(NSArray<ZegoUserState *> *)userList updateType:(ZegoUserUpdateType)type {
 
     FlutterEventSink sink = _eventSink;
@@ -509,6 +545,7 @@ Byte toByte(NSString* c) {
                             @"pktLostRate" : @(quality.pktLostRate),
 
                             @"isHardwareVenc": @(quality.isHardwareVenc),
+                            @"videoCodecId": @(quality.videoCodecId),
 
                             @"width": @(quality.width),
                             @"height": @(quality.height),
@@ -540,9 +577,10 @@ Byte toByte(NSString* c) {
     if(sink) {
         sink(@{@"type": @(TYPE_PUBLISH_EVENT),
                @"method": @{@"name": @"onCaptureAudioFirstFrame"}
-               });
+             });
     }
 }
+
 
 - (void)onCaptureVideoFirstFrame {
 
@@ -576,6 +614,81 @@ Byte toByte(NSString* c) {
                             @"width": @(width),
                             @"height": @(height)}
                });
+    }
+}
+
+- (void)onPreviewVideoFirstFrame:(ZegoAPIPublishChannelIndex)index
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onPreviewVideoFirstFrame",
+                            @"channelIndex": @(index)}
+               });
+    }
+}
+
+- (void)onSendLocalAudioFirstFrame:(ZegoAPIPublishChannelIndex)index
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onSendLocalAudioFirstFrame",
+                            @"channelIndex": @(index)}
+               });
+    }
+}
+
+- (void)onSendLocalVideoFirstFrame:(ZegoAPIPublishChannelIndex)index
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onSendLocalVideoFirstFrame",
+                            @"channelIndex": @(index)}
+               });
+    }
+}
+
+- (void)onVideoEncoder:(ZegoVideoCodecAvc)codecID error:(int)errorCode channel:(ZegoAPIPublishChannelIndex)index
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onVideoEncoderError",
+                            @"channelIndex": @(index),
+                            @"codecID": @(codecID),
+                            @"errorCode": @(errorCode)
+               }
+               });
+    }
+}
+
+- (void)onVideoDecoder:(ZegoVideoCodecAvc)codecID error:(int)errorCode stream:(NSString *)streamID
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onVideoDecoderError",
+                            @"streamID": streamID,
+                            @"codecID": @(codecID),
+                            @"errorCode": @(errorCode)
+               }
+               });
+    }
+}
+
+- (void)onVideoEncoderChanged:(ZegoVideoCodecAvc)fromCodecID toCodecID:(ZegoVideoCodecAvc)toCodecID channel:(ZegoAPIPublishChannelIndex)index
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_PUBLISH_EVENT),
+               @"method": @{@"name": @"onVideoEncoderChanged",
+                            @"channelIndex": @(index),
+                            @"fromCodecID": @(fromCodecID),
+                            @"toCodecID": @(toCodecID)
+               }
+             });
     }
 }
 
@@ -615,6 +728,7 @@ Byte toByte(NSString* c) {
 
 - (void)onPlayQualityUpate:(NSString *)streamID quality:(ZegoApiPlayQuality)quality
 {
+    
     FlutterEventSink sink = _eventSink;
     if(sink) {
         sink(@{@"type" : @(TYPE_PLAY_EVENT),
@@ -641,7 +755,7 @@ Byte toByte(NSString* c) {
                             @"p2pPktLostRate": @(quality.peerToPeerPktLostRate),
                             @"quality" : @(quality.quality),
                             @"delay" : @(quality.delay),
-
+                            @"videoCodecId" : @(quality.videoCodecId),
                             @"isHardwareVdec": @(quality.isHardwareVdec),
 
                             @"width": @(quality.width),
@@ -1591,7 +1705,39 @@ Byte toByte(NSString* c) {
         bool bRequire = [self numberToBoolValue:args[@"bRequire"]];
         BOOL success = [ZegoLiveRoomApi requireHardwareEncoder:bRequire];
         result(@(success));
-
+    } else if ([call.method isEqualToString: @"isVideoEncoderSupported"]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int codecId = [self numberToIntValue:args[@"codecID"]];
+        BOOL success = [self.zegoApi isVideoEncoderSupported:(ZegoVideoCodecAvc)codecId];
+        result(@(success));
+    
+    } else if ([call.method isEqualToString: @"isVideoDecoderSupported"]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        int codecId = [self numberToIntValue:args[@"codecID"]];
+        BOOL success = [self.zegoApi isVideoDecoderSupported:(ZegoVideoCodecAvc)codecId];
+        result(@(success));
+        
+    } else if ([call.method isEqualToString: @"enableH265EncodeFallback"]) {
+        
+        if(self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        BOOL enable = [self numberToBoolValue:args[@"enable"]];
+        BOOL success = [self.zegoApi enableH265EncodeFallback:enable];
+        result(@(success));
+        
     } else if([@"enableBeautifying" isEqualToString:call.method]) {
 
         if(self.zegoApi == nil) {
