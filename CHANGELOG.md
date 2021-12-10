@@ -3,26 +3,9 @@
 ## ⚠️❗️ This project is a **legacy** SDK and and will be deprecated in the future, only used to support the maintenance for existing users, it is recommended to migrate and upgrade to the new SDK as soon as possible
 
 ## **🚀 Please use the brand new [`ZegoExpressEngine Flutter SDK`](https://pub.dev/packages/zego_express_engine)**
+
 ## 1.7.0
 1. Support max 4 mediaplayers
-
-## 1.5.7
-1. Fix iOS Objective-C++ compatible strict
-
-## 1.5.6
-1. Fix Android native bugs triggered by external video capture with mediaplayer
-
-## 1.5.5
-1. Add some MediaPlayer, AudioPlayer callbacks.
-
-## 1.5.4
-1. Optimization: Now allow reuse textureID when createMediaPlayerRenderer called more than one times without destroyMediaPlayerRenderer called
-
-## 1.5.3
-1. Optimization: Adjust some head files to remove Objective-C++ restricts
-
-## 1.5.2
-1. Optimization: Widen the limits of some MediaPlayer API
 
 ## 1.5.1
 

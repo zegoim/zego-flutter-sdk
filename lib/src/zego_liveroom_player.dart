@@ -220,6 +220,18 @@ class ZegoLiveRoomPlayerPlugin {
     return success;
   }
 
+  ///获取 SDK 是否支持指定解码能力
+  ///
+  ///@param codecID 解码器 ID，参考 [ZegoVideoCodecAvc] 定义
+  ///@return true: 支持, false: 不支持
+  ///@discussion 获取是否支持指定编码能力,在 InitSDK 后，拉流前调用
+  static Future<bool> isVideoDecoderSupported(int codecID) async {
+    final bool success = await _channel
+        .invokeMethod('isVideoDecoderSupported', {'codecID': codecID});
+
+    return success;
+  }
+
   ///拉流是否接收音频数据
   ///
   ///@param streamID 播放流 ID
@@ -330,6 +342,7 @@ class ZegoLiveRoomPlayerPlugin {
   ///@param onRecvRemoteAudioFirstFrame 设置接收 远端音频的首帧 回调，参考 [_onRecvRemoteAudioFirstFrame] 定义
   ///@param onRecvRemoteVideoFirstFrame 设置接收 远端视频的首帧 回调，参考 [_onRecvRemoteVideoFirstFrame] 定义
   ///@param onRenderRemoteVideoFirstFrame 设置接收 远端视频渲染首帧 回调，参考 [_onRenderRemoteVideoFirstFrame] 定义
+  ///@param onVideoDecoderError 设置接收 解码错误 回调，参考 [_onVideoDecoderError] 定义
   ///@discussion 开发者只有调用本 API 设置回调对象才能收到相关回调
   static void registerPlayerCallback({
     Function(int stateCode, String streamID) onPlayStateUpdate,
@@ -341,7 +354,8 @@ class ZegoLiveRoomPlayerPlugin {
     Function(int status, String streamID, int reason) onRemoteMicStatusUpdate,
     Function(String streamID) onRecvRemoteAudioFirstFrame,
     Function(String streamID) onRecvRemoteVideoFirstFrame,
-    Function(String streamID) onRenderRemoteVideoFirstFrame
+    Function(String streamID) onRenderRemoteVideoFirstFrame,
+    Function(int codecID, int errorCode, String streamID) onVideoDecoderError
   }) {
 
     _onPlayStateUpdate = onPlayStateUpdate;
@@ -354,6 +368,7 @@ class ZegoLiveRoomPlayerPlugin {
     _onRecvRemoteAudioFirstFrame = onRecvRemoteAudioFirstFrame;
     _onRecvRemoteVideoFirstFrame = onRecvRemoteVideoFirstFrame;
     _onRenderRemoteVideoFirstFrame = onRenderRemoteVideoFirstFrame;
+    _onVideoDecoderError = onVideoDecoderError;
 
     _addRoomNoticeLog('[Flutter-Dart] registerPlayerCallback, init player stream subscription');
     _streamSubscription = ZegoLiveRoomEventChannel.listenPlayEvent().listen(_eventListener, onError: (error) {
@@ -380,6 +395,7 @@ class ZegoLiveRoomPlayerPlugin {
     _onRecvRemoteAudioFirstFrame = null;
     _onRecvRemoteVideoFirstFrame = null;
     _onRenderRemoteVideoFirstFrame = null;
+    _onVideoDecoderError = null;
 
     _streamSubscription.cancel().then((_) {
       _streamSubscription = null;
@@ -476,6 +492,14 @@ class ZegoLiveRoomPlayerPlugin {
   ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onRenderRemoteVideoFirstFrame 对象参数之后才能收到该回调
   static void Function(String streamID) _onRenderRemoteVideoFirstFrame;
 
+  ///解码错误通知
+  ///
+  ///@param codecID 解码的格式
+  ///@param errorCode 错误码
+  ///@param streamID 流的唯一标识
+  ///@discussion 开发者必须调用 [registerPlayerCallback] 且设置 onVideoDecoderError 对象参数之后才能收到该回调
+  static void Function(int codecID, int errorCode, String streamID) _onVideoDecoderError;
+
   /// SDK内置日志，开发者无需关注
   static void _addRoomNoticeLog(String content) {
 
@@ -532,6 +556,7 @@ class ZegoLiveRoomPlayerPlugin {
           int delay = args['delay'];
 
           bool isHardwareVdec = args['isHardwareVdec'];
+          int videoCodecId = args['videoCodecId'];
 
           int width = args['width'];
           int height = args['height'];
@@ -558,6 +583,7 @@ class ZegoLiveRoomPlayerPlugin {
               quality,
               delay,
               isHardwareVdec,
+              videoCodecId,
               width,
               height
           );
@@ -641,6 +667,14 @@ class ZegoLiveRoomPlayerPlugin {
           String streamID = args['streamID'];
 
           _onRenderRemoteVideoFirstFrame(streamID);
+        }
+        break;
+      case 'onVideoDecoderError':
+        if(_onVideoDecoderError != null) {
+          int codecID = args['codecID'];
+          int errorCode = args['errorCode'];
+          String streamID = args['streamID'];
+          _onVideoDecoderError(codecID, errorCode, streamID);
         }
         break;
       default:

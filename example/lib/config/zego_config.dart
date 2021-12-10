@@ -47,8 +47,8 @@ class ZegoConfig {
 
       this.userID = config.getString('userID') ?? '${Platform.operatingSystem}-${new Random().nextInt(9999999).toString()}';
       this.userName = config.getString('userName') ?? 'user-$userID';
-      this.appID = config.getString('appID') ?? '';
-      this.appSign = config.getString('appSign') ?? '';
+      this.appID ??= config.getString('appID') ?? '';
+      this.appSign ??= config.getString('appSign') ?? '';
       this.isUseTestEnv = config.getBool('isUseTestEnv') ?? true;
       this.roomID = config.getString('roomID') ?? '';
       this.streamID = config.getString('streamID') ?? '';
