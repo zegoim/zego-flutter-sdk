@@ -728,6 +728,7 @@ Byte toByte(NSString* c) {
 
 - (void)onPlayQualityUpate:(NSString *)streamID quality:(ZegoApiPlayQuality)quality
 {
+    
     FlutterEventSink sink = _eventSink;
     if(sink) {
         sink(@{@"type" : @(TYPE_PLAY_EVENT),
@@ -754,7 +755,7 @@ Byte toByte(NSString* c) {
                             @"p2pPktLostRate": @(quality.peerToPeerPktLostRate),
                             @"quality" : @(quality.quality),
                             @"delay" : @(quality.delay),
-                            @"videoCodecId" : @(quality.videoCodecId)
+                            @"videoCodecId" : @(quality.videoCodecId),
                             @"isHardwareVdec": @(quality.isHardwareVdec),
 
                             @"width": @(quality.width),
