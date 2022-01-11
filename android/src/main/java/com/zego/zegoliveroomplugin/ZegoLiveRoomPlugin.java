@@ -3353,6 +3353,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                     method.put("delay", zegoStreamQuality.delay);
 
                     method.put("isHardwareVdec", zegoStreamQuality.isHardwareVdec);
+                    method.put("videoCodecId", zegoStreamQuality.videoCodecId);
 
                     method.put("width", zegoStreamQuality.width);
                     method.put("height", zegoStreamQuality.height);
@@ -3509,7 +3510,19 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
             @Override
             public void onVideoDecoderError(int codecID, int errorCode, String streamID) {
+                if (mEventSink != null) {
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_PLAY_EVENT);
 
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onVideoDecoderError");
+                    method.put("codecID", codecID);
+                    method.put("errorCode", errorCode);
+                    method.put("streamID", streamID);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
             }
 
             @Override

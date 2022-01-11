@@ -2,6 +2,7 @@
 #import <mutex>
 #import <atomic>
 #import <ZegoLog.h>
+#import <libkern/OSAtomic.h>
 
 @interface ZegoViewRenderer()
 
@@ -428,9 +429,18 @@
         glBindTexture(GL_TEXTURE_2D, 0);
         glFlush();
         
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            self->m_pRenderFrameBuffer = processBuffer;
+//        {
+//            std::lock_guard<std::mutex> lock(m_mutex);
+//            self->m_pRenderFrameBuffer = processBuffer;
+//
+        
+        CVPixelBufferRef old = m_pRenderFrameBuffer;
+        while (!OSAtomicCompareAndSwapPtr(old, processBuffer, (void **)&m_pRenderFrameBuffer)) {
+            old = m_pRenderFrameBuffer;
+        }
+        
+        if (old != nil) {
+            CFRelease(old);
         }
         
         CFRelease(texture_input);
@@ -578,14 +588,19 @@
         [strong_ptr processingData];
     });
     
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    CVBufferRelease(m_pTempToCopyFrameBuffer);
-    m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
-    CVBufferRetain(m_pTempToCopyFrameBuffer);
+//    std::lock_guard<std::mutex> lock(m_mutex);
+//
+//    CVBufferRelease(m_pTempToCopyFrameBuffer);
+//    m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
+//    CVBufferRetain(m_pTempToCopyFrameBuffer);
+//
+    CVPixelBufferRef pixelBuffer = m_pRenderFrameBuffer;
+    while (!OSAtomicCompareAndSwapPtr(pixelBuffer, nil, (void **)&m_pRenderFrameBuffer)) {
+        pixelBuffer = m_pRenderFrameBuffer;
+    }
     
     m_isNewFrameAvailable = NO;
-    return m_pTempToCopyFrameBuffer;
+    return pixelBuffer;
 }
 
 - (void)createPixelBufferPool:(CVPixelBufferPoolRef *)pool width:(int)width height:(int)height {

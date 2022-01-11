@@ -659,6 +659,9 @@ class ZegoPlayStreamQuality {
   /// 是否硬解
   final bool isHardwareVdec;
 
+  //编码格式
+  final int videoCodecId;
+
   /// 视频宽度
   final int width;
 
@@ -685,6 +688,7 @@ class ZegoPlayStreamQuality {
       this.quality,
       this.delay,
       this.isHardwareVdec,
+      this.videoCodecId,
       this.width,
       this.height
       );
