@@ -232,7 +232,7 @@ Byte toByte(NSString* c) {
     [self.mediaSideInfoApi setMediaSideDelegate:self];
 
     [[ZegoAudioPlayerController instance] initObject];
-    
+
     NSMutableArray <ZegoMediaPlayerController *>*mediaPlayers = [NSMutableArray array];
     for (int i = 0; i < playerCount; i++) {
         ZegoMediaPlayerController *player = [[ZegoMediaPlayerController alloc] initObjectWithIndex: (ZegoMediaPlayerIndex)i];
@@ -1291,12 +1291,12 @@ Byte toByte(NSString* c) {
         unsigned int appID = [self numberToUintValue:args[@"appID"]];
         NSString *strAppSign = args[@"appSign"];
         int playerCount = 4;
-        
+
         if(playerCount > 4 || playerCount <= 0) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         [self initSDKWithAppID:appID appSign:strAppSign playerCount:playerCount result:result];
 
     } else if([@"uninitSDK" isEqualToString:call.method]){
@@ -1320,11 +1320,11 @@ Byte toByte(NSString* c) {
             self.mediaSideInfoApi = nil;
 
             [[ZegoAudioPlayerController instance] uninitObject];
-            
+
             [self.mediaPlayers enumerateObjectsUsingBlock:^(ZegoMediaPlayerController * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 [obj uninitObject];
             }];
-            
+
             [self.zegoApi setRoomDelegate:nil];
             [self.zegoApi setPublisherDelegate:nil];
             [self.zegoApi setPlayerDelegate:nil];
@@ -1396,18 +1396,18 @@ Byte toByte(NSString* c) {
         result(@(success));
 
     } else if([@"switchRoom" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         NSString *roomID = args[@"roomID"];
         NSString *roomName = args[@"roomName"];
         int role = [self numberToIntValue:args[@"role"]];
-        
+
         BOOL success = [self.zegoApi switchRoom:roomID roomName:roomName role:role withCompletionBlock:^(int errorCode, NSArray<ZegoStream *> *streamList) {
-            
+
             NSMutableArray *streamArray = [NSMutableArray array];
             for (ZegoStream *stream in streamList) {
 
@@ -1418,12 +1418,12 @@ Byte toByte(NSString* c) {
             [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] onLoginRoom, return map: %@", dic]];
             result(dic);
         }];
-        
+
         if(!success) {
             result([FlutterError errorWithCode:[[NSString stringWithFormat:@"%@_ERROR", call.method] uppercaseString] message:@"call \'switchRoom\' failed." details:nil]);
         }
-        
-        
+
+
     } else if([@"pauseModule" isEqualToString:call.method]) {
 
         if(self.zegoApi == nil) {
@@ -1705,38 +1705,38 @@ Byte toByte(NSString* c) {
         BOOL success = [ZegoLiveRoomApi requireHardwareEncoder:bRequire];
         result(@(success));
     } else if ([call.method isEqualToString: @"isVideoEncoderSupported"]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         int codecId = [self numberToIntValue:args[@"codecID"]];
         BOOL success = [self.zegoApi isVideoEncoderSupported:(ZegoVideoCodecAvc)codecId];
         result(@(success));
-    
+
     } else if ([call.method isEqualToString: @"isVideoDecoderSupported"]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         int codecId = [self numberToIntValue:args[@"codecID"]];
         BOOL success = [self.zegoApi isVideoDecoderSupported:(ZegoVideoCodecAvc)codecId];
         result(@(success));
-        
+
     } else if ([call.method isEqualToString: @"enableH265EncodeFallback"]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         BOOL enable = [self numberToBoolValue:args[@"enable"]];
         BOOL success = [self.zegoApi enableH265EncodeFallback:enable];
         result(@(success));
-        
+
     } else if([@"enableBeautifying" isEqualToString:call.method]) {
 
         if(self.zegoApi == nil) {
@@ -2235,7 +2235,7 @@ Byte toByte(NSString* c) {
         int vol = [self numberToIntValue:args[@"volume"]];
         [self.zegoApi setCaptureVolume: vol];
         result(nil);
-        
+
     /* LiveRoom-Player */
 #pragma mark LiveRoom-Player
     } else if([@"startPlayingStream" isEqualToString:call.method]) {
@@ -2349,7 +2349,7 @@ Byte toByte(NSString* c) {
 
         ZegoViewRenderer *renderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
         [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] create play view renderer, width: %d, height: %d, texture id: %lld, stream id: %@", width, height, renderer.textureID, streamID]];
-        
+
         if([self.renderController addRenderer:renderer ofKey:streamID]) {
 
             if(![self.renderController isRendering])
@@ -2431,9 +2431,9 @@ Byte toByte(NSString* c) {
                 if([self.renderController isRendering])
                     [self.renderController stopRendering];
             }
-            
+
             [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] destroy play view renderer. stream id: %@", streamID]];
-            
+
             [self.renderController destroyPixelBufferPool:streamID];
             result(@(YES));
         } else {
@@ -2915,29 +2915,29 @@ Byte toByte(NSString* c) {
             return;
         }
 
-//        int width = [self numberToIntValue:args[@"width"]];
-//        int height = [self numberToIntValue:args[@"height"]];
-//
-//        [[ZegoMediaPlayerController instance] setRenderController:self.renderController];
-//
-//        extern NSString *kZegoVideoDataMediaPlayerStream;
-//
-//        ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
-//        if(renderer) {
-//            result(@(renderer.textureID));
-//        } else {
-//            ZegoViewRenderer *newRenderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
-//            if([self.renderController addRenderer:newRenderer ofKey:kZegoVideoDataMediaPlayerStream]) {
-//
-//                if(![self.renderController isRendering]) {
-//                    [self.renderController startRendering];
-//                }
-//                NSLog(@"new renderer. textureID: %lld", newRenderer.textureID);
-//                result(@(newRenderer.textureID));
-//            }
-//        }
+       int width = [self numberToIntValue:args[@"width"]];
+       int height = [self numberToIntValue:args[@"height"]];
+
+       [[ZegoMediaPlayerController instance] setRenderController:self.renderController];
+
+       extern NSString *kZegoVideoDataMediaPlayerStream;
+
+       ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
+       if(renderer) {
+           result(@(renderer.textureID));
+       } else {
+           ZegoViewRenderer *newRenderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
+           if([self.renderController addRenderer:newRenderer ofKey:kZegoVideoDataMediaPlayerStream]) {
+
+               if(![self.renderController isRendering]) {
+                   [self.renderController startRendering];
+               }
+               NSLog(@"new renderer. textureID: %lld", newRenderer.textureID);
+               result(@(newRenderer.textureID));
+           }
+       }
     } else if([@"createMediaPlayerPlatformView" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
@@ -2947,18 +2947,18 @@ Byte toByte(NSString* c) {
             [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
-        
+
         int viewID = [self numberToIntValue:args[@"viewID"]];
         int playerIndex = [self numberToIntValue:args[@"playerIndex"]];
         ZegoPlatformView *platformView = [[ZegoPlatformViewFactory shareInstance] getPlatformView:@(viewID)];
-        
+
         ZegoMediaPlayerController *player = [self mediaPlayerWithPlayerIndex:playerIndex];
         [player setPlatformView: platformView.getUIView];
 
         //result(nil);
 
     } else if([@"destroyMediaPlayerPlatformView" isEqualToString:call.method]) {
-        
+
         if(self.zegoApi == nil) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
@@ -2968,7 +2968,7 @@ Byte toByte(NSString* c) {
             [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
-        
+
         int viewID = [self numberToIntValue:args[@"viewID"]];
         int playerIndex = [self numberToIntValue:args[@"playerIndex"]];
         [[ZegoPlatformViewFactory shareInstance] removeView:@(viewID)];
@@ -2988,9 +2988,9 @@ Byte toByte(NSString* c) {
         BOOL repeat = [self numberToBoolValue:args[@"repeat"]];
         BOOL isAsset = [self numberToBoolValue:args[@"asset"]];
         int playerIndex = [self numberToIntValue:args[@"playerIndex"]];
-        
+
         ZegoMediaPlayerController *player = [self mediaPlayerWithPlayerIndex:playerIndex];
-        
+
         [player start:path repeat:repeat asset:isAsset reg:self.registrar result:result];
 
         //result(nil);
@@ -3001,7 +3001,7 @@ Byte toByte(NSString* c) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         int playerIndex = [self numberToIntValue:args[@"playerIndex"]];
         ZegoMediaPlayerController *player = [self mediaPlayerWithPlayerIndex:playerIndex];
         [player stop:result];
@@ -3050,7 +3050,7 @@ Byte toByte(NSString* c) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-        
+
         int playerIndex = [self numberToIntValue:args[@"playerIndex"]];
         ZegoMediaPlayerController *player = [self mediaPlayerWithPlayerIndex:playerIndex];
         result(@([player getDuration]));
@@ -3195,7 +3195,7 @@ Byte toByte(NSString* c) {
         [self.mediaPlayers enumerateObjectsUsingBlock:^(ZegoMediaPlayerController * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [obj setDelegate:nil];
         }];
-        
+
         result(nil);
     } else if ([@"destroyMediaPlayerRenderer" isEqualToString:call.method]) {
         if(self.zegoApi == nil) {
@@ -3207,7 +3207,7 @@ Byte toByte(NSString* c) {
             [self throwNoTextureError:result ofMethodName:call.method];
             return;
         }
-        
+
 //        extern NSString *kZegoVideoDataMediaPlayerStream;
 //
 //        if([self.renderController removeRenderer:kZegoVideoDataMediaPlayerStream]) {
@@ -3335,12 +3335,12 @@ Byte toByte(NSString* c) {
             result(nil);
             return;
         }
-        
+
         if ([videoCaptureFactory conformsToProtocol:@protocol(ZegoMediaPlayerControllerVideoDataDelegate)]) {
-            
+
             [player setVideoDataDelegate:(id<ZegoMediaPlayerControllerVideoDataDelegate>)videoCaptureFactory];
         }
-        
+
         [ZegoExternalVideoCapture setVideoCaptureFactory:enable ? videoCaptureFactory : nil channelIndex:ZEGOAPI_CHN_MAIN];
         result(nil);
     }
@@ -3491,4 +3491,3 @@ Byte toByte(NSString* c) {
 
 
 @end
-

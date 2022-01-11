@@ -2166,11 +2166,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 return;
             }
 
-            //废弃创建 PlayerRenderer
-            if(!mIsEnablePlatformView){
-                throwNoTextureError(result, call.method);
-                return;
-            }
+            // //废弃创建 PlayerRenderer
+            // if(!mIsEnablePlatformView){
+            //     throwNoTextureError(result, call.method);
+            //     return;
+            // }
 
             int width = numberToIntValue((Number) call.argument("width"));
             int height = numberToIntValue((Number) call.argument("height"));
