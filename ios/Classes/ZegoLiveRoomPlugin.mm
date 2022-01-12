@@ -2915,19 +2915,25 @@ Byte toByte(NSString* c) {
             return;
         }
 
-       int width = [self numberToIntValue:args[@"width"]];
-       int height = [self numberToIntValue:args[@"height"]];
+        int width = [self numberToIntValue:args[@"width"]];
+        int height = [self numberToIntValue:args[@"height"]];
+        int playerIndex = [self numberToIntValue:args[@"playerIndex"]];
+        if (self.mediaPlayers.count <= playerIndex) {
+            return;
+        }
+        ZegoMediaPlayerController *mediaPlayerController = self.mediaPlayers[playerIndex];
+        
+        extern NSString *kZegoVideoDataMediaPlayerStream;
+        
+        NSString *renderKey = [NSString stringWithFormat:@"%@-%d",kZegoVideoDataMediaPlayerStream, playerIndex];
+        ZegoViewRenderer *renderer = [self.renderController getRenderer:renderKey];
+        [mediaPlayerController setRenderController:self.renderController];
 
-       [[ZegoMediaPlayerController instance] setRenderController:self.renderController];
-
-       extern NSString *kZegoVideoDataMediaPlayerStream;
-
-       ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
        if(renderer) {
            result(@(renderer.textureID));
        } else {
            ZegoViewRenderer *newRenderer = [[ZegoViewRenderer alloc] initWithTextureRegistry:[self.registrar textures] isPublisher:NO viewWidth:width viewHeight:height];
-           if([self.renderController addRenderer:newRenderer ofKey:kZegoVideoDataMediaPlayerStream]) {
+           if([self.renderController addRenderer:newRenderer ofKey:renderKey]) {
 
                if(![self.renderController isRendering]) {
                    [self.renderController startRendering];
@@ -3228,18 +3234,18 @@ Byte toByte(NSString* c) {
             [self throwSdkNotInitError:result ofMethodName:call.method];
             return;
         }
-
+        int width = [self numberToIntValue:args[@"width"]];
+        int height = [self numberToIntValue:args[@"height"]];
+        int playerIndex = [self numberToIntValue:args[@"playerIndex"]];
         extern NSString *kZegoVideoDataMediaPlayerStream;
-        ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
+        NSString *renderKey = [NSString stringWithFormat:@"%@-%d",kZegoVideoDataMediaPlayerStream, playerIndex];
+        ZegoViewRenderer *renderer = [self.renderController getRenderer:renderKey];
         if(renderer == nil) {
             [self throwNoRendererError:result ofMethodName:call.method];
             return;
         }
-
-        int width = [self numberToIntValue:args[@"width"]];
-        int height = [self numberToIntValue:args[@"height"]];
-
         [renderer updateRenderSize:CGSizeMake(width, height)];
+            
         result(nil);
     } else if ([@"mpGetAudioStreamCount" isEqualToString:call.method]) {
         // 获取音轨数量

@@ -78,14 +78,15 @@ static NSString * const KEY_SEEK_TO = @"seek_to";
 }
 
 - (void)uninitObject {
-    if ([_renderController removeRenderer:kZegoVideoDataMediaPlayerStream]) {
+    NSString *renderKey = [NSString stringWithFormat:@"%@-%ld",kZegoVideoDataMediaPlayerStream, (long)self.zegoPlayIndex];
+    if ([_renderController removeRenderer:renderKey]) {
         if([self.renderController getRenderCount] == 0) {
 
             if([self.renderController isRendering])
                 [self.renderController stopRendering];
         }
 
-        [_renderController destroyPixelBufferPool:kZegoVideoDataMediaPlayerStream];
+        [_renderController destroyPixelBufferPool:renderKey];
     };
     _renderController = nil;
     [_mediaPlayer setVideoPlayWithIndexDelegate:nil format:self.mFormat];
@@ -540,7 +541,8 @@ typedef void (*CFTypeDeleter)(CFTypeRef cf);
     }
 
     // 通过固定的 key 拿到在 plugin 中创建的 Render
-    ZegoViewRenderer *renderer = [self.renderController getRenderer:kZegoVideoDataMediaPlayerStream];
+    NSString *renderKey = [NSString stringWithFormat:@"%@-%ld",kZegoVideoDataMediaPlayerStream, (long)index];
+    ZegoViewRenderer *renderer = [self.renderController getRenderer:renderKey];
     [renderer setSrcFrameBuffer:pixelBuffer processBuffer:nil];
     
     // 回调出去
