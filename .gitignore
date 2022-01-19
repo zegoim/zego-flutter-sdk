@@ -13,5 +13,11 @@ doc/api/
 *.iws
 .idea/
 
+.settings
+.project
+.classpath
+.flutter-plugins-dependencies
+flutter_export_environment.sh
+
 # mac
 .DS_Store
