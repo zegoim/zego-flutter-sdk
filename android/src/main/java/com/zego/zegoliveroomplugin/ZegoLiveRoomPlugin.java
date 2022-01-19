@@ -3589,12 +3589,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             public void onInitSDK(int errorCode) {
 
                 ZegoLogJNI.logNotice("[Flutter-Native] on init sdk, errorCode: " + errorCode);
-                result.success(errorCode);
             }
         });
 
-        if (!success)
-            result.success(false);
 
         ZegoAudioPlayerController.getInstance().init();
 //        ZegoMediaPlayerController.getInstance().init();
@@ -3658,7 +3655,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             }
         });
 
-
+        result.success(0);
     }
 
     @Override

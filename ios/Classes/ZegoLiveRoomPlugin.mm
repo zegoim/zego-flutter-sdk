@@ -216,7 +216,6 @@ Byte toByte(NSString* c) {
     self.zegoApi = [[ZegoLiveRoomApi alloc] initWithAppID: appID appSignature:appSign completionBlock:^(int errorCode){
 
         [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] on init sdk, errorCode: %d", errorCode]];
-        result(@(errorCode));
 
     }];
 
@@ -239,6 +238,8 @@ Byte toByte(NSString* c) {
         [mediaPlayers addObject:player];
     }
     self.mediaPlayers = mediaPlayers.copy;
+
+    result(@(0));
 }
 
 #pragma mark - FlutterStreamHandler methods
