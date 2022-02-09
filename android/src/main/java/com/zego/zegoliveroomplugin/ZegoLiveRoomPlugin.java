@@ -221,7 +221,9 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
                 //
                 if (mMediaPlayerControllers.size()>0){
-                    mMediaPlayerControllers.forEach(ZegoMediaPlayerController::uninit);
+                    for (ZegoMediaPlayerController mediaPlayerController : mMediaPlayerControllers) {
+                        mediaPlayerController.uninit();
+                    }
                     mMediaPlayerControllers.clear();
                 }
 
@@ -2140,19 +2142,19 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         } else if (call.method.equals("registerMediaPlayerCallback")) {
 
-            if (mMediaPlayerControllers.size()>0){
-                mMediaPlayerControllers.forEach((mMediaPlayerController)->{
-                    mMediaPlayerController.setMediaPlayerEventCallback(this);
-                });
+            if (mMediaPlayerControllers.size() > 0) {
+                for (ZegoMediaPlayerController mediaPlayerController : mMediaPlayerControllers) {
+                    mediaPlayerController.setMediaPlayerEventCallback(ZegoLiveRoomPlugin.this);
+                }
             }
             result.success(null);
 
         } else if (call.method.equals("unregisterMediaPlayerCallback")) {
 
             if (mMediaPlayerControllers.size()>0){
-                mMediaPlayerControllers.forEach((mMediaPlayerController)->{
-                    mMediaPlayerController.setMediaPlayerEventCallback(null);
-                });
+                for (ZegoMediaPlayerController mediaPlayerController : mMediaPlayerControllers) {
+                    mediaPlayerController.setMediaPlayerEventCallback(null);
+                }
             }
             result.success(null);
         } else if (call.method.equals("createMediaPlayerRenderer")) {
