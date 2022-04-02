@@ -3,10 +3,8 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
         google()
         jcenter()
 
@@ -19,10 +17,8 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
         google()
         jcenter()
 
@@ -36,15 +32,13 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++11"
             }
         }
         ndk {
-            //设置支持的SO库架构
-            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86'
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
         }
     }
 
@@ -56,11 +50,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
-    sourceSets {
-        main {
-            jniLibs.srcDirs = ['libs']
-        }
-    }
+    // No need to explicitly add jni libs here
+    // https://developer.android.com/studio/releases/gradle-plugin#cmake-imported-targets
+    // sourceSets {
+    //     main {
+    //         jniLibs.srcDirs = ['libs']
+    //     }
+    // }
 
     externalNativeBuild {
         cmake {
