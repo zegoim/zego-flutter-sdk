@@ -50,13 +50,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
-    // No need to explicitly add jni libs here
-    // https://developer.android.com/studio/releases/gradle-plugin#cmake-imported-targets
-    // sourceSets {
-    //     main {
-    //         jniLibs.srcDirs = ['libs']
-    //     }
-    // }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
 
     externalNativeBuild {
         cmake {
