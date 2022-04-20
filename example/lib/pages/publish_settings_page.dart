@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:zegoliveroom_plugin/zegoliveroom_plugin.dart';
 import 'package:zegoliveroom_plugin_example/config/zego_config.dart';
 
@@ -14,6 +18,8 @@ class _PublishSettingsPageState extends State<PublishSettingsPage> {
   bool _isPreviewMirror;
   bool _isPublishMirror;
 
+  bool _enableCamera;
+  bool _isSetDummyCaptureImage;
   bool _enableVirtualStereo;
   double _virtualStereoAngle;
   bool _enableReverb;
@@ -29,6 +35,8 @@ class _PublishSettingsPageState extends State<PublishSettingsPage> {
     _isPreviewMirror = ZegoConfig.getInstance().isPreviewMirror;
     _isPublishMirror = ZegoConfig.getInstance().isPublishMirror;
 
+    _enableCamera = ZegoConfig.getInstance().enableCamera;
+    _isSetDummyCaptureImage = ZegoConfig.getInstance().isSetDummyCaptureImage;
     _enableVirtualStereo = ZegoConfig.getInstance().enableVirtualStereo;
     _virtualStereoAngle = ZegoConfig.getInstance().virtualStereoAngle;
     _enableReverb = ZegoConfig.getInstance().enableReverb;
@@ -79,6 +87,33 @@ class _PublishSettingsPageState extends State<PublishSettingsPage> {
       ZegoConfig.getInstance().isPublishMirror = _isPublishMirror;
       checkMirrorMode();
     });
+  }
+
+  void onCamaraEnabledChanged(bool value) {
+    setState(() {
+      _enableCamera = value;
+      ZegoConfig.getInstance().enableCamera = _enableCamera;
+      ZegoLiveRoomPublisherPlugin.enableCamera(_enableCamera);
+    });
+  }
+
+  void onSetDummyCaptureImageChanged(bool value) async {
+    setState(() {
+      _isSetDummyCaptureImage = value;
+      ZegoConfig.getInstance().isSetDummyCaptureImage= _isSetDummyCaptureImage;
+    });
+
+    if (_isSetDummyCaptureImage) {
+      Directory directory = await getApplicationDocumentsDirectory();
+      String imagePath = directory.path +  "/zegologo.jpg";
+      print("🧪 SetDummyCaptureImagePath: " + imagePath);
+      ByteData data = await rootBundle.load("resources/images/zegologo.jpg");
+      List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      await File(imagePath).writeAsBytes(bytes);
+      ZegoLiveRoomPublisherPlugin.setDummyCaptureImagePath("file:" + imagePath);
+    } else {
+      ZegoLiveRoomPublisherPlugin.setDummyCaptureImagePath("");
+    }
   }
 
   void onVirtualEnableChanged(bool value) {
@@ -209,6 +244,58 @@ class _PublishSettingsPageState extends State<PublishSettingsPage> {
                         ],
                       ),
                     ],
+                  )
+                ],
+              ),
+            ),
+            /// enable camera
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.black26
+                  )
+                )
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    'EnableCamera',
+                    style: TextStyle(
+                      fontSize: 20.0
+                    ),
+                  ),
+                  CupertinoSwitch(
+                    value: _enableCamera,
+                    onChanged: onCamaraEnabledChanged,
+                  )
+                ],
+              ),
+            ),
+            /// set dummy capture image
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.black26
+                  )
+                )
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    'SetDummyCaptureImage',
+                    style: TextStyle(
+                      fontSize: 20.0
+                    ),
+                  ),
+                  CupertinoSwitch(
+                    value: _isSetDummyCaptureImage,
+                    onChanged: onSetDummyCaptureImageChanged,
                   )
                 ],
               ),

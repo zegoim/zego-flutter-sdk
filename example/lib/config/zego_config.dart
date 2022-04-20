@@ -35,6 +35,8 @@ class ZegoConfig {
   bool isPreviewMirror;
   bool isPublishMirror;
 
+  bool enableCamera;
+  bool isSetDummyCaptureImage;
   bool enableVirtualStereo;
   double virtualStereoAngle;
   bool enableReverb;
@@ -58,6 +60,8 @@ class ZegoConfig {
       this.isPreviewMirror = true;
       this.isPublishMirror = false;
 
+      this.enableCamera = true;
+      this.isSetDummyCaptureImage = false;
       this.enableVirtualStereo = false;
       this.virtualStereoAngle = 90.0;
       this.enableReverb = false;
