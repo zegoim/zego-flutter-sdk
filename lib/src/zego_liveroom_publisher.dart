@@ -653,6 +653,30 @@ class ZegoLiveRoomPublisherPlugin {
     return image;
   }
 
+  /// Set the path of the static picture would be published when the camera is closed.
+  ///
+  /// Description: Set the path of the static picture would be published when enableCamera(NO) is called, it would start to publish static pictures, and when enableCamera(YES) is called, it would end publishing static pictures.
+  /// Use case: The developer wants to display a static picture when the camera is closed. For example, when the anchor exits the background, the camera would be actively closed. At this time, the audience side needs to display the image of the anchor temporarily leaving.
+  /// When to call: After the engine is initialized, call this API to configure the parameters before closing the camera.
+  /// Restrictions: 
+  ///   1. Supported picture types are JPEG/JPG, PNG, BMP, HEIF.
+  ///   2. The function is only for SDK video capture and does not take effect for custom video capture.
+  /// Caution: 
+  ///   1. The static picture cannot be seen in the local preview.
+  ///   2. External filters, mirroring, watermarks, and snapshots are all invalid.
+  ///   3. If the picture aspect ratio is inconsistent with the set code aspect ratio, it will be cropped according to the code aspect ratio.
+  /// Platform differences: 
+  ///   1. Windows: Fill in the location of the picture directly, such as "D://dir//image.jpg".
+  ///   2. iOS: If it is a full path, add the prefix "file:", such as @"file:/var/image.png"; If it is a assets picture path, add the prefix "asset:", such as @"asset:watermark".
+  ///   3. Android: If it is a full path, add the prefix "file:", such as "file:/sdcard/image.png"; If it is a assets directory path, add the prefix "asset:", such as "asset:watermark.png".
+  ///
+  /// @param filePath Picture file path
+  static Future<bool> setDummyCaptureImagePath(String imagePath) async {
+    final bool success = await _channel
+        .invokeMethod('setDummyCaptureImagePath', {'imagePath': imagePath});
+    return success;
+  }
+
   ///设置回调对象
   ///
   ///@param onPublishStateUpdate 设置接收 推流状态更新 回调，参考 [_onPublishStateUpdate] 定义

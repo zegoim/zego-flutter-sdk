@@ -2235,6 +2235,17 @@ Byte toByte(NSString* c) {
         int vol = [self numberToIntValue:args[@"volume"]];
         [self.zegoApi setCaptureVolume: vol];
         result(nil);
+        
+    } else if ([@"setDummyCaptureImagePath" isEqualToString:call.method]) {
+        
+        if (self.zegoApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+
+        NSString *imagePath = args[@"imagePath"];
+        [self.zegoApi setDummyCaptureImagePath:imagePath channelIndex:ZEGOAPI_CHN_MAIN];
+        result(@(YES));
 
     /* LiveRoom-Player */
 #pragma mark LiveRoom-Player

@@ -1177,6 +1177,15 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 }
             });
 
+        } else if (call.method.equals("setDummyCaptureImagePath")) {
+            if (mZegoLiveRoom == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+
+            ZegoLiveRoom.setDummyCaptureImagePath((String) call.argument("imagePath"), PublishChannelIndex.MAIN);
+
+            result.success(true);
         }
         /* LiveRoom-Player */
         else if (call.method.equals("setViewMode")) {
