@@ -9,4 +9,5 @@ public class ZegoEventType {
     public static final int TYPE_SOUND_LEVEL_EVENT = 4;
     public static final int TYPE_MEDIA_PLAYER_EVENT = 5;
     public static final int TYPE_AUDIO_PLAYER_EVENT = 10;
+    public static final int TYPE_MEDIA_RECORD_EVENT = 11;
 }

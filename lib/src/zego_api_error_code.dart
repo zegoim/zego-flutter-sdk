@@ -139,6 +139,29 @@ class ZegoErrorCode {
   static const int kMixStreamQpsOverloadError = 82000190;
 }
 
+class ZegoMediaRecordErrorCode {
+  /// 成功
+  static const int success = 0;
+  /// 路径太长
+  static const int pathTooLong = 1;
+  /// 初始化 avcontext 失败
+  static const int initFailed = 2;
+  /// 打开文件失败
+  static const int openFileFailed = 3;
+  /// 写文件头失败
+  static const int writeHeaderFailed = 4;
+  /// 开始录制
+  static const int recordBegin = 5;
+  /// 停止录制
+  static const int recordEnd = 6;
+  /// 剩余空间不够
+  static const int noSpace = 7;
+  /// 文件句柄异常
+  static const int badFileDesc = 8;
+  /// IO 异常
+  static const int ioError = 9;
+}
+
 class ZegoErrorHandler {
   /* Method Channel */
   static const MethodChannel _channel =

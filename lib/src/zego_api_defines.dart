@@ -917,3 +917,56 @@ class ZegoMediaplayerCacheResult {
 
   const ZegoMediaplayerCacheResult(this.time, this.size);
 }
+
+class ZegoMediaRecordType {
+  /// 只录制音频
+  static const int Media_RECORD_TYPE_AUDIO = 1;
+  /// 只录制视频
+  static const int Media_RECORD_TYPE_VIDEO = 2;
+  /// 同时录制音频、视频
+  static const int Media_RECORD_TYPE_BOTH = 3;
+}
+
+class ZegoMediaRecordFormat {
+  /// FLV格式
+  static const int Media_RECORD_FORMAT_FLV = 1;
+  /// MP4格式
+  static const int Media_RECORD_FORMAT_MP4 = 2;
+  /// AAC格式
+  static const int Media_RECORD_FORMAT_AAC = 4;
+}
+
+/// 媒体录制配置
+class ZegoMediaRecordConfig {
+
+  /// 录制类型， 参考 [ZegoMediaRecordType] 定义
+  int recordType = ZegoMediaRecordType.Media_RECORD_TYPE_BOTH;
+
+  /// 录制文件存储路径，传入的路径需要包含文件名
+  String storagePath;
+
+  /// 是否开启录制状态回调，true: 表示会以指定的 interval 间隔回调。false: 表示不回调。默认为false
+  bool enableStatusCallback = false;
+
+  /// 录制信息更新频率，单位毫秒，有效范围：1000-10000，默认值3000
+  int interval = 3000;
+
+  /// 媒体录制格式，参考 [ZegoMediaRecordFormat] 定义
+  int recordFormat;
+
+  /// 录制文件是否分片，MP4格式才有效，默认为false
+  bool isFragment = false;
+
+  ZegoMediaRecordConfig(this.storagePath, this.recordFormat);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'recordType': recordType,
+      'storagePath': storagePath,
+      'enableStatusCallback': enableStatusCallback,
+      'interval': interval,
+      'recordFormat': recordFormat,
+      'isFragment': isFragment
+    };
+  }
+}
