@@ -35,6 +35,11 @@ import com.zego.zegoavkit2.audioprocessing.ZegoAudioReverbParam;
 import com.zego.zegoavkit2.camera.ZegoCamera;
 import com.zego.zegoavkit2.entities.ZegoStreamRelayCDNInfo;
 import com.zego.zegoavkit2.error.ZegoError;
+import com.zego.zegoavkit2.mediarecorder.IZegoMediaRecordCallback2;
+import com.zego.zegoavkit2.mediarecorder.ZegoMediaRecordChannelIndex;
+import com.zego.zegoavkit2.mediarecorder.ZegoMediaRecordFormat;
+import com.zego.zegoavkit2.mediarecorder.ZegoMediaRecordType;
+import com.zego.zegoavkit2.mediarecorder.ZegoMediaRecorder;
 import com.zego.zegoavkit2.mediaside.IZegoMediaSideCallback;
 import com.zego.zegoavkit2.mediaside.ZegoMediaSideInfo;
 import com.zego.zegoavkit2.soundlevel.IZegoSoundLevelCallback;
@@ -100,6 +105,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
     private ZegoLiveRoom mZegoLiveRoom;
     private ZegoMediaSideInfo mZegoMediaSideInfo;
+    private ZegoMediaRecorder mZegoMediaRecorder;
     private HashMap<String, ZegoViewRenderer> mRenders;
     private boolean mIsEnablePlatformView;
 
@@ -117,6 +123,7 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
 
         this.mZegoLiveRoom = null;
         this.mZegoMediaSideInfo = null;
+        this.mZegoMediaRecorder = null;
         this.mIsEnablePlatformView = false;
 
         this.mRenders = new HashMap<>();
@@ -2589,6 +2596,51 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                 result.success(null);
             }
 
+        } else if (call.method.equals("startRecord")) {
+
+            if (mZegoLiveRoom == null || mZegoMediaRecorder == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+
+            HashMap<String, Object> config = call.argument("config");
+
+            int recordType = numberToIntValue((Number) config.get("recordType"));
+            int recordFormat = numberToIntValue((Number) config.get("recordFormat"));
+            int interval = numberToIntValue((Number) config.get("interval"));
+            boolean enableStatusCallback = numberToBoolValue((Boolean) config.get("enableStatusCallback"));
+            boolean isFragment = numberToBoolValue((Boolean) config.get("isFragment"));
+            String storagePath = (String) config.get("storagePath");
+
+            ZegoMediaRecordType recordTypeO = ZegoMediaRecordType.BOTH;
+            if (ZegoMediaRecordType.VIDEO.value() == recordType) {
+                recordTypeO = ZegoMediaRecordType.VIDEO;
+            } else if (ZegoMediaRecordType.AUDIO.value() == recordType) {
+                recordTypeO = ZegoMediaRecordType.AUDIO;
+            } else if (ZegoMediaRecordType.BOTH.value() == recordType) {
+                recordTypeO = ZegoMediaRecordType.BOTH;
+            }
+
+            ZegoMediaRecordFormat recordFormatO = ZegoMediaRecordFormat.FLV;
+            if (ZegoMediaRecordFormat.FLV.value() == recordFormat) {
+                recordFormatO = ZegoMediaRecordFormat.FLV;
+            } else if (ZegoMediaRecordFormat.AAC.value() == recordFormat) {
+                recordFormatO = ZegoMediaRecordFormat.AAC;
+            } else if (ZegoMediaRecordFormat.MP4.value() == recordFormat) {
+                recordFormatO = ZegoMediaRecordFormat.MP4;
+            }
+
+            mZegoMediaRecorder.startRecord(ZegoMediaRecordChannelIndex.MAIN, recordTypeO, storagePath, enableStatusCallback, interval, recordFormatO, isFragment);
+            result.success(null);
+
+        } else if (call.method.equals("stopRecord")) {
+            if (mZegoLiveRoom == null || mZegoMediaRecorder == null) {
+                throwSdkNotInitError(result, call.method);
+                return;
+            }
+
+            mZegoMediaRecorder.stopRecord(ZegoMediaRecordChannelIndex.MAIN);
+            result.success(null);
         } else {
 
             result.notImplemented();
@@ -3642,6 +3694,73 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                     method.put("name", "onRecvMediaSideInfo");
                     method.put("streamID", streamID);
                     method.put("data", strData);
+
+                    returnMap.put("method", method);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mEventSink.success(returnMap);
+                        }
+                    });
+                }
+            }
+        });
+
+        mZegoMediaRecorder = new ZegoMediaRecorder();
+        mZegoMediaRecorder.setZegoMediaRecordCallback(new IZegoMediaRecordCallback2() {
+            @Override
+            public void onRecordStatusUpdate(ZegoMediaRecordChannelIndex channelIndex, String storagePath, long duration, long fileSize, com.zego.zegoavkit2.entities.ZegoPublishStreamQuality quality) {
+                if (mEventSink != null) {
+
+                    final HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_MEDIA_RECORD_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onMediaRecordInfoUpdate");
+                    method.put("storagePath", storagePath);
+                    method.put("duration", duration);
+                    method.put("fileSize", fileSize);
+
+                    HashMap<String, Object> qualityMap = new HashMap<>();
+                    qualityMap.put("cfps", quality.vcapFps);
+                    qualityMap.put("vencFps", quality.vencFps);
+                    qualityMap.put("fps", quality.vnetFps);
+                    qualityMap.put("kbps", quality.vkbps);
+                    qualityMap.put("acapFps", quality.acapFps);
+                    qualityMap.put("afps", quality.anetFps);
+                    qualityMap.put("akbps", quality.akbps);
+                    qualityMap.put("rtt", quality.rtt);
+                    qualityMap.put("pktLostRate", quality.pktLostRate);
+                    qualityMap.put("quality", quality.quality);
+                    qualityMap.put("isHardwareVenc", quality.isHardwareVenc);
+                    qualityMap.put("videoCodecId", quality.videoCodecId);
+                    qualityMap.put("width", quality.width);
+                    qualityMap.put("height", quality.height);
+                    method.put("quality", qualityMap);
+
+                    returnMap.put("method", method);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mEventSink.success(returnMap);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onMediaRecord(int errCode, ZegoMediaRecordChannelIndex channelIndex, String storagePath) {
+                if (mEventSink != null) {
+
+                    final HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_MEDIA_RECORD_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onMediaRecord");
+                    method.put("errorCode", errCode);
+                    method.put("storagePath", storagePath);
 
                     returnMap.put("method", method);
                     Handler mainHandler = new Handler(Looper.getMainLooper());

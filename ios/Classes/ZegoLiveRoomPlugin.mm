@@ -13,7 +13,8 @@ typedef NS_ENUM(NSUInteger, EVENT_TYPE) {
     TYPE_MEDIA_SIDE_INFO_EVENT,
     TYPE_SOUND_LEVEL_EVENT,
     TYPE_MEDIA_PLAYER_EVENT,
-    TYPE_AUDIO_PLAYER_EVENT = 10
+    TYPE_AUDIO_PLAYER_EVENT = 10,
+    TYPE_MEDIA_RECORD_EVENT = 11
 };
 
 static id<ZegoVideoFilterFactory> videoFilterFactory = nil;
@@ -28,6 +29,7 @@ ZegoLivePublisherDelegate,
 ZegoDeviceEventDelegate,
 ZegoLivePlayerDelegate,
 ZegoMediaSideDelegate,
+ZegoMediaRecordDelegage,
 ZegoVideoRenderCVPixelBufferDelegate,
 ZegoSoundLevelDelegate,
 ZegoAudioPlayerControllerDelegate,
@@ -37,6 +39,7 @@ FlutterStreamHandler
 
 @property (nonatomic, strong) ZegoLiveRoomApi *zegoApi;
 @property (nonatomic, strong) ZegoMediaSideInfo * mediaSideInfoApi;
+@property (nonatomic, strong) ZegoMediaRecorder * mediaRecordApi;
 @property (nonatomic, strong) ZegoRendererController *renderController;
 @property (nonatomic, assign) BOOL isEnablePlatformView;
 
@@ -56,6 +59,7 @@ FlutterStreamHandler
 
         _zegoApi = nil;
         _mediaSideInfoApi = nil;
+        _mediaRecordApi = nil;
         _renderController = nil;
         _isEnablePlatformView = NO;
 
@@ -69,10 +73,15 @@ FlutterStreamHandler
 
     [ZegoPlatformViewFactory release];
 
-    if(self.zegoApi)
+    if(self.zegoApi) {
         self.zegoApi = nil;
-    if(self.mediaSideInfoApi)
+    }
+    if(self.mediaSideInfoApi) {
         self.mediaSideInfoApi = nil;
+    }
+    if (self.mediaRecordApi) {
+        self.mediaRecordApi = nil;
+    }
 }
 
 #pragma mark - ZegoMediaPlayerController 相关工具方法
@@ -229,6 +238,10 @@ Byte toByte(NSString* c) {
     //初始化媒体次要信息模块
     self.mediaSideInfoApi = [[ZegoMediaSideInfo alloc] init];
     [self.mediaSideInfoApi setMediaSideDelegate:self];
+    
+    //初始化本地媒体录制模块
+    self.mediaRecordApi = [[ZegoMediaRecorder alloc] init];
+    [self.mediaRecordApi setMediaRecordDelegage:self];
 
     [[ZegoAudioPlayerController instance] initObject];
     
@@ -921,6 +934,52 @@ Byte toByte(NSString* c) {
     }
 }
 
+#pragma mark - ZegoMediaRecordDelegate
+
+- (void)onMediaRecord:(int)errCode channelIndex:(ZegoAPIMediaRecordChannelIndex)index storagePath:(NSString *)path {
+    FlutterEventSink sink = _eventSink;
+    if (sink) {
+        sink(@{@"type": @(TYPE_MEDIA_RECORD_EVENT),
+               @"method" : @{@"name" : @"onMediaRecord",
+                             @"errorCode": @(errCode),
+                             @"storagePath" : path}
+               });
+    }
+}
+
+- (void)onRecordStatusUpdateFromChannel:(ZegoAPIMediaRecordChannelIndex)index storagePath:(NSString *)path duration:(unsigned int)duration fileSize:(unsigned int)size quality:(ZegoAPIPublishQuality)quality {
+    FlutterEventSink sink = _eventSink;
+    if (sink) {
+        NSMutableDictionary *qualityMap = [[NSMutableDictionary alloc] init];
+        
+        qualityMap[@"cfps"] = @(quality.cfps);
+        qualityMap[@"vencFps"] = @(quality.vencFps);
+        qualityMap[@"fps"] = @(quality.fps);
+        qualityMap[@"kbps"] = @(quality.kbps);
+        qualityMap[@"acapFps"] = @(quality.acapFps);
+        qualityMap[@"afps"] = @(quality.afps);
+        qualityMap[@"akbps"] = @(quality.akbps);
+        
+        qualityMap[@"rtt"] = @(quality.rtt);
+        qualityMap[@"pktLostRate"] = @(quality.pktLostRate);
+        qualityMap[@"quality"] = @(quality.quality);
+        qualityMap[@"isHardwareVenc"] = @(quality.isHardwareVenc);
+        qualityMap[@"videoCodecId"] = @(quality.videoCodecId);
+        
+        
+        qualityMap[@"width"] = @(quality.width);
+        qualityMap[@"height"] = @(quality.height);
+        
+        sink(@{@"type": @(TYPE_MEDIA_RECORD_EVENT),
+               @"method" : @{@"name" : @"onMediaRecordInfoUpdate",
+                             @"storagePath": path,
+                             @"duration" : @(duration),
+                             @"fileSize": @(size),
+                             @"quality": qualityMap}
+               });
+    }
+}
+
 #pragma mark - ZegoSoundLevelDelegate
 
 - (void)onSoundLevelUpdate:(NSArray<ZegoSoundLevelInfo *> *)soundLevels {
@@ -1320,6 +1379,9 @@ Byte toByte(NSString* c) {
 
             [self.mediaSideInfoApi setMediaSideDelegate:nil];
             self.mediaSideInfoApi = nil;
+            
+            [self.mediaRecordApi setMediaRecordDelegage:nil];
+            self.mediaRecordApi = nil;
 
             [[ZegoAudioPlayerController instance] uninitObject];
             
@@ -3483,6 +3545,33 @@ Byte toByte(NSString* c) {
     else if([@"addNoticeLog" isEqualToString:call.method]) {
         NSString *content = args[@"content"];
         [ZegoLog logNotice:content];
+        result(nil);
+    }
+    else if([@"startRecord" isEqualToString:call.method]) {
+        if(self.zegoApi == nil || self.mediaRecordApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        NSDictionary *config = args[@"config"];
+        int recordType = [self numberToIntValue:config[@"recordType"]];
+        int recordFormat = [self numberToIntValue:config[@"recordFormat"]];
+        int interval = [self numberToIntValue:config[@"interval"]];
+        BOOL enableStatusCallback = [self numberToBoolValue:config[@"enableStatusCallback"]];
+        BOOL isFragment = [self numberToBoolValue:config[@"isFragment"]];
+        NSString *storagePath = config[@"storagePath"];
+        
+        [self.mediaRecordApi startRecord:ZEGOAPI_MEDIA_RECORD_CHN_MAIN recordType:ZegoAPIMediaRecordType(recordType) storagePath:storagePath
+                 enableStatusUpdate:enableStatusCallback interval:interval recordFormat:ZegoAPIMediaRecordFormat(recordFormat) isFragment:isFragment];
+        result(nil);
+    }
+    else if([@"stopRecord" isEqualToString:call.method]) {
+        if(self.zegoApi == nil || self.mediaRecordApi == nil) {
+            [self throwSdkNotInitError:result ofMethodName:call.method];
+            return;
+        }
+        
+        [self.mediaRecordApi stopRecord:ZEGOAPI_MEDIA_RECORD_CHN_MAIN];
         result(nil);
     }
     else {
