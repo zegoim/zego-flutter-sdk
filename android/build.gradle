@@ -51,11 +51,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
     }
 
-    // sourceSets {
-    //     main {
-    //         jniLibs.srcDirs = ['libs']
-    //     }
-    // }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
 
     externalNativeBuild {
         cmake {
