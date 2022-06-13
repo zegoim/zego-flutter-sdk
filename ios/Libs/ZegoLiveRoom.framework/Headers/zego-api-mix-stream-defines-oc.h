@@ -32,6 +32,14 @@
  * 字体透明度。默认值：0。取值范围：[0,100]，100 为完全不透明，0 为完全透明。
  */
 @property (nonatomic, assign) int transparency;
+/**
+ * 字体是否有边框。是否必填：否。默认值：false。取值范围：true/false.
+ */
+@property (nonatomic, assign) BOOL border;
+/**
+ * 字体边框颜色，计算公式为为：R + G x 256 + B x 65536，R（红）、G（绿）、B（蓝）的取值范围 [0,255]。是否必填：否。默认值：0。取值范围：[0,16777215]。
+ */
+@property (nonatomic, assign) int borderColor;
 
 @end
 
@@ -56,6 +64,22 @@
  * 字体距离输出画布上边框的距离，单位 px。是否必填：否。默认值：0。
  */
 @property (nonatomic, assign) int top;
+
+@end
+
+/**
+ 为该流的内容设置图片，用于替代视频。复用 layout 布局。
+ */
+@interface ZegoMixImageInfo : NSObject
+
+/**
+ * 图片链接。url为空则显示视频，否则显示图片。
+ * 图片大小限制在 1M 以内。
+ * 支持 JPG 和 PNG 格式。支持以下 2 种使用方式：
+ * URI：将图片提供给 ZEGO 技术支持进行配置，配置完成后会提供图片 URI，例如：preset-id://xxx.jpg。
+ * URL：仅支持 HTTP 协议
+ */
+@property (nonatomic, copy) NSString *url;
 
 @end
 
@@ -116,6 +140,13 @@
  * 文字水印
  */
 @property (nonatomic, strong) ZegoLabelInfo *label;
+
+/**
+ * 图片信息
+ * 为该流的内容设置图片，用于替代视频。
+ * 复用 layout 布局。
+ */
+@property (nonatomic, strong) ZegoMixImageInfo *imageInfo;
 /**
  *  原点在左上角，top/bottom/left/right 定义如下：
  *
@@ -369,6 +400,10 @@
  不存在的输入流列表
  */
 @property (nonatomic, strong) NSMutableArray<NSString *> *nonExistInputList;
+/**
+ * 输入图片加载失败的流列表
+ */
+@property (nonatomic, strong) NSMutableArray<NSString *> *imageErrorInputList;
 /**
  混流输出流列表，每路输出对应一个 ZegoMixStreamOutputResult 对象。
  */

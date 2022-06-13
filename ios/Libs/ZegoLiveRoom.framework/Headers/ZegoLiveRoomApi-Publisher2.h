@@ -203,6 +203,15 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
 - (void)setPublishConfig:(NSDictionary *)config channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 /**
+ 设置自定义直推CDN的配置，可支持TCP, QUIC协议
+ 
+ @param target 自定义直推 CDN 地址的配置信息，详见 [ZegoAPICDNPublishTarget]
+ @param index 推流 channel Index
+ @return true 调用成功 false 调用失败
+ */
+- (bool)setCustomCDNPublishTarget:(ZegoAPICDNPublishTarget *)target channelIndex:(ZegoAPIPublishChannelIndex)index;
+
+/**
  添加已发布直播的转推地址
 
  @param target 添加的转推地址（支持rtmp/avertp）
@@ -593,6 +602,29 @@ typedef void(^ZegoUpdatePublishTargetCompletionBlock)(int errorCode, NSString *s
  @param channelIndex 推流通道, 详见 ZegoAPIPublishChannelIndex
  */
 - (void)setMinVideoBitrateForTrafficControl:(int)bitrate mode:(ZegoAPITrafficControlMinVideoBitrateMode)mode channelIndex:(ZegoAPIPublishChannelIndex)channelIndex;
+
+/**
+ 设置流量控制中视频帧率最小值
+ 
+ * 开启流量控制后，设置视频帧率最小值可以让 SDK 采取用户设置的策略。
+ 
+ * 注意：可以在初始化之后的任意时间调用，需要开启流量控制该参数才会生效。
+
+ @param fps 视频最小帧率(fps)，默认为 0，即尽可能的保持视频流畅
+ */
+- (void)setMinVideoFpsForTrafficControl:(int)fps channelIndex:(ZegoAPIPublishChannelIndex)channelIndex;
+
+/**
+ 设置流量控制中视频分辨率最小值
+ 
+ * 开启流量控制后，设置视频分辨率最小值可以让 SDK 采取用户设置的策略。
+ 
+ * 注意：可以在初始化之后的任意时间调用，需要开启流量控制该参数才会生效。
+
+ @param width 视频分辨率的宽, 默认为 0，即尽可能的保持视频流畅
+ @param height 视频分辨率的高, 默认为 0，即尽可能的保持视频流畅
+ */
+- (void)setMinVideoResolutionForTrafficControl:(int)width height:(int)height channelIndex:(ZegoAPIPublishChannelIndex)channelIndex;
 
 /**
  设置触发流量控制的关注因素

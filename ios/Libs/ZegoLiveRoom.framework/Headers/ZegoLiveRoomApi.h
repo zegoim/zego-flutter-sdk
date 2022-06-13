@@ -395,6 +395,12 @@ typedef void(^ZegoExperimentalAPIBlock)(NSString *params);
  */
 - (bool)setAudioRouteDelegate:(id<ZegoAudioRouteDelegate>)delegate;
 
+/**
+ 获取当前引擎状态
+ @return 详见 ZegoAPIEngineState
+ */
+- (ZegoAPIEngineState)getEngineState;
+
 #endif
 
 #if TARGET_OS_OSX
@@ -853,6 +859,21 @@ typedef enum : NSUInteger {
  */
 - (void)zego_onLiveEvent:(ZegoLiveEvent)event info:(NSDictionary<NSString*, NSString*>*)info;
 
+@optional
+
+/**
+ 推拉流事件回调
+ 
+ * 用于监听推拉流开始、推拉流重试操作等 SDK 事件，及附加信息。
+ 
+ * 注意：extraInfo 目前包括的键有 "url"表示地址, "streamProtocol"表示流协议，包括rtmp,flv,avertp，hls，webrtc等, "netProtocol"表示网络协议，包括tcp,udp,quic, "resourceType"表示资源类型，包括cdn,rtc,l3,
+
+ @param event 发生的直播事件
+ @param streamID 流 ID
+ @param extraInfo 附加信息
+ */
+- (void)zego_onStreamEvent:(ZegoStreamEvent)event stream:(NSString*)streamID extraInfo:(NSDictionary<NSString*, NSString*>*)extraInfo;
+
 @end
 
 @protocol ZegoDeviceEventDelegate <NSObject>
@@ -988,6 +1009,7 @@ typedef enum : NSUInteger {
 /**
  接收实时有序数据的回调
  
+ @attention 同步接口，请勿做耗时操作
  @param data 数据
  @param streamID 流 ID
  */

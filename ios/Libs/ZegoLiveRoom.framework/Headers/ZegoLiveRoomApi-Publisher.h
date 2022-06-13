@@ -485,6 +485,7 @@
  
  * 开启耳返后，主播方讲话会听到自己的声音。
  * 在连接上耳麦时耳返功能才实际生效。
+ * 耳返默认是在采集之后、前处理之前返回，如果需要在前处理之后返回请咨询技术支持。
  
  @param bEnable true 打开，false 关闭。默认 false
  @return true 成功，false 失败
@@ -853,19 +854,37 @@
  * 开启采集后的音频数据语音状态检测（包括麦克风采集和外部音频采集）
  * 
  * @param enable 是否开启
- * @note 检测周期是 3 秒钟
+ * @note 检测周期是 3000 毫秒
  * @note 推流前后设置都有效。预览或者推流后开始回调
  */
 - (void)enableCapturedAudioVADStableStateMonitor:(bool)enable;
 
 /**
+ * 开启采集后的音频数据语音状态检测（包括麦克风采集和外部音频采集）
+ * 
+ * @param enable 是否开启
+ * @param period 检测周期，单位毫秒，有效值范围 [200,10000]
+ * @note 推流前后设置都有效。预览或者推流后开始回调
+ */
+- (void)enableCapturedAudioVADStableStateMonitor:(bool)enable period:(int)period;
+
+/**
  * 开启音频外部预处理后的音频数据的语音状态检测
  * 
  * @param enable 是否开启
- * @note 检测周期是 3 秒钟
+ * @note 检测周期是 3000 毫秒
  * @note 推流前后设置都有效。预览或者推流后开始回调
  */
 - (void)enableAudioPrepVADStableStateMonitor:(bool)enable;
+
+/**
+ * 开启音频外部预处理后的音频数据的语音状态检测
+ * 
+ * @param enable 是否开启
+ * @param period 检测周期，单位毫秒，有效值范围 [200,10000]
+ * @note 推流前后设置都有效。预览或者推流后开始回调
+ */
+- (void)enableAudioPrepVADStableStateMonitor:(bool)enable period:(int)period;
 
 
 #if TARGET_OS_IPHONE

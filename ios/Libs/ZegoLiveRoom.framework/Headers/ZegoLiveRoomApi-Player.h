@@ -524,6 +524,17 @@
  */
 - (int)setPlayStreamsAlignmentProperty:(int)alignment;
 
+
+/**
+ 拉流时设置的Token即将过期，调用该 API 变更。
+
+ @param token 设置的 Token
+ @param streamID 播放流 ID
+ @return true 表示成功，false 表示失败
+ @attention 拉流之后调用，若拉流时未设 appid，该接口无效。
+ */
+- (bool)updatePlayToken:(NSData*)token streamID:(NSString *)streamID;
+
 @end
 
 

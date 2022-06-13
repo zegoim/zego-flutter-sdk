@@ -3546,6 +3546,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                     mEventSink.success(returnMap);
                 }
             }
+
+            @Override
+            public void onStreamEvent(int i, String s, HashMap<String, String> hashMap) {
+
+            }
         });
 
         mZegoLiveRoom.setZegoAVEngineCallback(new IZegoAVEngineCallback() {

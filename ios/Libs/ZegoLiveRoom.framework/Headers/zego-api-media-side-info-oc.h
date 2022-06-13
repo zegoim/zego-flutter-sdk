@@ -12,7 +12,9 @@
 /**
  接收到媒体次要信息
  
- * 调用 ZegoMediaSideInfo -setMediaSideDelegate: 设置了回调监听，且主播端已成功发送了媒体次要信息，SDK 通过此 API 通知拉流方收到媒体次要信息。
+ * 注意：
+ * 1.调用 ActivateVideoPlayStream 或 ActivateAllVideoPlayStream 设置只拉音频流时，将无法接收媒体次要信息。
+ * 2.调用 ZegoMediaSideInfo -setMediaSideDelegate: 设置了回调监听，且主播端已成功发送了媒体次要信息，SDK 通过此 API 通知拉流方收到媒体次要信息。
  
  @param  data  接收到的媒体信息数据（具体内容参考官网对应文档中的格式说明）
  @param  streamID  当前流ID信息，标记当前回调的信息属于哪条流。

@@ -453,6 +453,7 @@
  预加载资源
  
  @param path 媒体文件的路径
+ @note 如果是视频, 会将首帧画面显示在显示控件上(通过 setView 设置的). 之后需要播放资源时请调用 Resume 接口
  */
 - (void)load:(NSString *)path;
 
@@ -462,6 +463,7 @@
  @param path 媒体文件的路径
  @param position 指定开始播放的进度,单位毫秒
  @note 当 position 超过播放总时长，将从头开始播放
+ @note 如果是视频, 会将首帧画面显示在显示控件上(通过 setView 设置的). 之后需要播放资源时请调用 Resume 接口
  */
 - (void)load:(NSString *)path startPosition:(long)position;
 
@@ -471,6 +473,7 @@
  @param data 媒体数据
  @param position 指定开始播放的进度,单位毫秒
  @note 当 position 超过播放总时长，将从头开始播放
+ @note 如果是视频, 会将首帧画面显示在显示控件上(通过 setView 设置的). 之后需要播放资源时请调用 Resume 接口
  */
 - (void)loadMediaData:(NSData *)data startPosition:(long)position;
 
@@ -481,6 +484,7 @@
  @param len 媒体数据的大小
  @param position 指定开始播放的进度,单位毫秒
  @note 当 position 超过播放总时长，将从头开始播放
+ @note 如果是视频, 会将首帧画面显示在显示控件上(通过 setView 设置的). 之后需要播放资源时请调用 Resume 接口
  */
 - (void)loadMediaData:(unsigned char *)data dataLen:(int)len startPosition:(long)position;
 
@@ -490,6 +494,7 @@
  @param resourceId 从版权音乐模块获取的资源 ID
  @param position 指定开始播放的进度,单位毫秒
  @note 当 position 超过播放总时长，将从头开始播放
+ @note 如果是视频, 会将首帧画面显示在显示控件上(通过 setView 设置的). 之后需要播放资源时请调用 Resume 接口
  */
 -(void)loadCopyrightedMusic:(NSString*)resourceId startPosition : (long)position;
 

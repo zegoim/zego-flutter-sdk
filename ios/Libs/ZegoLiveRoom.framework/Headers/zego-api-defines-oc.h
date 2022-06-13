@@ -8,13 +8,13 @@
 #ifndef zego_api_defines_oc_h
 #define zego_api_defines_oc_h
 
-#import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
+#import <Foundation/Foundation.h>
 
 #ifdef __cplusplus
-#define ZEGO_EXTERN     extern "C"
+#define ZEGO_EXTERN extern "C"
 #else
-#define ZEGO_EXTERN     extern
+#define ZEGO_EXTERN extern
 #endif
 
 /** 流ID，值为 NSString */
@@ -50,7 +50,7 @@ ZEGO_EXTERN NSString *const kPublishCDNTarget;
 /** AudioSession相关配置信息的key, 值为 NSString */
 ZEGO_EXTERN NSString *const kZegoConfigKeepAudioSesionActive;
 
-typedef unsigned int	uint32;
+typedef unsigned int uint32;
 
 /** 配置返回错误类型 */
 typedef enum {
@@ -65,11 +65,11 @@ typedef enum {
 /** 本地预览视频视图的模式 */
 typedef enum {
     /** 等比缩放，可能有黑边，SDK 默认值 */
-    ZegoVideoViewModeScaleAspectFit     = 0,
+    ZegoVideoViewModeScaleAspectFit = 0,
     /** 等比缩放填充整View，可能有部分被裁减 */
-    ZegoVideoViewModeScaleAspectFill    = 1,
+    ZegoVideoViewModeScaleAspectFill = 1,
     /** 填充整个View */
-    ZegoVideoViewModeScaleToFill        = 2,
+    ZegoVideoViewModeScaleToFill = 2,
 } ZegoVideoViewMode;
 
 typedef enum {
@@ -81,18 +81,18 @@ typedef enum {
     ZegoVideoMirrorModePreviewCaptureBothNoMirror = 2,
     /** 预览不启用镜像，推流启用镜像 */
     ZegoVideoMirrorModePreviewNoMirrorPublishMirror = 3
-}ZegoVideoMirrorMode;
+} ZegoVideoMirrorMode;
 
 /** 采集旋转角度，逆时针旋转 */
 typedef enum {
     /** 旋转 0 度 */
-    CAPTURE_ROTATE_0    = 0,
+    CAPTURE_ROTATE_0 = 0,
     /** 旋转 90 度 */
-    CAPTURE_ROTATE_90   = 90,
+    CAPTURE_ROTATE_90 = 90,
     /** 旋转 180 度 */
-    CAPTURE_ROTATE_180  = 180,
+    CAPTURE_ROTATE_180 = 180,
     /** 旋转 270 度 */
-    CAPTURE_ROTATE_270  = 270
+    CAPTURE_ROTATE_270 = 270
 } CAPTURE_ROTATE;
 
 /** 视频编解码器. */
@@ -110,6 +110,17 @@ typedef enum {
 
 } ZegoVideoCodecAvc;
 
+/** 流的资源类型. */
+typedef enum {
+    /** CDN */
+    RESOURCE_TYPE_CDN = 0,
+    /** RTC */
+    RESOURCE_TYPE_RTC = 1,
+    /** L3 */
+    RESOURCE_TYPE_L3 = 2
+
+} ZegoResourceType;
+
 /** 视频分层类型 */
 typedef enum {
     /**< 根据网络状态选择图层  */
@@ -126,26 +137,30 @@ typedef enum {
 typedef enum {
     /**
      ZEGO 定义的打包类型，跟视频编码器产生的信息不存兼容性问题。
-     <br>但是在其它 CDN 上转码视频的时候，其它 CDN 基本上不支持提取这种方式打包的信息数据，转码完成后再从其它 CDN 拉流时，可能就丢失了这些次媒体信息。
-     <br>ZEGO CDN 转码支持提取此种方式打包的信息数据。
+     <br>但是在其它 CDN 上转码视频的时候，其它 CDN 基本上不支持提取这种方式打包的信息数据，转码完成后再从其它 CDN
+     拉流时，可能就丢失了这些次媒体信息。 <br>ZEGO CDN 转码支持提取此种方式打包的信息数据。
      */
     SideInfoZegoDefined = 0,
     /**
-     采用 H264 的 SEI (nalu type = 6,payload type = 243) 类型打包，此类型是 SEI 标准未规定的类型，跟视频编码器或者视频文件中的 SEI 不存在冲突性，用户不需要根据 SEI 的内容做过滤。
-     <br>若需要发送 SEI 推荐采用此种类型。
+     采用 H264 的 SEI (nalu type = 6,payload type = 243) 类型打包，此类型是 SEI 标准未规定的类型，跟视频编码器或者视频文件中的 SEI
+     不存在冲突性，用户不需要根据 SEI 的内容做过滤。 <br>若需要发送 SEI 推荐采用此种类型。
      */
     SeiZegoDefined = 1,
     /**
-     采用 H264 的 SEI (nalu type = 6,payload type = 5) 类型打包，H264 标准对于此类型有规定的格式：startcode + nalu type(6) + payload type(5) + len + pay load(uuid + context)+ trailing bits；
-     
-     <br>因为视频编码器自身会产生 payload type 为 5 的 SEI，或者使用视频文件推流时，视频文件中也可能存在这样的 SEI，所以使用此类型时，用户需要把 uuid + context 当作一段 buffer 塞给次媒体的发送接口；
-     
-     <br>为了区别视频编码器自身产生的 SEI，所以对 uuid 有格式要求，即 uuid 16字节的前四个字节固定为 'Z' 'E' 'G' 'O' 四个字符（全部大写），后面12字节用户任意填写；
-     
-     <br>在 SDK 接收端，对于 payload type = 5的 SEI 会根据'ZEGO'字样做过滤，识别出符合要求的 SEI 抛给用户，避免用户收到编码器自身产生的 SEI。
+     采用 H264 的 SEI (nalu type = 6,payload type = 5) 类型打包，H264 标准对于此类型有规定的格式：startcode + nalu type(6) + payload type(5)
+     + len + pay load(uuid + context)+ trailing bits；
+
+     <br>因为视频编码器自身会产生 payload type 为 5 的 SEI，或者使用视频文件推流时，视频文件中也可能存在这样的
+     SEI，所以使用此类型时，用户需要把 uuid + context 当作一段 buffer 塞给次媒体的发送接口；
+
+     <br>为了区别视频编码器自身产生的 SEI，所以对 uuid 有格式要求，即 uuid 16字节的前四个字节固定为 'Z' 'E' 'G' 'O'
+     四个字符（全部大写），后面12字节用户任意填写；
+
+     <br>在 SDK 接收端，对于 payload type = 5的 SEI 会根据'ZEGO'字样做过滤，识别出符合要求的 SEI 抛给用户，避免用户收到编码器自身产生的
+     SEI。
      */
     SeiUserUnregisted = 2
-}MediaInfoType;
+} MediaInfoType;
 
 /**
  SEI发送类型
@@ -174,49 +189,48 @@ typedef enum {
 /** 滤镜特性 */
 typedef enum : NSUInteger {
     /**  不使用滤镜 */
-    ZEGO_FILTER_NONE        = 0,
+    ZEGO_FILTER_NONE = 0,
     /**  简洁 */
-    ZEGO_FILTER_LOMO        = 1,
+    ZEGO_FILTER_LOMO = 1,
     /**  黑白 */
-    ZEGO_FILTER_BLACKWHITE  = 2,
+    ZEGO_FILTER_BLACKWHITE = 2,
     /**  老化 */
-    ZEGO_FILTER_OLDSTYLE    = 3,
+    ZEGO_FILTER_OLDSTYLE = 3,
     /**  哥特 */
-    ZEGO_FILTER_GOTHIC      = 4,
+    ZEGO_FILTER_GOTHIC = 4,
     /**  锐色 */
-    ZEGO_FILTER_SHARPCOLOR  = 5,
+    ZEGO_FILTER_SHARPCOLOR = 5,
     /**  淡雅 */
-    ZEGO_FILTER_FADE        = 6,
+    ZEGO_FILTER_FADE = 6,
     /**  酒红 */
-    ZEGO_FILTER_WINE        = 7,
+    ZEGO_FILTER_WINE = 7,
     /**  青柠 */
-    ZEGO_FILTER_LIME        = 8,
+    ZEGO_FILTER_LIME = 8,
     /**  浪漫 */
-    ZEGO_FILTER_ROMANTIC    = 9,
+    ZEGO_FILTER_ROMANTIC = 9,
     /**  光晕 */
-    ZEGO_FILTER_HALO        = 10,
+    ZEGO_FILTER_HALO = 10,
     /**  蓝调 */
-    ZEGO_FILTER_BLUE        = 11,
+    ZEGO_FILTER_BLUE = 11,
     /**  梦幻 */
-    ZEGO_FILTER_ILLUSION    = 12,
+    ZEGO_FILTER_ILLUSION = 12,
     /**  夜色 */
-    ZEGO_FILTER_DARK        = 13
+    ZEGO_FILTER_DARK = 13
 } ZegoFilter;
 
 /** 美颜特性 */
 typedef enum : NSUInteger {
     /**  无美颜 */
-    ZEGO_BEAUTIFY_NONE          = 0,
+    ZEGO_BEAUTIFY_NONE = 0,
     /**  磨皮 */
-    ZEGO_BEAUTIFY_POLISH        = 1,
+    ZEGO_BEAUTIFY_POLISH = 1,
     /**  全屏美白，一般与磨皮结合使用：ZEGO_BEAUTIFY_POLISH | ZEGO_BEAUTIFY_WHITEN */
-    ZEGO_BEAUTIFY_WHITEN        = 1 << 1,
+    ZEGO_BEAUTIFY_WHITEN = 1 << 1,
     /**  皮肤美白 */
-    ZEGO_BEAUTIFY_SKINWHITEN    = 1 << 2,
+    ZEGO_BEAUTIFY_SKINWHITEN = 1 << 2,
     /**  锐化 */
-    ZEGO_BEAUTIFY_SHARPEN       = 1 << 3
+    ZEGO_BEAUTIFY_SHARPEN = 1 << 3
 } ZegoBeautifyFeature;
-
 
 /**
  混流图层信息
@@ -244,7 +258,8 @@ typedef enum : NSUInteger {
  */
 @property int right;
 /**
- 音浪ID，用于标识用户（比如拉取混流方可根据此标识明确到混流中的单条流是主播/观众/副主播），soundLevelID 必须大于等于 0 且小于等于 4294967295L（即2^32-1）
+ 音浪ID，用于标识用户（比如拉取混流方可根据此标识明确到混流中的单条流是主播/观众/副主播），soundLevelID 必须大于等于 0 且小于等于
+ 4294967295L（即2^32-1）
  */
 @property unsigned int soundLevelID;
 /**
@@ -272,7 +287,6 @@ typedef enum : NSUInteger {
  */
 
 @end
-
 
 /**
  混流配置
@@ -304,7 +318,8 @@ typedef enum : NSUInteger {
 @property int outputAudioBitrate;
 /**
  混流输出视频分辨率，不确定用什么分辨率时可采用16:9的规格设置。
- <br>此参数中的宽必须大于等于 输入流列表中所有输入流中最大的分辨率宽，即right布局值；此参数中的高必须大于等于 输入流列表中所有输入流中最大的分辨率高，即bottom布局值；且输入流的布局位置不能超出此参数规定的范围。
+ <br>此参数中的宽必须大于等于 输入流列表中所有输入流中最大的分辨率宽，即right布局值；此参数中的高必须大于等于
+ 输入流列表中所有输入流中最大的分辨率高，即bottom布局值；且输入流的布局位置不能超出此参数规定的范围。
  */
 @property CGSize outputResolution;
 /**
@@ -316,12 +331,12 @@ typedef enum : NSUInteger {
 /**
  混流输入流列表，SDK 根据输入流列表中的流进行混流。
  */
-@property (strong) NSMutableArray<ZegoMixStreamInfo*> *inputStreamList;
+@property (strong) NSMutableArray<ZegoMixStreamInfo *> *inputStreamList;
 /**
  用户自定义数据
  <b>注意：</b>1. userData自定义的数据通过媒体次要信息的 -onRecvMediaSideInfo:ofStream: 接口回调出来。
  */
-@property NSData* userData;
+@property NSData *userData;
 /**
  混流声道数，1-单声道，2-双声道，默认为单声道。
  */
@@ -347,8 +362,7 @@ typedef enum : NSUInteger {
 @end
 
 /** 视频编码码率控制策略 */
-typedef enum
-{
+typedef enum {
     /** 平均码率 */
     ZEGOAPI_RC_ABR = 0,
     /** 恒定码率 */
@@ -360,31 +374,28 @@ typedef enum
 } ZegoAPIVideoEncoderRateControlStrategy;
 
 /** 发布直播的模式 */
-enum ZegoAPIPublishFlag
-{
+enum ZegoAPIPublishFlag {
     /**  连麦模式，直播流会推到即构服务器，然后转推到CDN，默认连麦者之间从即构服务器拉流，观众从 CDN 拉流 */
-    ZEGOAPI_JOIN_PUBLISH    = 0,
-    ZEGO_JOIN_PUBLISH       = ZEGOAPI_JOIN_PUBLISH,
+    ZEGOAPI_JOIN_PUBLISH = 0,
+    ZEGO_JOIN_PUBLISH = ZEGOAPI_JOIN_PUBLISH,
     /**  混流模式，同连麦模式，有混流需求时使用 */
-    ZEGOAPI_MIX_STREAM      = 1 << 1,
-    ZEGO_MIX_STREAM         = ZEGOAPI_MIX_STREAM,
+    ZEGOAPI_MIX_STREAM = 1 << 1,
+    ZEGO_MIX_STREAM = ZEGOAPI_MIX_STREAM,
     /**  单主播模式，直播流会直接推到CDN，不经过即构服务器 */
-    ZEGOAPI_SINGLE_ANCHOR   = 1 << 2,
-    ZEGO_SINGLE_ANCHOR      = ZEGOAPI_SINGLE_ANCHOR,
+    ZEGOAPI_SINGLE_ANCHOR = 1 << 2,
+    ZEGO_SINGLE_ANCHOR = ZEGOAPI_SINGLE_ANCHOR,
 };
 
 typedef enum ZegoAPIPublishFlag ZegoApiPublishFlag;
 
 /** 设备模块类型 */
-enum ZegoAPIModuleType
-{
+enum ZegoAPIModuleType {
     /** 音频采集播放设备 */
-    ZEGOAPI_MODULE_AUDIO            = 0x4 | 0x8,
+    ZEGOAPI_MODULE_AUDIO = 0x4 | 0x8,
 };
 
 /** 推流质量 */
-typedef struct
-{
+typedef struct {
     /** 视频采集帧率(fps) */
     double cfps;
     /** 视频编码帧率(fps) */
@@ -393,21 +404,21 @@ typedef struct
     double fps;
     /** 视频码率(kbps) */
     double kbps;
-    
+
     /** 音频采集帧率(fps) */
     double acapFps;
     /** 音频网络发送帧率(fps) */
     double afps;
     /** 音频码率(kbps) */
     double akbps;
-    
+
     /** 本机到即构服务器的往返时延(ms) */
     int rtt;
     /** 发送丢包(0~255)，数值越大丢包越高，丢包率 = pktLostRate/255 */
     int pktLostRate;
     /** 本机综合网络质量(0~3)，分别对应优、良、中、差 */
     int quality;
-    
+
     /** 是否开启硬件编码 */
     bool isHardwareVenc;
     /** 视频编码格式 参考ZegoVideoCodecAvc  */
@@ -423,27 +434,25 @@ typedef struct
     double audioBytes;
     /** 已发送的视频字节数 */
     double videoBytes;
-    
+
     /** 当前 APP 的 CPU 使用率 */
     double cpuAppUsage;
     /** 当前系统的 CPU 使用率 */
     double cpuTotalUsage;
-    
+
     /** 当前 APP 的内存使用率 */
     double memoryAppUsage;
     /** 当前系统的内存使用率 */
     double memoryTotalUsage;
     /** 当前 APP 的内存使用量,单位 MB */
     double memoryAppUsed;
-    
+
 } ZegoAPIPublishQuality;
 
 typedef ZegoAPIPublishQuality ZegoApiPublishQuality;
 
-
 /** 拉流质量 */
-typedef struct
-{
+typedef struct {
     /** 视频帧率(网络接收) */
     double fps;
     /** 视频帧率(dejitter) */
@@ -454,7 +463,7 @@ typedef struct
     double vrndFps;
     /** 视频码率(kb/s) */
     double kbps;
-    
+
     /** 音频帧率(网络接收) */
     double afps;
     /** 音频帧率(dejitter) */
@@ -469,7 +478,7 @@ typedef struct
     double audioBreakRate;
     /** 视频卡顿次数 */
     double videoBreakRate;
-    
+
     /** 延时(ms) */
     int rtt;
     /** 丢包率(0~255) */
@@ -482,9 +491,12 @@ typedef struct
     int quality;
     /** 语音延时(ms) */
     int delay;
-    /** 音质评分。-1 表示未知。小于 2 表示音质非常差，杂音频现，大量语义丢失，完全无法交流。2 到 2.5 表示音质很差，偶有杂音，部分语义丢失，难以交流。2.5 到 3 表示音质较差，卡顿频繁，需要集中精力才能听清。3 到 3.5 表示音质一般，偶有卡顿，不是非常流畅，需要一点注意力才能听清。3.5 到 4 表示音质较好，偶有音质损伤，单依然清晰。大于 4 表示音质佳，清晰流畅。 */
+    /** 音质评分。-1 表示未知。小于 2 表示音质非常差，杂音频现，大量语义丢失，完全无法交流。2 到 2.5
+     * 表示音质很差，偶有杂音，部分语义丢失，难以交流。2.5 到 3 表示音质较差，卡顿频繁，需要集中精力才能听清。3 到 3.5
+     * 表示音质一般，偶有卡顿，不是非常流畅，需要一点注意力才能听清。3.5 到 4 表示音质较好，偶有音质损伤，单依然清晰。大于 4
+     * 表示音质佳，清晰流畅。 */
     double mos;
-    
+
     /** 是否硬解 */
     bool isHardwareVdec;
     /** 视频解码格式 参考ZegoVideoCodecAvc */
@@ -500,20 +512,21 @@ typedef struct
     double audioBytes;
     /** 已接收的视频字节数 */
     double videoBytes;
-    
+
     /** 当前 APP 的 CPU 使用率 */
     double cpuAppUsage;
     /** 当前系统的 CPU 使用率 */
     double cpuTotalUsage;
-    
+
     /** 当前 APP 的内存使用率 */
     double memoryAppUsage;
     /** 当前系统的内存使用率 */
     double memoryTotalUsage;
     /** 当前 APP 的内存使用量,单位 MB */
     double memoryAppUsed;
-    
-    /** 音画不同步, 单位毫秒, 小于0表示视频超前音频的毫秒数, 大于0表示视频滞后音频的毫秒数, 等于0表示无差别. 当绝对值小于200，可基本认为音画同步，当绝对值连续10秒大于200可以认为异常 */
+
+    /** 音画不同步, 单位毫秒, 小于0表示视频超前音频的毫秒数, 大于0表示视频滞后音频的毫秒数, 等于0表示无差别.
+     * 当绝对值小于200，可基本认为音画同步，当绝对值连续10秒大于200可以认为异常 */
     int avTimestampDiff;
 
     /** 累计音频卡顿次数 */
@@ -532,7 +545,7 @@ typedef struct
     unsigned int videoCumulativeDecodeTime;
     /** 累计视频卡顿比例(%) */
     double videoCumulativeBreakRate;
-    
+
 } ZegoAPIPlayQuality;
 
 typedef ZegoAPIPlayQuality ZegoApiPlayQuality;
@@ -561,15 +574,15 @@ typedef enum : NSUInteger {
     ZEGOAPI_TRAFFIC_CONTROL_ADAPTIVE_FPS = 1,
     /** 自适应分辨率*/
     ZEGOAPI_TRAFFIC_CONTROL_ADAPTIVE_RESOLUTION = 1 << 1,
-    
+
     /** 音频流量控制 */
     ZEGOAPI_TRAFFIC_CONTROL_AUDIO_BITRATE = 1 << 2,
-    
+
     /**< 废弃 */
     ZEGOAPI_TRAFFIC_NONE = ZEGOAPI_TRAFFIC_CONTROL_BASIC,
     ZEGOAPI_TRAFFIC_FPS = ZEGOAPI_TRAFFIC_CONTROL_ADAPTIVE_FPS,
     ZEGOAPI_TRAFFIC_RESOLUTION = ZEGOAPI_TRAFFIC_CONTROL_ADAPTIVE_RESOLUTION,
-    
+
 } ZegoAPITrafficControlProperty;
 
 /** 开启流量控制视频码率低于设置的视频最低码率时 SDK 推流策略 */
@@ -578,7 +591,7 @@ typedef enum : NSUInteger {
     ZEGOAPI_TRAFFIC_CONTROL_MIN_VIDEO_BITRATE_NO_VIDEO = 0,
     /** 低于设置的最低码率时，视频以极低的帧率发送 （不超过3fps) */
     ZEGOAPI_TRAFFIC_CONTROL_MIN_VIDEO_BITRATE_ULTRA_LOW_FPS
-    
+
 } ZegoAPITrafficControlMinVideoBitrateMode;
 
 /** 音频设备模式 */
@@ -602,34 +615,32 @@ typedef enum : NSUInteger {
 } ZegoAPIAudioDeviceMode;
 
 /** 音频录制时，指定音源类型 */
-enum ZegoAPIAudioRecordMask
-{
+enum ZegoAPIAudioRecordMask {
     /** 关闭音频录制 */
-    ZEGOAPI_AUDIO_RECORD_NONE      = 0x0,
+    ZEGOAPI_AUDIO_RECORD_NONE = 0x0,
     /** 打开采集录制，即录制推流端音频 */
-    ZEGOAPI_AUDIO_RECORD_CAP       = 0x01,
+    ZEGOAPI_AUDIO_RECORD_CAP = 0x01,
     /** 打开渲染录制，即录制拉流端音频 */
-    ZEGOAPI_AUDIO_RECORD_RENDER    = 0x02,
+    ZEGOAPI_AUDIO_RECORD_RENDER = 0x02,
     /** 打开采集和渲染混音结果录制，即录制推流、拉流端混音音频 */
-    ZEGOAPI_AUDIO_RECORD_MIX       = 0x04
+    ZEGOAPI_AUDIO_RECORD_MIX = 0x04
 };
 
 /** 音频录制配置信息 */
-typedef struct
-{
+typedef struct {
     /** 启用音频源选择，详细请参考 ZegoAPIAudioRecordMask */
     unsigned int mask;
     /** 采样率 支持 8000, 16000, 22050, 24000, 32000, 44100, 48000 */
     int sampleRate;
     /** 声道数 支持1(单声道) 或 2(双声道) */
     int channels;
-    
+
 } ZegoAPIAudioRecordConfig;
 
 /** 推流通道 */
-typedef enum :  NSUInteger {
+typedef enum : NSUInteger {
     /** 主推流通道，默认*/
-    ZEGOAPI_CHN_MAIN        =   0,
+    ZEGOAPI_CHN_MAIN = 0,
     /** 第二路推流通道, 默认没有声音，需要指定音频源。*/
     ZEGOAPI_CHN_AUX,
 } ZegoAPIPublishChannelIndex;
@@ -643,8 +654,7 @@ typedef enum : NSUInteger {
 } ZegoAPIAudioDeviceType;
 
 /** 设备状态 */
-typedef enum : NSUInteger
-{
+typedef enum : NSUInteger {
     /**< 添加设备 */
     ZEGOAPI_DEVICE_ADD = 0,
     /**< 删除设备 */
@@ -652,8 +662,7 @@ typedef enum : NSUInteger
 } ZegoAPIDeviceState;
 
 /** 设备状态 */
-typedef enum : NSInteger
-{
+typedef enum : NSInteger {
     /**< 设备状态未知，由于推流端的 SDK 版本低于 6.3.0 */
     ZEGOAPI_DEVICE_UNKNOWN = -1,
     /**< 设备已打开 */
@@ -663,8 +672,7 @@ typedef enum : NSInteger
 } ZegoAPIDeviceStatus;
 
 /** 音量类型 */
-typedef enum : NSUInteger
-{
+typedef enum : NSUInteger {
     /**< 设备音量 */
     ZEGOAPI_VOLUME_ENDPOINT = 0,
     /**< App 音量 */
@@ -673,9 +681,9 @@ typedef enum : NSUInteger
 
 @interface ZegoAPIDeviceInfo : NSObject
 /** 设备ID */
-@property (copy) NSString* deviceId;
+@property (copy) NSString *deviceId;
 /** 设备名 */
-@property (copy) NSString* deviceName;
+@property (copy) NSString *deviceName;
 
 @end
 
@@ -689,10 +697,9 @@ typedef enum : NSUInteger
 
 @end
 
-typedef enum : NSUInteger
-{
+typedef enum : NSUInteger {
     /**< 默认模式,SDK会根据拉流设置的rtmpUrls/flvUrls/shouldSwitchServer参数和即构的后台配置自动选择拉流资源 */
-    DEFAULT= 0,
+    DEFAULT = 0,
     /**<只从CDN拉流 */
     CDN_ONLY = 1,
     /**< 只从L3拉流,会忽略rtmpUrls/flvUrls/shouldSwitchServer 参数 */
@@ -702,36 +709,83 @@ typedef enum : NSUInteger
 } ZegoAPIStreamResourceMode;
 
 /**
+ 支持的 CDN 网络协议
+ */
+typedef NS_ENUM(NSUInteger, ZegoAPICDNProtocol) {
+    /**
+     TCP
+    */
+    ZEGOAPI_CDN_PROTOCOL_TCP = 1,
+    /**
+     QUIC
+    */
+    ZEGOAPI_CDN_PROTOCOL_QUIC = 2
+};
+
+/**
+ 自定义拉流 CDN 地址信息
+*/
+@interface ZegoAPICDNPlayUrlInfo : NSObject
+/** 拉流地址 */
+@property (nonatomic, copy) NSString *url;
+/** 网络协议 */
+@property (nonatomic, assign) ZegoAPICDNProtocol protocol;
+/** 支持的quic版本列表 */
+@property (nonatomic, strong) NSArray<NSString *> *quicVersions;
+
+@end
+
+/**
+ 跨 APP 拉流信息
+*/
+@interface ZegoAPICrossAppInfo : NSObject
+/** 跨app拉流时的目标appid */
+@property (nonatomic, assign) unsigned int appid;
+/** 拉流所需的Token */
+@property (nonatomic, strong) NSData *token;
+@end
+
+/**
  多媒体流附加信息
  */
 @interface ZegoAPIStreamExtraPlayInfo : NSObject
 
 /** 流参数 */
-@property (copy) NSString* params;
+@property (nonatomic, copy) NSString *params;
 /** 解密密钥（支持16/24/32字节） */
-@property (strong) NSData* decryptKey;
-/** rtmp 地址 */
-@property (strong) NSArray<NSString*>* rtmpUrls;
-/** flv 地址 */
-@property (strong) NSArray<NSString*>* flvUrls;
+@property (nonatomic, strong) NSData *decryptKey;
+/** rtmp 地址，使用 TCP 网络协议 */
+@property (nonatomic, strong) NSArray<NSString *> *rtmpUrls;
+/** flv 地址，使用 TCP 网络协议 */
+@property (nonatomic, strong) NSArray<NSString *> *flvUrls;
+
+/** rtmp 地址，可选择 TCP 或者 QUIC 网络协议 */
+@property (nonatomic, strong) NSArray<ZegoAPICDNPlayUrlInfo *> *advancedRtmpUrls;
+/** flv 地址，可选择 TCP 或者 QUIC 网络协议 */
+@property (nonatomic, strong) NSArray<ZegoAPICDNPlayUrlInfo *> *advancedFlvUrls;
+
 /** 连麦时是否切换服务器 */
-@property (assign) BOOL shouldSwitchServer;
+@property (nonatomic, assign) BOOL shouldSwitchServer;
 
 /** 自定义拉流模式 默认auto */
-@property (assign) ZegoAPIStreamResourceMode mode;
+@property (nonatomic, assign) ZegoAPIStreamResourceMode mode;
 
 /** 源流编码模式 默认VIDEO_CODEC_UNKNOWN */
-@property (assign) ZegoVideoCodecAvc videoCodecID;
+@property (nonatomic, assign) ZegoVideoCodecAvc videoCodecID;
+
+/** 源流资源类型 默认RESOURCE_TYPE_RTC */
+@property (nonatomic, assign) ZegoResourceType sourceResourceType;
+
+/** 跨 APP 拉流信息 */
+@property (nonatomic, strong) ZegoAPICrossAppInfo *crossAppInfo;
 
 @end
-
 
 /**
  转推CDN状态
  */
 
-typedef enum : NSUInteger
-{
+typedef enum : NSUInteger {
     /**< 转推停止 */
     ZEGOAPI_RELAY_STOP = 0,
     /**< 正在转推 */
@@ -740,10 +794,9 @@ typedef enum : NSUInteger
     ZEGOAPI_RELAY_RETRY = 2,
 } ZegoAPIStreamRelayCDNState;
 
-typedef enum : NSUInteger
-{
+typedef enum : NSUInteger {
     /**< 无 */
-    ZEGOAPI_RELAY_NONE = 0,                       
+    ZEGOAPI_RELAY_NONE = 0,
     /**< 服务器错误 */
     ZEGOAPI_RELAY_SERVER_ERROR = 8,
     /**< 握手失败 */
@@ -806,8 +859,7 @@ typedef enum : NSUInteger
 /**
  ACE 模式
  */
-typedef enum : NSUInteger
-{
+typedef enum : NSUInteger {
     /** 激进模式 */
     ZEGOAPI_AEC_MODE_ARRGRESSIVE,
     /** 中等模式 */
@@ -819,19 +871,18 @@ typedef enum : NSUInteger
 /**
  ANS 模式
  */
-typedef enum : NSUInteger
-{
+typedef enum : NSUInteger {
     /** 轻度模式 */
     ZEGOAPI_ANS_MODE_LOW = 0,
     /** 中等模式 */
     ZEGOAPI_ANS_MODE_MEDIUM,
     /** 激进模式 */
     ZEGOAPI_ANS_MODE_HIGH,
+    /** AI 模式 */
+    ZEGOAPI_ANS_MODE_AI,
 } ZegoAPIANSMode;
 
-
-typedef enum : NSInteger
-{
+typedef enum : NSInteger {
     /** 一般性错误 */
     ZEGOAPI_DEVICE_ERROR_GENERIC = -1,
     /** 无效设备 ID */
@@ -854,8 +905,7 @@ typedef enum : NSInteger
     ZEGOAPI_DEVICE_ERROR_MAGNETIC_CASE = -11,
 } ZegoAPIDeviceErrorCode;
 
-typedef enum : NSInteger
-{
+typedef enum : NSInteger {
     /** 一般性错误 */
     ZEGOAPI_DEVICE_ERROR_REASON_GENERIC = -1,
     /** 无效设备 ID */
@@ -893,11 +943,10 @@ typedef enum : NSInteger
     /** 系统压力过大 */
     ZEGOAPI_DEVICE_ERROR_REASON_SYSTEM_PRESSURE = 7,
 
-}ZegoAPIDeviceErrorReason;
+} ZegoAPIDeviceErrorReason;
 
 /** 多路混音模式 */
-typedef NS_ENUM(NSInteger, ZegoAPIAudioMixMode)
-{
+typedef NS_ENUM(NSInteger, ZegoAPIAudioMixMode) {
     /** 关闭效果 */
     ZEGOAPI_AUDIO_MIX_MODE_RAW = 0,
     /** 聚焦效果 */
@@ -905,8 +954,7 @@ typedef NS_ENUM(NSInteger, ZegoAPIAudioMixMode)
 };
 
 /** 音频路由类型 */
-typedef NS_ENUM(NSInteger, ZegoAPIAudioRoute)
-{
+typedef NS_ENUM(NSInteger, ZegoAPIAudioRoute) {
     /** 扬声器 */
     ZEGOAPI_AUDIO_ROUTE_SPEAKER = 0,
     /** 耳机 */
@@ -919,12 +967,11 @@ typedef NS_ENUM(NSInteger, ZegoAPIAudioRoute)
     ZEGOAPI_AUDIO_ROUTE_USB_AUDIO,
     /** air play */
     ZEGOAPI_AUDIO_ROUTE_AIR_PLAY
-    
+
 };
 
 /** 网络类型 */
-typedef NS_ENUM(NSInteger, ZegoAPINetType)
-{
+typedef NS_ENUM(NSInteger, ZegoAPINetType) {
     /** 无网络 */
     ZEGOAPI_NT_NONE = 0,
     /** 网线 */
@@ -932,20 +979,19 @@ typedef NS_ENUM(NSInteger, ZegoAPINetType)
     /**  WIFI */
     ZEGOAPI_NT_WIFI = 2,
     /** 2G */
-    ZEGOAPI_NT_2G   = 3,
+    ZEGOAPI_NT_2G = 3,
     /** 3G */
-    ZEGOAPI_NT_3G   = 4,
+    ZEGOAPI_NT_3G = 4,
     /** 4G */
-    ZEGOAPI_NT_4G   = 5,
+    ZEGOAPI_NT_4G = 5,
     /** 5G */
-    ZEGOAPI_NT_5G   = 6,
+    ZEGOAPI_NT_5G = 6,
     /** 未知类型 */
     ZEGOAPI_NT_UNKNOWN = 32
 };
 
 /** sdk 任务类型*/
-typedef NS_ENUM(NSInteger, ZegoAPITaskType)
-{
+typedef NS_ENUM(NSInteger, ZegoAPITaskType) {
     /** 正常任务 */
     ZEGOAPI_TASK_NORMAL = 1,
     /** 延时类任务(如定时器) */
@@ -953,8 +999,7 @@ typedef NS_ENUM(NSInteger, ZegoAPITaskType)
 };
 
 /** 编解码器错误码 */
-typedef NS_ENUM(NSInteger, ZegoAPICodecError)
-{
+typedef NS_ENUM(NSInteger, ZegoAPICodecError) {
     /** 成功 */
     ZEGOAPI_CODEC_ERROR_NONE = 0,
     /** 不支持 */
@@ -966,8 +1011,7 @@ typedef NS_ENUM(NSInteger, ZegoAPICodecError)
 };
 
 /** 触发流量控制的因素 */
-typedef NS_ENUM(NSInteger, ZegoAPITrafficControlFocusOn)
-{
+typedef NS_ENUM(NSInteger, ZegoAPITrafficControlFocusOn) {
     /** 只关注本地网络 */
     ZEGOAPI_TRAFFIC_CONTROL_FOCUS_ON_LOCAL_ONLY = 0,
     /** 关注本地网络, 同时也兼顾远端网络,目前只在 1v1 场景下有效 */
@@ -975,14 +1019,13 @@ typedef NS_ENUM(NSInteger, ZegoAPITrafficControlFocusOn)
 };
 
 /** 视频数据来源，例如想设置辅路推流视频数据直接复制主路视频数据，则可以设置为 VIDEO_SRC_MAIN_PUBLISH_CHN */
-typedef NS_ENUM(NSInteger, ZegoVideoSourceType)
-{
+typedef NS_ENUM(NSInteger, ZegoVideoSourceType) {
     /** 默认采集逻辑，即如果有设置视频外部采集工厂，则使用外部采集，否则使用内部采集 */
     VIDEO_SRC_DEFAULT = 0,
     /** 不启动采集，即没有视频数据 */
     ZEGOAPI_VIDEO_SRC_NONE = 1,
     /** 视频源来自于摄像头 */
-    ZEGOAPI_VIDEO_SRC_CAMERA  = 2,
+    ZEGOAPI_VIDEO_SRC_CAMERA = 2,
     /** 视频源来自于外部采集。当没有设置外部采集工厂时，将自动修正为 VIDEO_SRC_CAMERA */
     ZEGOAPI_VIDEO_SRC_EXTERNAL_CAPTURE = 3,
     /** 视频源来自于主路推流。当推主路流时，不能设置为此值 */
@@ -990,8 +1033,7 @@ typedef NS_ENUM(NSInteger, ZegoVideoSourceType)
 };
 
 /** 视频编码模式 */
-typedef NS_ENUM(NSInteger, ZegoAPIVideoEncodeMode)
-{
+typedef NS_ENUM(NSInteger, ZegoAPIVideoEncodeMode) {
     /** 低延时 */
     ZEGOAPI_VIDEO_ENCODE_MODE_LOW_DELAY = 0,
     /** 低码率 */
@@ -1001,8 +1043,7 @@ typedef NS_ENUM(NSInteger, ZegoAPIVideoEncodeMode)
 /**
 语音检测结果类型
 */
-typedef NS_ENUM(NSInteger, ZegoAPIAudioVADType)
-{
+typedef NS_ENUM(NSInteger, ZegoAPIAudioVADType) {
     /** 噪声 */
     ZEGOAPI_AUDIO_VAD_TYPE_NOISE = 0,
     /** 人声 */
@@ -1012,8 +1053,7 @@ typedef NS_ENUM(NSInteger, ZegoAPIAudioVADType)
 /**
  视频编码规格
  */
-typedef NS_ENUM(NSInteger, ZegoAPIEncodeProfile)
-{
+typedef NS_ENUM(NSInteger, ZegoAPIEncodeProfile) {
     /**
      Baseline 级别的视频编码规格，解码消耗较低，画面效果较差，一般用于低阶或需要额外容错的应用。
      */
@@ -1028,5 +1068,63 @@ typedef NS_ENUM(NSInteger, ZegoAPIEncodeProfile)
     ZEGOAPI_ENCODE_PROFILE_HIGH = 2,
 };
 
+/**
+ 采集视频朝向模式
+ */
+typedef NS_ENUM(NSUInteger, ZegoOrientationMode) {
+    /**
+     自定义模式，开发者通过 SDK 接口自己控制采集视频旋转角度及分辨率
+    */
+    ZEGOAPI_ORIENTATION_MODE_CUSTOM = 0,
+    /**
+     自适应模式，SDK 内部根据 App 朝向自动匹配合适的推流分辨率及旋转角度，拉流端自动对视频画面进行合适的旋转及裁剪
+    */
+    ZEGOAPI_ORIENTATION_MODE_ADAPTIVE = 1
+};
+
+/**  */
+typedef NS_ENUM(NSUInteger, ZegoStreamEvent) {
+    /** 开始推流 */
+    ZEGOAPI_STREAM_EVENT_PUBLISH_START = 100,
+    /** 推流成功 */
+    ZEGOAPI_STREAM_EVENT_PUBLISH_SUCCESS = 101,
+    /** 推流失败 */
+    ZEGOAPI_STREAM_EVENT_PUBLISH_FAIL = 102,
+    /** 开始重试推流 */
+    ZEGOAPI_STREAM_EVENT_RETRY_PUBLISH_START = 103,
+    /** 重试推流成功 */
+    ZEGOAPI_STREAM_EVENT_RETRY_PUBLISH_SUCCESS = 104,
+    /** 重试推流失败 */
+    ZEGOAPI_STREAM_EVENT_RETRY_PUBLISH_FAIL = 105,
+    /** 推流结束 */
+    ZEGOAPI_STREAM_EVENT_PUBLISH_END = 106,
+    /** 开始拉流 */
+    ZEGOAPI_STREAM_EVENT_PLAY_START = 200,
+    /** 拉流成功 */
+    ZEGOAPI_STREAM_EVENT_PLAY_SUCCESS = 201,
+    /** 拉流失败 */
+    ZEGOAPI_STREAM_EVENT_PLAY_FAIL = 202,
+    /** 开始重试拉流 */
+    ZEGOAPI_STREAM_EVENT_RETRY_PLAY_START = 203,
+    /** 重试拉流成功 */
+    ZEGOAPI_STREAM_EVENT_RETRY_PLAY_SUCCESS = 204,
+    /** 重试拉流失败 */
+    ZEGOAPI_STREAM_EVENT_RETRY_PLAY_FAIL = 205,
+    /** 拉流结束 */
+    ZEGOAPI_STREAM_EVENT_PLAY_END = 206,
+};
+
+/**
+自定义直推 CDN 地址信息
+*/
+@interface ZegoAPICDNPublishTarget : NSObject
+/** 推流地址 */
+@property (nonatomic, copy) NSString *url;
+/** 支持的协议列表，按照顺序尝试 */
+@property (nonatomic, strong) NSArray<NSNumber *> *protocol_list;
+/** 支持的 QUIC 版本列表，如果支持 QUIC 协议，需要填写此信息 */
+@property (nonatomic, strong) NSArray<NSString *> *quic_version_list;
+
+@end
 
 #endif /* zego_api_defines_oc_h */

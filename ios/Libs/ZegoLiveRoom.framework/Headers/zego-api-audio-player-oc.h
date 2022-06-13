@@ -103,6 +103,14 @@
 - (void)setVolumeAll:(int)volume;
 
 /**
+ * 设置指定音效的播放速度
+ * 
+ * @param soundID 音效 ID
+ * @param speed 倍速，取值范围[0.5, 2.0]，默认 1.0
+ */
+- (void)setPlaySpeed:(unsigned int)soundID speed:(float)speed;
+
+/**
  * 暂停全部音效
  */
 - (void)pauseAll;

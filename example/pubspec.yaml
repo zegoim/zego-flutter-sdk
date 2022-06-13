@@ -13,6 +13,8 @@ description: Demonstrates how to use the zegoliveroom_plugin.
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 version: 1.0.0+1
 
+publish_to: none
+
 environment:
   sdk: ">=2.6.0 <3.0.0"
 
@@ -27,10 +29,9 @@ dependencies:
   path_provider: ^2.0.2
 
   zego_permission:
-    git:
-      url: git://github.com/zegoim/zego-flutter-permission.git
+    git: git@github.com:zegoim/zego-flutter-permission.git
   flutter_seekbar:
-    git: https://github.com/LiuC520/flutter_seekbar.git
+    git: git@github.com:LiuC520/flutter_seekbar.git
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

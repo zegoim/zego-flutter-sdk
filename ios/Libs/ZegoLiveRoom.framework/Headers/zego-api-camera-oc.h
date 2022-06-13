@@ -26,6 +26,7 @@ typedef NS_ENUM(NSInteger, ZegoCameraExposureMode) {
 
 @interface ZegoCamera : NSObject
 
+#if TARGET_OS_IPHONE
 /**
  设置设备坐标中的曝光参考点
  
@@ -107,6 +108,23 @@ typedef NS_ENUM(NSInteger, ZegoCameraExposureMode) {
  @attention SDK 默认使用 ZegoCameraExposureModeContinuousAutoExposure
 */
 + (BOOL)setCamExposureMode:(ZegoCameraExposureMode)mode channelIndex:(ZegoAPIPublishChannelIndex)index;
+
+#endif
+/**
+ 开启摄像头自适应帧率
+
+ @note 开启后，SDK 在一定帧率范围内根据环境亮度自动匹配合适的摄像头帧率，提升设置的帧率过高时的画面亮度。
+ @note 业务场景：推流端用户设置的帧率偏高，所处环境光照较低，无法正常显示或识别主体的场景。
+
+ @attention 调用时机：在初始化 SDK 后、摄像头启动前调用。
+ @attention 注意事项：当 SetVideoFPS 设置帧率值小于期望帧率最小值时，将使用 SetVideoFPS 设置的帧率值。
+
+ @param enable true 开启，false 关闭
+ @param minFPS 期望帧率的最小值，最小值为 3，建议 15
+ @param maxFPS 期望帧率的最大值，非负值，建议 25
+ @param index 推流通道
+*/
++ (void)enableCamAdaptiveFPS:(BOOL)enable minFPS:(int)minFPS maxFPS:(int)maxFPS channelIndex:(ZegoAPIPublishChannelIndex)index;
 
 @end
 

@@ -71,6 +71,21 @@ typedef enum : NSUInteger {
  kMediaServerPublishBadNameError= 12301012,
  kMediaServerStopPublishError   = 12301014,
 
+ kUploadLogFreqLimited            = 14000001,
+ kUploadLogIllegalParams          = 14000002,
+ kUploadLogAuthFailure            = 14000101,
+ kUploadLogNoUploadFile           = 14000201,
+ kUploadLogSaveFileFailed         = 14000205,
+ kUploadLogForbidUpload           = 14000209,
+ kUploadLogInBlackList            = 14000210,
+ kUploadLogStartSendFail          = 14010001,
+ kUploadLogNoPackError            = 14010002,
+ kUploadLogNetworkError           = 14010003,
+ kUploadLogUnknownServiceError    = 14010004,
+ kUploadLogInvalidTask            = 14010005,
+ kUploadLogInvalidTaskConfig      = 14010006,
+ kUploadLogUploadTimeout          = 14010007,
+
  kConfigDecryptError            = 20000001,
  kConfigOfflineError            = 20000002,
  kConfigDomainError             = 20000003,
@@ -90,6 +105,7 @@ typedef enum : NSUInteger {
  kDispatchEmptyPublishIpsError  = 32001002,
  kDispatchEmptyPlayIpsError     = 32001003,
  kDispatchStreamNotExistError   = 32001004,
+ kDispatchPlayAuthFailedError   = 32001016,
  kDispatchAgentTimeoutError     = 35500001,
  kDispatchAgentDroppedError     = 35500002,
 
@@ -110,6 +126,7 @@ typedef enum : NSUInteger {
  kLiveRoomSslCaCertError        = 51200060,
  kLiveRoomInvalidRspError       = 51400003,
  kLiveRoomInputParamsError      = 52000002,
+ kLiveRoomInputParamsLengthLimitError = 52000003,
  kLiveRoomRoomAuthError         = 52000101,
  kLiveRoomRoomNotExistError     = 52000104,
  kLiveRoomNotLoginError         = 52000105,
@@ -156,6 +173,8 @@ typedef enum : NSUInteger {
  kMixStreamFailError            = 82000001, //混流失败
  kMixStreamInputParamsError     = 82000002, //混流请求包解析错误
  kMixStreamAuthError            = 82000003, //混流鉴权失败
+ kMixStreamInputImageFormatError   = 82000141, //混流输入图片格式错误
+ kMixStreamInputImageSizeError  = 82000142, //混流输入图片大小超过1MB，或者下载失败
  kMixStreamNotExistError        = 82000150, //混流的输入流不存在
  kMixStreamStartMixError        = 82000151, //启动混流失败
  kMixStreamStopMixError         = 82000152, //停止混流失败
@@ -167,6 +186,7 @@ typedef enum : NSUInteger {
  kMixStreamStopMixOwnerError    = 82000160, //非创建者停止混流错误
  kMixStreamWaterMarkParamError  = 82000170, //混流水印参数错误
  kMixStreamWaterMarkImageError  = 82000171, //混流水印image错误
+ kMixStreamTextWaterMarkIllegalParamError  = 82000179, //混流文字水印参数非法
  kMixStreamQpsOverloadError     = 82000190, //混流请求qps超限错误
  kMixStreamAgentTimeoutError    = 85500001,
  kMixStreamAgentDroppedError    = 85500002,

@@ -70,6 +70,7 @@
 
  @return true 成功，等待回调；false 失败
  @discussion startSoundLevelMonitor 后一定要 stopSoundLevelMonitor
+ @discussion StartSoundLevelMonitor 后，即使未启动本地音频采集，[ZegoSoundLevelDelegate -onCaptureSoundLevelUpdate:] 也会有回调，且音浪值为0
  */
 - (bool)startSoundLevelMonitor;
 

@@ -110,6 +110,20 @@ typedef enum
 
 typedef void(^ZegoSnapshotCompletionBlock)(ZEGOImage* img);
 
+
+typedef enum
+{
+      /** 不审查,sdk默认此值 */
+      ZEGO_STREAM_CENSORSHIP_NONE     = 0,
+      /** 仅审查流中的音频 */
+      ZEGO_STREAM_CENSORSHIP_AUDIO    =1,
+      /** 仅审查流中的视频 */
+      ZEGO_STREAM_CENSORSHIP_VIDEO    =2,
+       /** 审查流中的音频和视频 */
+      ZEGO_STREAM_CENSORSHIP_AUDIO_AND_VIDEO    =3,
+      
+} ZegoAPIStreamCensorshipMode;
+
 /**
  推流参数
  */
@@ -128,6 +142,8 @@ typedef void(^ZegoSnapshotCompletionBlock)(ZEGOImage* img);
 @property (nonatomic, assign) ZegoAPIPublishChannelIndex channelIndex;
 /** 推流是否同步网络时间,仅RTC流有效，与setStreamAlignmentProperty 接口配合使用, 用于混流时各路流的对齐, 常用于KTV场景。*/
 @property (nonatomic, assign) int forceSynchronousNetworkTime;
+/** 推rtc流时指定该流的审查模式，常用于音视频鉴黄场景，需要使用此功能联系zego 技术支持 */
+@property (nonatomic, assign) ZegoAPIStreamCensorshipMode censorshipMode;
 
 @end
 
@@ -155,6 +171,17 @@ typedef NS_ENUM(NSInteger, ZegoAPIRoomMode)
     ZEGOAPI_ROOM_MODE_SINGLE_ROOM = 0,
     /** 多房间模式 */
     ZEGOAPI_ROOM_MODE_MULTI_ROOM = 1,
+};
+
+/**
+ * 引擎状态
+ */
+typedef NS_ENUM(NSInteger, ZegoAPIEngineState)
+{
+    /** Engine 关闭 */
+    ZEGOAPI_ENGINE_STATE_STOPED = 0,
+    /** Engine 开启 */
+    ZEGOAPI_ENGINE_STATE_STARTED = 1,
 };
 
 
