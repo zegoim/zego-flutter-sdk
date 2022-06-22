@@ -627,7 +627,7 @@ typedef void(^ZegoExperimentalAPIBlock)(NSString *params);
  @discussion "room_retry_time", uint32 value, default:300S，设置房间异常后自动恢复最大重试时间，SDK尽最大努力恢复，单位为S，SDK默认为300s，设置为0时不重试
  @discussion "av_retry_time", uint32 value, default:300S，设置推拉流异常后自动恢复最大重试时间，SDK尽最大努力恢复，单位为S，SDK默认为300s，设置为0时不重试
  @discussion "play_clear_last_frame", bool value, default false. 停止拉流时，是否清除最后一帧内容
- @discussion "preview_clear_last_frame", bool value, default false. 停止预览时，是否清除最后一帧内容
+ @discussion "preview_clear_last_frame", bool value, default false. 停止预览时，是否清除最后一帧内容。注意：必须停止预览且setPreviewView设置为空，此配置才能生效。否则，停止预览后，播放控件仍会保留最后一帧
  @discussion "vcap_external_handle_rotation", bool value, default true, 表示在推流端处理旋转；设置为 vcap_external_handle_rotation=false 时，会把旋转值传到拉流端（仅为 UDP 时有效）。这个配置目前只对外部采集的内存模式和 CVPixelBuffer 模式生效
  @discussion "audio_jitter_break_threshold_ms", uint32 value, default:200ms，定义音频卡顿时长，当音频卡顿时长超过该值时，认为存在卡顿，单位为ms，SDK默认为200ms，取值范围[10,2000]
  @discussion "video_jitter_break_threshold_ms", uint32 value, default:500ms，定义视频卡顿时长，当视频卡顿时长超过该值时，认为存在卡顿，单位为ms，SDK默认为500ms，取值范围[500,2000]

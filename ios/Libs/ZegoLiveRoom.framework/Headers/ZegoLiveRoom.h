@@ -14,8 +14,24 @@ FOUNDATION_EXPORT double ZegoLiveRoomVersionNumber;
 //! Project version string for ZegoLiveRoom.
 FOUNDATION_EXPORT const unsigned char ZegoLiveRoomVersionString[];
 
-#import <ZegoLiveRoom/zego-api-audio-aux-oc.h>
 #import <ZegoLiveRoom/zego-api-defines-oc.h>
+#import <ZegoLiveRoom/zego-api-sound-level-oc.h>
+#import <ZegoLiveRoom/zego-api-camera-oc.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApi.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApiDefines.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApiDefines-Publisher.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApi-Publisher.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApi-Publisher2.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApi-Player.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApi-ReplayLive.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApi-IM.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApi-RoomExtraInfo.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApiDefines-IM.h>
+#import <ZegoLiveRoom/ZegoLiveRoomApiDefines-RoomExtraInfo.h>
+#import <ZegoLiveRoom/zego-api-audio-aux-oc.h>
+#import <ZegoLiveRoom/zego-api-audio-device-oc.h>
+#import <ZegoLiveRoom/zego-api-audio-encrypt-decrypt-oc.h>
+#import <ZegoLiveRoom/zego-api-audio-observer-oc.h>
 #import <ZegoLiveRoom/zego-api-error-oc.h>
 #import <ZegoLiveRoom/zego-api-audio-frame-oc.h>
 #import <ZegoLiveRoom/zego-api-external-audio-device-oc.h>
@@ -42,19 +58,3 @@ FOUNDATION_EXPORT const unsigned char ZegoLiveRoomVersionString[];
 #import <ZegoLiveRoom/zego-api-mediaplayer-defines-oc.h>
 #import <ZegoLiveRoom/zego-api-mediaplayer-oc.h>
 #import <ZegoLiveRoom/zego-api-media-side-info-oc.h>
-#import <ZegoLiveRoom/zego-api-audio-device-oc.h>
-#import <ZegoLiveRoom/zego-api-audio-encrypt-decrypt-oc.h>
-#import <ZegoLiveRoom/zego-api-audio-observer-oc.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApi.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApiDefines.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApiDefines-Publisher.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApi-Publisher.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApi-Publisher2.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApi-Player.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApi-ReplayLive.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApi-IM.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApi-RoomExtraInfo.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApiDefines-IM.h>
-#import <ZegoLiveRoom/ZegoLiveRoomApiDefines-RoomExtraInfo.h>
-#import <ZegoLiveRoom/zego-api-sound-level-oc.h>
-#import <ZegoLiveRoom/zego-api-camera-oc.h>
