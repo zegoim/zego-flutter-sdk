@@ -18,11 +18,11 @@ add_library(
 
 set_target_properties(zegoliveroom
         PROPERTIES IMPORTED_LOCATION
-        ${CMAKE_CURRENT_LIST_DIR}/libs/${ANDROID_ABI}/libzegoliveroom.so
+        ${CMAKE_CURRENT_LIST_DIR}/libs/${ANDROID_ABI}/libZegoLiveRoom.so
 )
 
 target_link_libraries( # Specifies the target library.
 
         ZegoLog
-        zegoliveroom
+        ZegoLiveRoom
         )
