@@ -11,12 +11,12 @@ add_library( # Sets the name of the library.
              src/main/cpp/zego_log_jni.cpp)
 
 add_library(
-        zegoliveroom
+        ZegoLiveRoom
         SHARED
         IMPORTED
 )
 
-set_target_properties(zegoliveroom
+set_target_properties(ZegoLiveRoom
         PROPERTIES IMPORTED_LOCATION
         ${CMAKE_CURRENT_LIST_DIR}/libs/${ANDROID_ABI}/libZegoLiveRoom.so
 )
