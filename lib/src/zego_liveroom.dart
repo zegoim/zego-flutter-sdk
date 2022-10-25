@@ -7,7 +7,7 @@ import 'zego_liveroom_publisher.dart';
 class ZegoLiveRoomPlugin {
   /* Method Channel */
   static const MethodChannel _channel =
-  const MethodChannel('plugins.zego.im/zegoliveroom_plugin');
+      const MethodChannel('plugins.zego.im/zegoliveroom_plugin');
 
   ///ZegoLiveRoom SDK 版本号
   ///
@@ -34,11 +34,10 @@ class ZegoLiveRoomPlugin {
   ///@return 错误码，0 代表初始化成功
   ///@discussion 初始化 SDK 时调用。初始化 SDK 失败可能导致 SDK 功能异常
   static Future<int> initSDK(int appID, String appSign) async {
-    _addRoomNoticeLog('[Flutter-Dart] initSDK, appid: $appID, appSign: $appSign');
-    final int errorCode = await _channel.invokeMethod('initSDK', {
-      'appID': appID,
-      'appSign': appSign
-    });
+    _addRoomNoticeLog(
+        '[Flutter-Dart] initSDK, appid: $appID, appSign: $appSign');
+    final int errorCode = await _channel
+        .invokeMethod('initSDK', {'appID': appID, 'appSign': appSign});
 
     return errorCode;
   }
@@ -61,9 +60,8 @@ class ZegoLiveRoomPlugin {
   ///@discussion 由于 flutter 团队 对 platform view 仍处于开发阶段，请开发者酌情使用
   static Future<void> enablePlatformView(bool enable) async {
     _addRoomNoticeLog('[Flutter-Dart] enablePlatformView, enable: $enable');
-    return await _channel.invokeMethod('enablePlatformView', {
-      'enable': enable
-    });
+    return await _channel
+        .invokeMethod('enablePlatformView', {'enable': enable});
   }
 
   ///设置用户 ID 及用户名
@@ -73,10 +71,8 @@ class ZegoLiveRoomPlugin {
   ///@return true 成功，false 失败
   ///@discussion 确保在 [loginRoom] 前设置成功。userID 和 userName 由业务方自己控制
   static Future<bool> setUser(String userID, String userName) async {
-    final bool success = await _channel.invokeMethod('setUser', {
-      'userID': userID,
-      'userName': userName
-    });
+    final bool success = await _channel
+        .invokeMethod('setUser', {'userID': userID, 'userName': userName});
 
     return success;
   }
@@ -86,10 +82,7 @@ class ZegoLiveRoomPlugin {
   ///@param enable 是否打开调试信息，true 打开，false 不打开。默认为 false
   ///@discussion 建议在初始化 SDK 前调用。建议在调试阶段打开此开关，方便调试
   static Future<void> setVerbose(bool enable) async {
-    return await _channel.invokeMethod('setVerbose', {
-      'enable': enable
-    });
-
+    return await _channel.invokeMethod('setVerbose', {'enable': enable});
   }
 
   ///是否启用测试环境
@@ -97,18 +90,15 @@ class ZegoLiveRoomPlugin {
   ///@param enable 是否启用测试环境，true 启用，false 不启用。默认为 false
   ///@discussion 建议在初始化 SDK 前调用。建议开发者在开发阶段设置为测试环境，使用由 Zego 提供的测试环境。上线前需切换为正式环境运营
   static Future<void> setUseTestEnv(bool enable) async {
-    return await _channel.invokeMethod('setUseTestEnv', {
-      'enable': enable
-    });
+    return await _channel.invokeMethod('setUseTestEnv', {'enable': enable});
   }
 
   static Future<void> setLogConfig(int logSize, {String logPath}) async {
     print('logSize: $logSize, logPath: $logPath');
-    return await _channel.invokeMethod('setLogConfig', {
-      'logSize': logSize,
-      'logPath': logPath
-    });
+    return await _channel
+        .invokeMethod('setLogConfig', {'logSize': logSize, 'logPath': logPath});
   }
+
   ///上报日志
   ///
   ///@discussion 上传日志到后台便于分析问题
@@ -132,9 +122,10 @@ class ZegoLiveRoomPlugin {
   ///@param userStateUpdate 用户状态（用户进入、退出房间）是否广播。true 广播，false 不广播。默认 false
   ///@return true 成功，false 失败
   ///@discussion 在 userStateUpdate 为 true 的情况下，用户进入、退出房间会触发 [_onUserUpdate] 回调
-  static Future<void> setRoomConfig(bool audienceCreateRoom, bool userStateUpdate) async {
+  static Future<void> setRoomConfig(
+      bool audienceCreateRoom, bool userStateUpdate) async {
     return await _channel.invokeMethod('setRoomConfig', {
-      'audienceCreateRoom':audienceCreateRoom,
+      'audienceCreateRoom': audienceCreateRoom,
       'userStateUpdate': userStateUpdate
     });
   }
@@ -146,23 +137,24 @@ class ZegoLiveRoomPlugin {
   ///@param role 成员角色，可取值为 ZEGO_ANCHOR（主播），ZEGO_AUDIENCE（观众），详见 [ZegoRoomRole] 定义
   ///@return 房间流信息，其中 errorCode 为 0 代表登录房间成功，参考 [ZegoLoginRoomResult] 定义
   ///@discussion 登录房间成功，才能开始直播
-  static Future<ZegoLoginRoomResult> loginRoom(String roomID, String roomName, int role) async {
-    _addRoomNoticeLog('[Flutter-Dart] loginRoom, roomID: $roomID, roomName: $roomName, role: $role');
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('loginRoom', {
-      'roomID': roomID,
-      'roomName': roomName,
-      'role': role
-    });
+  static Future<ZegoLoginRoomResult> loginRoom(
+      String roomID, String roomName, int role) async {
+    _addRoomNoticeLog(
+        '[Flutter-Dart] loginRoom, roomID: $roomID, roomName: $roomName, role: $role');
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod(
+        'loginRoom', {'roomID': roomID, 'roomName': roomName, 'role': role});
 
     List<ZegoStreamInfo> streamList = [];
     final List<dynamic> nativeList = mapResult['streamList'];
 
-    for(var stream in nativeList) {
-      ZegoStreamInfo streamInfo = new ZegoStreamInfo(stream['userID'], stream['userName'], stream['streamID'], stream['extraInfo']);
+    for (var stream in nativeList) {
+      ZegoStreamInfo streamInfo = new ZegoStreamInfo(stream['userID'],
+          stream['userName'], stream['streamID'], stream['extraInfo']);
       streamList.add(streamInfo);
     }
 
-    ZegoLoginRoomResult result = new ZegoLoginRoomResult(mapResult['errorCode'], streamList);
+    ZegoLoginRoomResult result =
+        new ZegoLoginRoomResult(mapResult['errorCode'], streamList);
 
     return result;
   }
@@ -177,23 +169,24 @@ class ZegoLiveRoomPlugin {
     return success;
   }
 
-  static Future<ZegoLoginRoomResult> switchRoom(String roomID, String roomName, int role) async {
-    _addRoomNoticeLog('[Flutter-Dart] switchRoom, roomID: $roomID, roomName: $roomName, role: $role');
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('switchRoom', {
-      'roomID': roomID,
-      'roomName': roomName,
-      'role': role
-    });
+  static Future<ZegoLoginRoomResult> switchRoom(
+      String roomID, String roomName, int role) async {
+    _addRoomNoticeLog(
+        '[Flutter-Dart] switchRoom, roomID: $roomID, roomName: $roomName, role: $role');
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod(
+        'switchRoom', {'roomID': roomID, 'roomName': roomName, 'role': role});
 
     List<ZegoStreamInfo> streamList = [];
     final List<dynamic> nativeList = mapResult['streamList'];
 
-    for(var stream in nativeList) {
-      ZegoStreamInfo streamInfo = new ZegoStreamInfo(stream['userID'], stream['userName'], stream['streamID'], stream['extraInfo']);
+    for (var stream in nativeList) {
+      ZegoStreamInfo streamInfo = new ZegoStreamInfo(stream['userID'],
+          stream['userName'], stream['streamID'], stream['extraInfo']);
       streamList.add(streamInfo);
     }
 
-    ZegoLoginRoomResult result = new ZegoLoginRoomResult(mapResult['errorCode'], streamList);
+    ZegoLoginRoomResult result =
+        new ZegoLoginRoomResult(mapResult['errorCode'], streamList);
 
     return result;
   }
@@ -203,12 +196,13 @@ class ZegoLiveRoomPlugin {
   ///@param content 房间消息内容，不超过 512 字节
   ///@return 房间消息发送结果
   ///@discussion 在登录房间后调用该 API 才有效。调用该 API 后，房间的其他用户可以通过回调 [_onRecvRoomMessage] 收到该条消息。
-  static Future<ZegoSendRoomMessageResult> sendRoomMessage(String content) async {
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('sendRoomMessage', {
-      'content': content
-    });
+  static Future<ZegoSendRoomMessageResult> sendRoomMessage(
+      String content) async {
+    final Map<dynamic, dynamic> mapResult =
+        await _channel.invokeMethod('sendRoomMessage', {'content': content});
 
-    ZegoSendRoomMessageResult result = new ZegoSendRoomMessageResult(mapResult['errorCode'], mapResult['roomID'], mapResult['messageID']);
+    ZegoSendRoomMessageResult result = new ZegoSendRoomMessageResult(
+        mapResult['errorCode'], mapResult['roomID'], mapResult['messageID']);
 
     return result;
   }
@@ -218,12 +212,13 @@ class ZegoLiveRoomPlugin {
   ///@param content 房间消息内容，不超过 512 字节
   ///@return 房间消息发送结果
   ///@discussion 用于高并发的场景，消息可能被丢弃，当高并发达到极限时会根据策略丢弃部分消息。在登录房间后调用该 API 才有效。调用该 API 后，房间的其他用户可以通过回调 [_onRecvBigRoomMessage] 收到该条消息。
-  static Future<ZegoSendRoomMessageResult> sendBigRoomMessage(String content) async {
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('sendBigRoomMessage', {
-      'content': content
-    });
+  static Future<ZegoSendRoomMessageResult> sendBigRoomMessage(
+      String content) async {
+    final Map<dynamic, dynamic> mapResult =
+        await _channel.invokeMethod('sendBigRoomMessage', {'content': content});
 
-    ZegoSendRoomMessageResult result = new ZegoSendRoomMessageResult(mapResult['errorCode'], mapResult['roomID'], mapResult['messageID']);
+    ZegoSendRoomMessageResult result = new ZegoSendRoomMessageResult(
+        mapResult['errorCode'], mapResult['roomID'], mapResult['messageID']);
 
     return result;
   }
@@ -234,19 +229,19 @@ class ZegoLiveRoomPlugin {
   ///@param content 消息内容。长度不超过 2048 字节
   ///@return 自定义信令发送结果，参考 [ZegoCustomCommandResult] 定义
   ///@discussion 信令内容由用户自定义。用户可通过 [_onReceiveCustomCommand] 收到信令
-  static Future<ZegoCustomCommandResult> sendCustomCommand(List<ZegoUser> userList, String content) async {
+  static Future<ZegoCustomCommandResult> sendCustomCommand(
+      List<ZegoUser> userList, String content) async {
     List<Map<String, String>> objUserList = [];
-    for(var user in userList) {
+    for (var user in userList) {
       Map<String, String> objUser = user.toMap();
       objUserList.add(objUser);
     }
 
-    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod('sendCustomCommand', {
-      'users': objUserList,
-      'content': content
-    });
+    final Map<dynamic, dynamic> mapResult = await _channel.invokeMethod(
+        'sendCustomCommand', {'users': objUserList, 'content': content});
 
-    ZegoCustomCommandResult result = new ZegoCustomCommandResult(mapResult['errorCode'], mapResult['roomID']);
+    ZegoCustomCommandResult result = new ZegoCustomCommandResult(
+        mapResult['errorCode'], mapResult['roomID']);
 
     return result;
   }
@@ -256,9 +251,7 @@ class ZegoLiveRoomPlugin {
   ///@param type 模块类型，参考 [ZegoApiModule] 定义
   ///@discussion 用于需要暂停指定模块的场合，例如来电时暂定音频模块。暂停指定模块后，注意在合适时机下恢复模块
   static Future<void> pauseModule(int type) async {
-    return await _channel.invokeMethod('pauseModule', {
-      'type' : type
-    });
+    return await _channel.invokeMethod('pauseModule', {'type': type});
   }
 
   ///恢复模块
@@ -266,9 +259,7 @@ class ZegoLiveRoomPlugin {
   ///@param type 模块类型，参考 [ZegoApiModule] 定义
   ///@discussion 用于需要恢复指定模块的场合，例如来电结束后恢复音频模块。暂停指定模块后，注意在合适时机下恢复模块
   static Future<void> resumeModule(int type) async {
-    return await _channel.invokeMethod('resumeModule', {
-      'type' : type
-    });
+    return await _channel.invokeMethod('resumeModule', {'type': type});
   }
 
   ///设置是否允许SDK使用麦克风设备
@@ -278,9 +269,8 @@ class ZegoLiveRoomPlugin {
   ///@discussion 调用时机为引擎创建后的任意时刻。
   ///@note 接口由于涉及对设备的操作，极为耗时，不建议随便调用，只在真正需要让出麦克风给其他应用的时候才调用
   static Future<bool> enableMicDevice(bool enable) async {
-    final bool success = await _channel.invokeMethod('enableMicDevice', {
-      'enable': enable
-    });
+    final bool success =
+        await _channel.invokeMethod('enableMicDevice', {'enable': enable});
 
     return success;
   }
@@ -291,9 +281,8 @@ class ZegoLiveRoomPlugin {
   ///@discussion 然后在 dart 层调用此方法（必须在 initSDK 之前调用）将预存的工厂对象设置给 Native ZegoSDK
   ///@param enable true 表示将预存的外部视频滤镜工厂设置给 native，false 表示调用 native 接口将工厂设为空（释放)
   static Future<void> enableExternalVideoFilterFactory(bool enable) async {
-    return await _channel.invokeMethod('enableExternalVideoFilterFactory', {
-      'enable': enable
-    });
+    return await _channel
+        .invokeMethod('enableExternalVideoFilterFactory', {'enable': enable});
   }
 
   ///是否设置外部视频采集工厂
@@ -302,9 +291,8 @@ class ZegoLiveRoomPlugin {
   ///@discussion 然后在 dart 层调用此方法（必须在 initSDK 之前调用）将预存的工厂对象设置给 Native ZegoSDK
   ///@param enable true 表示将预存的外部视频滤镜工厂设置给 native，false 表示调用 native 接口将工厂设为空（释放)
   static Future<void> enableExternalVideoCaptureFactory(bool enable) async {
-    return await _channel.invokeMethod('enableExternalVideoCaptureFactory', {
-      'enable': enable
-    });
+    return await _channel
+        .invokeMethod('enableExternalVideoCaptureFactory', {'enable': enable});
   }
 
   ///设置配置信息，如果没有特殊说明，必须确保在 InitSDK 前调用
@@ -322,9 +310,7 @@ class ZegoLiveRoomPlugin {
   ///@discussion "play_clear_last_frame", bool value, default false. 停止拉流时，是否清除最后一帧内容
   ///@discussion "preview_clear_last_frame", bool value, default false. 停止预览时，是否清除最后一帧内容
   static Future<void> setConfig(String config) async {
-    return await _channel.invokeMethod('setConfig', {
-      'config': config
-    });
+    return await _channel.invokeMethod('setConfig', {'config': config});
   }
 
   ///设置回调对象
@@ -340,28 +326,35 @@ class ZegoLiveRoomPlugin {
   ///@param onReceiveCustomCommand 设置接收 收到自定义消息 回调，参考 [_onReceiveCustomCommand] 定义
   ///@param onUserUpdate 设置接收 房间成员更新 回调，参考 [_onUserUpdate] 定义
   ///@param onLiveEvent 设置接收 直播事件 回调，参考 [_onLiveEvent] 定义
+  ///@param onStreamEvent 设置接收 推拉流事件 回调，参考 [_onStreamEvent] 定义
   ///@param onAVEngineStart 设置接收 音视频引擎开始 回调，参考 [_onAVEngineStart] 定义
   ///@param onAVEngineStop 设置接收 音视频引擎停止 回调，参考 [_onAVEngineStop] 定义
   ///@discussion 开发者只有调用本 API 设置回调对象才能收到相关回调
-  static void registerRoomCallback({
-    Function(int type, List<ZegoStreamInfo> streamList, String roomID) onStreamUpdated,
-    Function(List<ZegoStreamInfo> streamList, String roomID) onStreamExtraInfoUpdated,
-    Function(int errorCode, String roomID) onTempBroken,
-    Function(int errorCode, String roomID) onReconnect,
-    Function(int errorCode, String roomID) onDisconnect,
-    Function(int reason, String roomID, String customReason) onKickOut,
-    Function(int onlineCount, String roomID) onUpdateOnlineCount,
-    Function(String roomID, List<ZegoRoomMessage> messageList) onRecvRoomMessage,
-    Function(String roomID, List<ZegoBigRoomMessage> messageList) onRecvBigRoomMessage,
-    Function(String fromUserID, String fromUserName, String content, String roomID) onReceiveCustomCommand,
-    Function(List<ZegoUserInfo> userList, int updateType) onUserUpdate,
-    Function(int event, Map<String, String> info) onLiveEvent,
-    Function() onAVEngineStart,
-    Function() onAVEngineStop,
-    Function(int errorCode, String deviceName) onDeviceError,
-    Function(String message) onInnerError
-}) {
-
+  static void registerRoomCallback(
+      {Function(int type, List<ZegoStreamInfo> streamList, String roomID)
+          onStreamUpdated,
+      Function(List<ZegoStreamInfo> streamList, String roomID)
+          onStreamExtraInfoUpdated,
+      Function(int errorCode, String roomID) onTempBroken,
+      Function(int errorCode, String roomID) onReconnect,
+      Function(int errorCode, String roomID) onDisconnect,
+      Function(int reason, String roomID, String customReason) onKickOut,
+      Function(int onlineCount, String roomID) onUpdateOnlineCount,
+      Function(String roomID, List<ZegoRoomMessage> messageList)
+          onRecvRoomMessage,
+      Function(String roomID, List<ZegoBigRoomMessage> messageList)
+          onRecvBigRoomMessage,
+      Function(String fromUserID, String fromUserName, String content,
+              String roomID)
+          onReceiveCustomCommand,
+      Function(List<ZegoUserInfo> userList, int updateType) onUserUpdate,
+      Function(int event, Map<String, String> info) onLiveEvent,
+      Function(int event, String streamID, Map<String, String> extraInfo)
+          onStreamEvent,
+      Function() onAVEngineStart,
+      Function() onAVEngineStop,
+      Function(int errorCode, String deviceName) onDeviceError,
+      Function(String message) onInnerError}) {
     _addRoomNoticeLog('[Flutter-Dart] registerRoomCallback, enter');
 
     _onStreamUpdated = onStreamUpdated;
@@ -376,24 +369,26 @@ class ZegoLiveRoomPlugin {
     _onReceiveCustomCommand = onReceiveCustomCommand;
     _onUserUpdate = onUserUpdate;
     _onLiveEvent = onLiveEvent;
+    _onStreamEvent = onStreamEvent;
     _onAVEngineStart = onAVEngineStart;
     _onAVEngineStop = onAVEngineStop;
     _onInnerError = onInnerError;
     _onDeviceError = onDeviceError;
 
-    _addRoomNoticeLog('[Flutter-Dart] registerRoomCallback, init room stream subscription');
-    _streamSubscription = ZegoLiveRoomEventChannel.listenRoomEvent().listen(_eventListener, onError: (error) {
+    _addRoomNoticeLog(
+        '[Flutter-Dart] registerRoomCallback, init room stream subscription');
+    _streamSubscription = ZegoLiveRoomEventChannel.listenRoomEvent()
+        .listen(_eventListener, onError: (error) {
       PlatformException exception = error;
-      _addRoomNoticeLog('[Flutter-Dart] room stream subscription listen error: ${exception.message??'no error message'}');
+      _addRoomNoticeLog(
+          '[Flutter-Dart] room stream subscription listen error: ${exception.message ?? 'no error message'}');
     });
-
   }
 
   ///销毁回调对象
   ///
   ///@discussion 当开发者不再需要接收回调时，必须显式调用本 API 销毁回调对象
   static void unregisterRoomCallback() {
-
     _addRoomNoticeLog('[Flutter-Dart] unregisterRoomCallback');
 
     _onStreamUpdated = null;
@@ -408,6 +403,7 @@ class ZegoLiveRoomPlugin {
     _onReceiveCustomCommand = null;
     _onUserUpdate = null;
     _onLiveEvent = null;
+    _onStreamEvent = null;
     _onAVEngineStart = null;
     _onAVEngineStop = null;
     _onInnerError = null;
@@ -415,14 +411,14 @@ class ZegoLiveRoomPlugin {
 
     _streamSubscription.cancel().then((_) {
       _streamSubscription = null;
-      _addRoomNoticeLog('[Flutter-Dart] room stream subscription cancel success');
+      _addRoomNoticeLog(
+          '[Flutter-Dart] room stream subscription cancel success');
     }).catchError((error) {
       PlatformException exception = error;
-      _addRoomNoticeLog('[Flutter-Dart] room stream subscription cancel error: ${exception.message??'no error message'}');
+      _addRoomNoticeLog(
+          '[Flutter-Dart] room stream subscription cancel error: ${exception.message ?? 'no error message'}');
     });
-
   }
-
 
   ///流信息更新
   ///
@@ -431,7 +427,8 @@ class ZegoLiveRoomPlugin {
   ///@param roomID 房间 ID
   ///@discussion 房间内增加流、删除流，均会触发此更新。主播推流，自己不会收到此回调，房间内其他成员会收到。建议对流增加和流删除分别采取不同的处理。
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onStreamUpdated 对象参数之后才能收到该回调
-  static void Function(int type, List<ZegoStreamInfo> streamList, String roomID) _onStreamUpdated;
+  static void Function(int type, List<ZegoStreamInfo> streamList, String roomID)
+      _onStreamUpdated;
 
   ///流附加信息更新
   ///
@@ -439,7 +436,8 @@ class ZegoLiveRoomPlugin {
   ///@param roomID 房间 ID
   ///@discussion 主播推流成功后调用 [ZegoLiveRoomPublisherPlugin.updateStreamExtraInfo] 更新附加信息，在此回调中通知房间内其他成员。调用 updateStreamExtraInfo 更新信息的调用方，不会收到此回调
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onStreamExtraInfoUpdated 对象参数之后才能收到该回调
-  static void Function(List<ZegoStreamInfo> streamList, String roomID) _onStreamExtraInfoUpdated;
+  static void Function(List<ZegoStreamInfo> streamList, String roomID)
+      _onStreamExtraInfoUpdated;
 
   ///与 server 连接中断通知，SDK会尝试自动重连
   ///
@@ -469,7 +467,8 @@ class ZegoLiveRoomPlugin {
   ///@param roomID 房间 ID
   ///@discussion 可在该回调中处理用户被踢出房间后的下一步处理（例如报错、重新登录提示等）
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onKickOut 对象参数之后才能收到该回调
-  static void Function(int reason, String roomID, String customReason) _onKickOut;
+  static void Function(int reason, String roomID, String customReason)
+      _onKickOut;
 
   ///收到在线人数更新
   ///
@@ -485,7 +484,8 @@ class ZegoLiveRoomPlugin {
   ///@param messageList 房间消息列表
   ///@discussion 调用 [sendRoomMessage] 发送房间消息后，会触发房间内其他用户收到该回调
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onRecvRoomMessage 对象参数之后才能收到该回调
-  static void Function(String roomID, List<ZegoRoomMessage> messageList) _onRecvRoomMessage;
+  static void Function(String roomID, List<ZegoRoomMessage> messageList)
+      _onRecvRoomMessage;
 
   ///收到大房间消息
   ///
@@ -493,7 +493,8 @@ class ZegoLiveRoomPlugin {
   ///@param messageList 大房间消息列表
   ///@discussion 调用 [sendBigRoomMessage] 发送大房间消息后，会触发房间内其他用户收到该回调
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 _onRecvBigRoomMessage 对象参数之后才能收到该回调
-  static void Function(String roomID, List<ZegoBigRoomMessage> messageList) _onRecvBigRoomMessage;
+  static void Function(String roomID, List<ZegoBigRoomMessage> messageList)
+      _onRecvBigRoomMessage;
 
   ///收到自定义消息
   ///
@@ -503,7 +504,9 @@ class ZegoLiveRoomPlugin {
   ///@param roomID 房间 ID
   ///@discussion 调用 [sendCustomCommand] 发送自定义消息后，消息列表中的用户会收到此通知
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onReceiveCustomCommand 对象参数之后才能收到该回调
-  static void Function(String fromUserID, String fromUserName, String content, String roomID) _onReceiveCustomCommand;
+  static void Function(
+          String fromUserID, String fromUserName, String content, String roomID)
+      _onReceiveCustomCommand;
 
   ///房间成员更新回调
   ///
@@ -511,7 +514,8 @@ class ZegoLiveRoomPlugin {
   ///@param type  更新类型，参考 [ZegoUserUpdateType] 定义(增量，全量)
   ///@discussion 用户调用 [setRoomConfig] 开启用户状态（用户进入、退出房间）广播，当房间成员变化（例如用户进入、退出房间）时，会触发此通知
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onUserUpdate 对象参数之后才能收到该回调
-  static void Function(List<ZegoUserInfo> userList, int updateType) _onUserUpdate;
+  static void Function(List<ZegoUserInfo> userList, int updateType)
+      _onUserUpdate;
 
   ///直播事件回调
   ///
@@ -520,6 +524,16 @@ class ZegoLiveRoomPlugin {
   ///@discussion 设置直播事件回调对象后，在此回调中获取直播事件状态
   ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onLiveEvent 对象参数之后才能收到该回调
   static void Function(int event, Map<String, String> info) _onLiveEvent;
+
+  ///推拉流事件回调
+  ///
+  ///@param event 直播事件状态，参考 [ZegoLiveEvent] 定义
+  ///@param streamID 流ID
+  ///@param extraInfo 附加信息，目前包括的键有 "url"表示地址, "streamProtocol"表示流协议，包括rtmp,flv,avertp，hls，webrtc等, "netProtocol"表示网络协议，包括tcp,udp,quic, "resourceType"表示资源类型，包括cdn,rtc,l3,
+  ///@discussion 设置直播事件回调对象后，在此回调中获取直播事件状态
+  ///@discussion 开发者必须调用 [registerRoomCallback] 且设置 onStreamEvent 对象参数之后才能收到该回调
+  static void Function(
+      int event, String streamID, Map<String, String> extraInfo) _onStreamEvent;
 
   ///音视频引擎开始时回调
   ///
@@ -539,6 +553,7 @@ class ZegoLiveRoomPlugin {
   ///@param deviceName 设备名
   ///@discussion 设置设备出错回调对象后，当设备（麦克风、摄像头）出现问题时，会通知到开发者
   static void Function(int errorCode, String deviceName) _onDeviceError;
+
   ///SDK检测到内部异常会抛出
   ///
   ///@param message 错误详情
@@ -548,30 +563,28 @@ class ZegoLiveRoomPlugin {
 
   /// SDK内置日志，开发者无需关注
   static void _addRoomNoticeLog(String content) {
-
-    _channel.invokeMethod('addNoticeLog', {
-      'content': content
-    });
+    _channel.invokeMethod('addNoticeLog', {'content': content});
   }
 
   /// 用于接收native层事件流，开发者无需关注
   static StreamSubscription<dynamic> _streamSubscription;
+
   /// 用于处理native层事件流，开发者无需关注
   static void _eventListener(dynamic data) {
     final Map<dynamic, dynamic> args = data;
-    _addRoomNoticeLog('[Flutter-Dart] room eventListener, method name: ${args['name']}');
+    _addRoomNoticeLog(
+        '[Flutter-Dart] room eventListener, method name: ${args['name']}');
 
     switch (args['name']) {
       case 'onStreamUpdated':
-        if(_onStreamUpdated != null) {
-
+        if (_onStreamUpdated != null) {
           int type = args['updateType'];
           String roomID = args['roomID'];
           List<ZegoStreamInfo> streamList = [];
           List<dynamic> objList = args['streamList'];
           for (Map<dynamic, dynamic> obj in objList) {
-
-            ZegoStreamInfo info = new ZegoStreamInfo(obj['userID'], obj['userName'], obj['streamID'], obj['extraInfo']);
+            ZegoStreamInfo info = new ZegoStreamInfo(obj['userID'],
+                obj['userName'], obj['streamID'], obj['extraInfo']);
             streamList.add(info);
           }
 
@@ -579,71 +592,60 @@ class ZegoLiveRoomPlugin {
         }
         break;
       case 'onStreamExtraInfoUpdated':
-        if(_onStreamExtraInfoUpdated != null) {
-
+        if (_onStreamExtraInfoUpdated != null) {
           String roomID = args['roomID'];
           List<ZegoStreamInfo> streamList = [];
           List<dynamic> objList = args['streamList'];
           for (Map<dynamic, dynamic> obj in objList) {
-
-            ZegoStreamInfo info = new ZegoStreamInfo(obj['userID'], obj['userName'], obj['streamID'], obj['extraInfo']);
+            ZegoStreamInfo info = new ZegoStreamInfo(obj['userID'],
+                obj['userName'], obj['streamID'], obj['extraInfo']);
             streamList.add(info);
           }
 
           _onStreamExtraInfoUpdated(streamList, roomID);
-
         }
         break;
       case 'onTempBroken':
-        if(_onTempBroken != null) {
-
+        if (_onTempBroken != null) {
           int errorCode = args['errorCode'];
           String roomID = args['roomID'];
 
           _onTempBroken(errorCode, roomID);
-
         }
         break;
       case 'onReconnect':
-        if(_onReconnect != null) {
-
+        if (_onReconnect != null) {
           int errorCode = args['errorCode'];
           String roomID = args['roomID'];
 
           _onReconnect(errorCode, roomID);
-
         }
         break;
       case 'onDisconnect':
-        if(_onDisconnect != null) {
-
+        if (_onDisconnect != null) {
           int errorCode = args['errorCode'];
           String roomID = args['roomID'];
 
           _onDisconnect(errorCode, roomID);
-
         }
         break;
       case 'onKickOut':
-        if(_onKickOut != null) {
-
+        if (_onKickOut != null) {
           int reason = args['reason'];
           String roomID = args['roomID'];
           String customReason = args['customReason'];
 
           _onKickOut(reason, roomID, customReason);
-
         }
         break;
       case 'onUserUpdate':
-        if(_onUserUpdate != null) {
-
+        if (_onUserUpdate != null) {
           int updateType = args['updateType'];
           List<ZegoUserInfo> userList = [];
           List<dynamic> objList = args['userList'];
           for (Map<dynamic, dynamic> obj in objList) {
-
-            ZegoUserInfo info = new ZegoUserInfo(obj['userID'], obj['userName'], obj['updateFlag'], obj['role']);
+            ZegoUserInfo info = new ZegoUserInfo(
+                obj['userID'], obj['userName'], obj['updateFlag'], obj['role']);
             userList.add(info);
           }
 
@@ -651,8 +653,7 @@ class ZegoLiveRoomPlugin {
         }
         break;
       case 'onLiveEvent':
-        if(_onLiveEvent != null) {
-
+        if (_onLiveEvent != null) {
           int event = args['event'];
           Map<dynamic, dynamic> objMap = args['info'];
           Map<String, String> info = {};
@@ -664,12 +665,26 @@ class ZegoLiveRoomPlugin {
           });
 
           _onLiveEvent(event, info);
+        }
+        break;
+      case 'onStreamEvent':
+        if (_onStreamEvent != null) {
+          int event = args['event'];
+          String streamID = args['streamID'];
+          Map<dynamic, dynamic> objMap = args['extraInfo'];
+          Map<String, String> extraInfo = {};
+          objMap.forEach((key, value) {
+            String strKey = key;
+            String strValue = value;
 
+            extraInfo[strKey] = strValue;
+          });
+
+          _onStreamEvent(event, streamID, extraInfo);
         }
         break;
       case 'onUpdateOnlineCount':
-        if(_onUpdateOnlineCount != null) {
-
+        if (_onUpdateOnlineCount != null) {
           int onlineCount = args['onlineCount'];
           String roomID = args['roomID'];
 
@@ -677,12 +692,13 @@ class ZegoLiveRoomPlugin {
         }
         break;
       case 'onRecvRoomMessage':
-        if(_onRecvRoomMessage != null) {
+        if (_onRecvRoomMessage != null) {
           String roomID = args['roomID'];
           List<ZegoRoomMessage> messageList = [];
           List<dynamic> objList = args['messageList'];
           for (Map<dynamic, dynamic> obj in objList) {
-            ZegoRoomMessage message = new ZegoRoomMessage(obj['content'], obj['fromUserID'], obj['fromUserName'], obj['messageID']);
+            ZegoRoomMessage message = new ZegoRoomMessage(obj['content'],
+                obj['fromUserID'], obj['fromUserName'], obj['messageID']);
             messageList.add(message);
           }
 
@@ -690,12 +706,13 @@ class ZegoLiveRoomPlugin {
         }
         break;
       case 'onRecvBigRoomMessage':
-        if(_onRecvBigRoomMessage != null) {
+        if (_onRecvBigRoomMessage != null) {
           String roomID = args['roomID'];
           List<ZegoBigRoomMessage> messageList = [];
           List<dynamic> objList = args['messageList'];
           for (Map<dynamic, dynamic> obj in objList) {
-            ZegoBigRoomMessage message = new ZegoBigRoomMessage(obj['content'], obj['fromUserID'], obj['fromUserName'], obj['messageID']);
+            ZegoBigRoomMessage message = new ZegoBigRoomMessage(obj['content'],
+                obj['fromUserID'], obj['fromUserName'], obj['messageID']);
             messageList.add(message);
           }
 
@@ -703,8 +720,7 @@ class ZegoLiveRoomPlugin {
         }
         break;
       case 'onReceiveCustomCommand':
-        if(_onReceiveCustomCommand != null) {
-
+        if (_onReceiveCustomCommand != null) {
           String fromUserID = args['userID'];
           String fromUserName = args['userName'];
           String content = args['content'];
@@ -714,38 +730,30 @@ class ZegoLiveRoomPlugin {
         }
         break;
       case 'onAVEngineStart':
-        if(_onAVEngineStart != null) {
-
+        if (_onAVEngineStart != null) {
           _onAVEngineStart();
-
         }
         break;
       case 'onAVEngineStop':
-        if(_onAVEngineStop != null) {
-
+        if (_onAVEngineStop != null) {
           _onAVEngineStop();
-
         }
         break;
       case 'onDeviceError':
-        if(_onDeviceError != null) {
-
+        if (_onDeviceError != null) {
           String deviceName = args['deviceName'];
           int errorCode = args['errorCode'];
           _onDeviceError(errorCode, deviceName);
         }
         break;
       case 'onInnerError':
-      if(_onInnerError != null) {
-
-        String message = args['message'];
-        _onInnerError(message);
-      }
+        if (_onInnerError != null) {
+          String message = args['message'];
+          _onInnerError(message);
+        }
         break;
       default:
         break;
     }
-
   }
-
 }
