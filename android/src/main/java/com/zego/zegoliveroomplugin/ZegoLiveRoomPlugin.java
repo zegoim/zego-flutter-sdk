@@ -3600,6 +3600,24 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
                     mEventSink.success(returnMap);
                 }
             }
+
+            @Override
+            public void onStreamEvent​(int event, String streamID, HashMap<String, String> extraInfo) {
+                if (mEventSink != null) {
+
+                    HashMap<String, Object> returnMap = new HashMap<>();
+                    returnMap.put("type", ZegoEventType.TYPE_ROOM_EVENT);
+
+                    HashMap<String, Object> method = new HashMap<>();
+                    method.put("name", "onStreamEvent​");
+                    method.put("event", event);
+                    method.put("streamID", streamID);
+                    method.put("extraInfo", extraInfo);
+
+                    returnMap.put("method", method);
+                    mEventSink.success(returnMap);
+                }
+            }
         });
 
         mZegoLiveRoom.setZegoAVEngineCallback(new IZegoAVEngineCallback() {

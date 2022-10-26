@@ -520,6 +520,19 @@ Byte toByte(NSString* c) {
     }
 }
 
+- (void)zego_onStreamEvent:(ZegoStreamEvent)event stream:(NSString *)streamID extraInfo:(NSDictionary<NSString*,NSString*> *)extraInfo
+{
+    FlutterEventSink sink = _eventSink;
+    if(sink) {
+        sink(@{@"type": @(TYPE_ROOM_EVENT),
+               @"method": @{@"name": @"onStreamEvent​",
+                            @"event": @(event),
+                            @"streamID": streamID,
+                            @"extraInfo": extraInfo}
+               });
+    }
+}
+
 #pragma mark - ZegoLivePublisherDelegate
 
 - (void)onPublishStateUpdate:(int)stateCode streamID:(NSString *)streamID streamInfo:(NSDictionary *)info{
