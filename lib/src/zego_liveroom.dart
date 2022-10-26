@@ -527,7 +527,7 @@ class ZegoLiveRoomPlugin {
 
   ///推拉流事件回调
   ///
-  ///@param event 直播事件状态，参考 [ZegoLiveEvent] 定义
+  ///@param event 事件状态，参考 [ZegoStreamEvent] 定义
   ///@param streamID 流ID
   ///@param extraInfo 附加信息，目前包括的键有 "url"表示地址, "streamProtocol"表示流协议，包括rtmp,flv,avertp，hls，webrtc等, "netProtocol"表示网络协议，包括tcp,udp,quic, "resourceType"表示资源类型，包括cdn,rtc,l3,
   ///@discussion 设置直播事件回调对象后，在此回调中获取直播事件状态
