@@ -527,7 +527,7 @@ Byte toByte(NSString* c) {
         sink(@{@"type": @(TYPE_ROOM_EVENT),
                @"method": @{@"name": @"onStreamEvent​",
                             @"event": @(event),
-                            @"streamID": @(streamID),
+                            @"streamID": streamID,
                             @"extraInfo": extraInfo}
                });
     }
