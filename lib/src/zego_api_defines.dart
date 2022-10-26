@@ -1,40 +1,32 @@
-
 /// 房间成员角色
 class ZegoRoomRole {
-
   /// 主播
   static const int ROOM_ROLE_ANCHOR = 1;
 
   /// 观众
   static const int ROOM_ROLE_AUDIENCE = 2;
-
 }
 
 /// 房间用户更新属性
 class ZegoUserUpdateFlag {
-
   /// 新增
   static const int USER_ADDED = 1;
 
   /// 删除
   static const int USER_DELETED = 2;
-
 }
 
 /// 房间用户更新类型
 class ZegoUserUpdateType {
-
   /// 全量更新
   static const int UPDATE_TOTAL = 1;
 
   /// 增量更新
   static const int UPDATE_INCREASE = 2;
-
 }
 
 /// 房间用户属性
 class ZegoUser {
-
   /// 用户ID
   final String userID;
 
@@ -44,16 +36,12 @@ class ZegoUser {
   const ZegoUser(this.userID, this.userName);
 
   Map<String, String> toMap() {
-    return {
-      'userID': userID,
-      'userName': userName
-    };
+    return {'userID': userID, 'userName': userName};
   }
 }
 
 /// 房间用户详细属性
-class ZegoUserInfo{
-
+class ZegoUserInfo {
   /// 用户ID
   final String userID;
 
@@ -71,18 +59,15 @@ class ZegoUserInfo{
 
 /// 推流通道标记
 class ZegoPublishChannel {
-
   /// 主推流通道
   static const String kZegoVideoDataMainPublishingStream = '';
 
   /// 辅推流通道
   static const String kZegoVideoDataAuxPublishingStream = ' ';
-
 }
 
 /// 发布直播的模式
 class ZegoPublishFlag {
-
   /// 连麦模式
   static const int ZEGO_JOIN_PUBLISH = 0;
 
@@ -91,12 +76,10 @@ class ZegoPublishFlag {
 
   /// 单主播模式
   static const int ZEGO_SINGLE_ANCHOR = 1 << 2;
-
 }
 
 /// 流属性
 class ZegoStreamInfo {
-
   /// 用户ID
   final String userID;
 
@@ -109,12 +92,12 @@ class ZegoStreamInfo {
   /// 流附加信息
   final String extraInfo;
 
-  const ZegoStreamInfo(this.userID, this.userName, this.streamID, this.extraInfo);
+  const ZegoStreamInfo(
+      this.userID, this.userName, this.streamID, this.extraInfo);
 }
 
 /// 多媒体流附加信息
 class ZegoStreamExtraPlayInfo {
-
   /// 流参数
   final String params;
 
@@ -127,27 +110,20 @@ class ZegoStreamExtraPlayInfo {
   const ZegoStreamExtraPlayInfo(this.params, this.rtmpUrls, this.flvUrls);
 
   Map<String, dynamic> toMap() {
-    return {
-      'params': params,
-      'rtmpUrls': rtmpUrls,
-      'flvUrls': flvUrls
-    };
+    return {'params': params, 'rtmpUrls': rtmpUrls, 'flvUrls': flvUrls};
   }
 }
 
 /// 流变更类型
 class ZegoStreamUpdateType {
-
   /// 流新增
   static const int STREAM_ADD = 2001;
 
   /// 流删除
   static const int STREAM_DELETE = 2002;
-
 }
 
 class ZegoAVPresetType {
-
   /// 超低质量
   static const int AVCONFIG_VERYLOW = 0;
 
@@ -165,12 +141,10 @@ class ZegoAVPresetType {
 
   /// 极高质量
   static const int AVCONFIG_SUPERHIGH = 5;
-
 }
 
 /// 视频参数设置
 class ZegoAVConfig {
-
   /// 视频采集分辨率-宽
   int videoCaptureResolutionWidth;
 
@@ -193,82 +167,98 @@ class ZegoAVConfig {
   int avPresetType;
 
   ZegoAVConfig(int presetType) {
+    presetType < ZegoAVPresetType.AVCONFIG_VERYLOW ||
+            presetType > ZegoAVPresetType.AVCONFIG_SUPERHIGH
+        ? this.avPresetType = ZegoAVPresetType.AVCONFIG_GENERIC
+        : this.avPresetType = presetType;
 
-    presetType < ZegoAVPresetType.AVCONFIG_VERYLOW || presetType > ZegoAVPresetType.AVCONFIG_SUPERHIGH
-        ?
-    this.avPresetType = ZegoAVPresetType.AVCONFIG_GENERIC :
-    this.avPresetType = presetType;
-
-    
-    switch (this.avPresetType){
+    switch (this.avPresetType) {
       case ZegoAVPresetType.AVCONFIG_VERYLOW:
+
         /// 分辨率：180 x 320
         this.videoCaptureResolutionWidth = 180;
         this.videoCaptureResolutionHeight = 320;
         this.videoEncodeResolutionWidth = 180;
         this.videoEncodeResolutionHeight = 320;
+
         /// 帧率：15fps
         this.fps = 15;
+
         /// 码率：300kbps
         this.bitrate = 300 * 1000;
         break;
 
       case ZegoAVPresetType.AVCONFIG_LOW:
+
         /// 分辨率：270 x 480
         this.videoCaptureResolutionWidth = 270;
         this.videoCaptureResolutionHeight = 480;
         this.videoEncodeResolutionWidth = 270;
         this.videoEncodeResolutionHeight = 480;
+
         /// 帧率：15fps
         this.fps = 15;
+
         /// 码率：400kbps
         bitrate = 400 * 1000;
         break;
-        
+
       case ZegoAVPresetType.AVCONFIG_GENERIC:
+
         /// 分辨率：360 x 640
         this.videoCaptureResolutionWidth = 360;
         this.videoCaptureResolutionHeight = 640;
         this.videoEncodeResolutionWidth = 360;
         this.videoEncodeResolutionHeight = 640;
+
         /// 帧率：15fps
         this.fps = 15;
+
         /// 码率 600kbps
         this.bitrate = 600 * 1000;
         break;
 
       case ZegoAVPresetType.AVCONFIG_HIGH:
+
         /// 分辨率：540 x 960
         this.videoCaptureResolutionWidth = 540;
         this.videoCaptureResolutionHeight = 960;
         this.videoEncodeResolutionWidth = 540;
         this.videoEncodeResolutionHeight = 960;
+
         /// 帧率：15fps
         this.fps = 15;
+
         /// 码率：1200kbps
         this.bitrate = 1200 * 1000;
         break;
-        
+
       case ZegoAVPresetType.AVCONFIG_VERYHIGH:
+
         /// 分辨率：720 x 1280
         this.videoCaptureResolutionWidth = 720;
         this.videoCaptureResolutionHeight = 1280;
         this.videoEncodeResolutionWidth = 720;
         this.videoEncodeResolutionHeight = 1280;
+
         /// 帧率：15fps
         this.fps = 15;
+
         /// 码率：1500kbps
         this.bitrate = 1500 * 1000;
         break;
 
       case ZegoAVPresetType.AVCONFIG_SUPERHIGH:
+
         /// 分辨率：1080 x 1920
         this.videoCaptureResolutionWidth = 1080;
         this.videoCaptureResolutionHeight = 1920;
         this.videoEncodeResolutionWidth = 1080;
         this.videoEncodeResolutionHeight = 1920;
+
         /// 帧率：15fps
         this.fps = 15;
+
         /// 码率：3000kbps
         this.bitrate = 3000 * 1000;
         break;
@@ -278,7 +268,6 @@ class ZegoAVConfig {
 
 /// 渲染视频视图的模式
 class ZegoViewMode {
-
   ///等比缩放，可能有黑边
   static const int ZegoRendererScaleAspectFit = 0;
 
@@ -287,21 +276,16 @@ class ZegoViewMode {
 
   ///填充整个View，图像可能会变形
   static const int ZegoRendererScaleToFill = 2;
-
 }
 
 /// 设备模块类型
 class ZegoApiModule {
-
   /// 音频采集播放设备
   static const int ZEGOAPI_MODULE_AUDIO = 0x4 | 0x8;
-
 }
-
 
 /// 延迟模式
 class ZegoLatencyMode {
-
   /// 普通延迟模式
   static const int ZEGO_LATENCY_MODE_NORMAL = 0;
 
@@ -319,24 +303,25 @@ class ZegoLatencyMode {
 
   /// 普通延迟模式，使用此模式前先咨询即构技术支持
   static const int ZEGO_LATENCY_MODE_NORMAL3 = 5;
-
 }
 
 /// 设置预览和推流镜像
 class ZegoVideoMirrorMode {
-    /// 预览启用镜像，推流不启用镜像
-    static const int ZegoVideoMirrorModePreviewMirrorPublishNoMirror = 0;
-    /// 预览启用镜像，推流启用镜像
-    static const int ZegoVideoMirrorModePreviewCaptureBothMirror = 1;
-    /// 预览不启用镜像，推流不启用镜像
-    static const int ZegoVideoMirrorModePreviewCaptureBothNoMirror = 2;
-    /// 预览不启用镜像，推流启用镜像
-    static const int ZegoVideoMirrorModePreviewNoMirrorPublishMirror = 3;
+  /// 预览启用镜像，推流不启用镜像
+  static const int ZegoVideoMirrorModePreviewMirrorPublishNoMirror = 0;
+
+  /// 预览启用镜像，推流启用镜像
+  static const int ZegoVideoMirrorModePreviewCaptureBothMirror = 1;
+
+  /// 预览不启用镜像，推流不启用镜像
+  static const int ZegoVideoMirrorModePreviewCaptureBothNoMirror = 2;
+
+  /// 预览不启用镜像，推流启用镜像
+  static const int ZegoVideoMirrorModePreviewNoMirrorPublishMirror = 3;
 }
 
 /// 流量控制属性
 class ZegoTrafficControlProperty {
-
   /// 基本流量控制，只有码率控制，不带自适应帧率和分辨率
   static const int ZEGOAPI_TRAFFIC_CONTROL_BASIC = 0;
 
@@ -348,23 +333,19 @@ class ZegoTrafficControlProperty {
 
   /// 音频流量控制
   static const int ZEGOAPI_TRAFFIC_CONTROL_AUDIO_BITRATE = 1 << 2;
-
 }
 
 /// 码率控制模式
 class ZegoTrafficControlMinVideoBitrateMode {
-
   /// 低于设置的最低码率时，停止视频发送
   static const int ZEGOAPI_TRAFFIC_CONTROL_MIN_VIDEO_BITRATE_NO_VIDEO = 0;
 
   /// 低于设置的最低码率时，视频以极低的频率发送 （不超过2FPS)
   static const int ZEGOAPI_TRAFFIC_CONTROL_MIN_VIDEO_BITRATE_ULTRA_LOW_FPS = 1;
-
 }
 
 /// 视频编码类型
 class ZegoVideoCodecAvc {
-
   /// 不支持分层编码
   static const int VIDEO_CODEC_DEFAULT = 0;
 
@@ -380,7 +361,6 @@ class ZegoVideoCodecAvc {
 
 /// 视频分层类型
 class ZegoVideoStreamLayer {
-
   /// 根据网络状态选择图层
   static const int VideoStreamLayer_Auto = -1;
 
@@ -389,12 +369,10 @@ class ZegoVideoStreamLayer {
 
   /// 指定拉扩展层（大分辨率)
   static const int VideoStreamLayer_ExtendLayer = 1;
-
 }
 
 /// 音频设备模式
 class ZegoAudioDeviceMode {
-
   /// 开启硬件回声消除，使用通话音量
   static const int ZEGO_AUDIO_DEVICE_MODE_COMMUNICATION = 1;
 
@@ -406,12 +384,10 @@ class ZegoAudioDeviceMode {
 
   /// 开启系统回声消除，与communication相比，communication2会始终占用麦克风设备
   static const int ZEGO_AUDIO_DEVICE_MODE_COMMUNICATION2 = 4;
-
 }
 
 /// 手机朝向角度
 class ZegoAppOrientation {
-
   static const int ROTATION_0 = 0;
 
   static const int ROTATION_90 = 1;
@@ -419,12 +395,10 @@ class ZegoAppOrientation {
   static const int ROTATION_180 = 2;
 
   static const int ROTATION_270 = 3;
-
 }
 
 /// 美颜特性
 class ZegoBeautifyFeature {
-
   /// 无美颜
   static const int ZEGO_BEAUTIFY_NONE = 0;
 
@@ -439,12 +413,10 @@ class ZegoBeautifyFeature {
 
   /// 锐化
   static const int ZEGO_BEAUTIFY_SHARPEN = 1 << 3;
-
 }
 
 /// 滤镜特性
 class ZegoFilter {
-
   /// 不使用滤镜
   static const int ZEGO_FILTER_NONE = 0;
 
@@ -486,12 +458,10 @@ class ZegoFilter {
 
   ///  夜色
   static const int ZEGO_FILTER_DARK = 13;
-
 }
 
 /// 流事件类型
 class ZegoLiveEvent {
-
   /// 播放直播开始重试
   static const int Play_BeginRetry = 1;
 
@@ -513,10 +483,73 @@ class ZegoLiveEvent {
   /// 拉流视频卡顿
   static const int Play_VideoBreak = 7;
 
+  /// 视频卡顿结束
+  static const int Play_VideoBreakEnd = 8;
+
+  /// 视频卡顿取消
+  static const int Play_VideoBreakCancel = 13;
+
+  /// 音频卡顿开始
+  static const int Play_AudioBreak = 9;
+
+  /// 音频卡顿结束
+  static const int Play_AudioBreakEnd = 10;
+
+  /// 音频卡顿取消
+  static const int Play_AudioBreakCancel = 14;
+
+  /// 注册推流信息失败
+  static const int PublishInfo_RegisterFailed = 11;
+
+  /// 注册推流信息成功
+  static const int PublishInfo_RegisterSuccess = 12;
+}
+
+class ZegoStreamEvent {
+  /// 开始推流
+  static const int Publish_Start = 100;
+
+  /// 推流成功
+  static const int Publish_Success = 101;
+
+  /// 推流失败
+  static const int Publish_Fail = 102;
+
+  /// 开始重试推流
+  static const int Retry_Publish_Start = 103;
+
+  /// 重试推流成功
+  static const int Retry_Publish_Success = 104;
+
+  /// 重试推流失败
+  static const int Retry_Publish_Fail = 105;
+
+  /// 推流结束
+  static const int Publish_End = 106;
+
+  /// 开始拉流
+  static const int Play_Start = 200;
+
+  /// 拉流成功
+  static const int Play_Success = 201;
+
+  /// 拉流失败
+  static const int Play_Fail = 202;
+
+  /// 开始重试拉流
+  static const int Retry_Play_Start = 203;
+
+  /// 重试拉流成功
+  static const int Retry_Play_Succrss = 204;
+
+  /// 重试拉流失败
+  static const int Retry_Play_Fail = 205;
+
+  /// 拉流结束
+  static const int Play_End = 206;
 }
 
 class ZegoAECMode {
-
   /// 激进的回声抵消。可能会稍微明显影响音质，但是回声会消除的很干净
   static const int ZEGOAPI_AEC_MODE_ARRGRESSIVE = 0;
 
@@ -525,21 +558,17 @@ class ZegoAECMode {
 
   /// 舒适的回声抵消。回声的抵消基本不会影响声音的音质，会残留一点回声但不影响正常听音
   static const int ZEGOAPI_AEC_MODE_SOFT = 2;
-
 }
 
 class ZegoDeviceStatus {
-
   /// 设备已打开
   static const int ZEGOAPI_DEVICE_OPEN = 0;
 
   /// 设备已关闭
   static const int ZEGOAPI_DEVICE_CLOSE = 1;
-
 }
 
 class ZegoPublishStreamQuality {
-
   /// 视频帧率(采集)
   final double cfps;
 
@@ -596,12 +625,10 @@ class ZegoPublishStreamQuality {
       this.isHardwareVenc,
       this.videoCodecId,
       this.width,
-      this.height
-      );
+      this.height);
 }
 
 class ZegoPlayStreamQuality {
-
   /// 视频帧率(网络接收)
   final double fps;
 
@@ -690,16 +717,17 @@ class ZegoPlayStreamQuality {
       this.isHardwareVdec,
       this.videoCodecId,
       this.width,
-      this.height
-      );
+      this.height);
 }
 
 /// 转推CDN状态
 class ZegoStreamRelayCDNState {
   /// 转推停止
   static const int ZEGO_STREAM_RELAY_STATE_STOP = 0;
+
   /// 正在转推
   static const int ZEGO_STREAM_RELAY_STATE_START = 1;
+
   /// 正在重试
   static const int ZEGO_STREAM_RELAY_STATE_RETRY = 2;
 }
@@ -708,32 +736,43 @@ class ZegoStreamRelayCDNState {
 class ZegoStreamRelayCDNDetail {
   /// 无
   static const int ZEGO_STREAM_RELAY_DETAIL_NONE = 0;
+
   /// 服务器错误
   static const int ZEGO_STREAM_RELAY_DETAIL_SERVER_ERROR = 8;
+
   /// 握手失败
   static const int ZEGO_STREAM_RELAY_DETAIL_HAND_SHAKE_FAILED = 9;
+
   /// 接入点错误
   static const int ZEGO_STREAM_RELAY_DETAIL_ACCESS_POINT_ERROR = 10;
+
   /// 创建流失败
   static const int ZEGO_STREAM_RELAY_DETAIL_CREATE_STREAM_FAILED = 11;
+
   /// BAD NAME
   static const int ZEGO_STREAM_RELAY_DETAIL_BAD_NAME = 12;
+
   /// CDN服务器主动断开
   static const int ZEGO_STREAM_RELAY_DETAIL_CDN_SERVER_DISCONNECTED = 13;
+
   /// 主动断开
   static const int ZEGO_STREAM_RELAY_DETAIL_DISCONNECTED = 14;
-  /// 混流输入流会话关闭, 混流转推CDN时有效
-  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_ALL_INPUT_STREAM_CLOSED = 1214;
-  /// 混流输入流全部没有数据, 混流转推CDN时有效
-  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_ALL_INPUT_STREAM_NODATA = 1215;
-  /// 混流服务器内部错误，混流转推CDN时有效
-  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_SERVER_INTERNAL_ERROR = 1230;
-}
 
+  /// 混流输入流会话关闭, 混流转推CDN时有效
+  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_ALL_INPUT_STREAM_CLOSED =
+      1214;
+
+  /// 混流输入流全部没有数据, 混流转推CDN时有效
+  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_ALL_INPUT_STREAM_NODATA =
+      1215;
+
+  /// 混流服务器内部错误，混流转推CDN时有效
+  static const int ZEGO_STREAM_RELAY_DETAIL_MIXSTREAM_SERVER_INTERNAL_ERROR =
+      1230;
+}
 
 /// 转推CDN状态信息
 class ZegoStreamRelayCDNInfo {
-  
   /// 转推CDN的rtmp地址
   final String rtmpURL;
 
@@ -746,12 +785,12 @@ class ZegoStreamRelayCDNInfo {
   /// 状态改变时的时间
   final int stateTime;
 
-  const ZegoStreamRelayCDNInfo(this.rtmpURL, this.state, this.detail, this.stateTime);
+  const ZegoStreamRelayCDNInfo(
+      this.rtmpURL, this.state, this.detail, this.stateTime);
 }
 
 /// 添加/删除转推 CDN 结果
 class ZegoStreamRelayCDNResult {
-
   /// 错误码，0为无错误
   final int errorCode;
 
@@ -763,7 +802,6 @@ class ZegoStreamRelayCDNResult {
 
 /// 登录房间结果
 class ZegoLoginRoomResult {
-
   /// 错误码，0为无错误
   final int errorCode;
 
@@ -783,7 +821,8 @@ class ZegoRoomMessage {
 
   final int messageID;
 
-  const ZegoRoomMessage(this.content, this.fromUserID, this.fromUserName, this.messageID);
+  const ZegoRoomMessage(
+      this.content, this.fromUserID, this.fromUserName, this.messageID);
 }
 
 /// 房间消息发送结果
@@ -807,7 +846,8 @@ class ZegoBigRoomMessage {
 
   final String messageID;
 
-  const ZegoBigRoomMessage(this.content, this.fromUserID, this.fromUserName, this.messageID);
+  const ZegoBigRoomMessage(
+      this.content, this.fromUserID, this.fromUserName, this.messageID);
 }
 
 /// 大房间消息发送结果
@@ -818,12 +858,12 @@ class ZegoSendBigRoomMessageResult {
 
   final String messageID;
 
-  const ZegoSendBigRoomMessageResult(this.errorCode, this.roomID, this.messageID);
+  const ZegoSendBigRoomMessageResult(
+      this.errorCode, this.roomID, this.messageID);
 }
 
 /// 自定义信令发送结果
 class ZegoCustomCommandResult {
-
   /// 错误码，0为无错误
   final int errorCode;
 
@@ -835,7 +875,6 @@ class ZegoCustomCommandResult {
 
 /// 连麦响应结果
 class ZegoResponseResult {
-
   /// 响应结果
   final int result;
 
@@ -850,7 +889,6 @@ class ZegoResponseResult {
 
 /// 结束连麦响应结果
 class ZegoEndJoinLiveResult {
-
   /// 错误码，0为无错误
   final int errorCode;
 
@@ -861,7 +899,6 @@ class ZegoEndJoinLiveResult {
 }
 
 class ZegoAudioReverbMode {
-
   static const int ZEGO_AUDIO_REVERB_MODE_SOFT_ROOM = 0;
 
   static const int ZEGO_AUDIO_REVERB_MODE_WARM_CLUB = 1;
@@ -872,10 +909,9 @@ class ZegoAudioReverbMode {
 }
 
 class ZegoAudioReverbParam {
-
   /// 房间大小，取值范围[0.0, 1.0]，用于控制产生混响"房间"的大小，房间越大，混响越强
   double roomSize;
-  
+
   /// 余响，取值范围[0.0, 0.5]，用于控制混响的拖尾长度
   double reverberance;
 
@@ -885,7 +921,8 @@ class ZegoAudioReverbParam {
   /// 干湿比，取值范围 >= 0.0。 控制混响与直达声和早期反射声之间的比例，干(dry)的部分默认定为1，当干湿比设为较小时，湿(wet)的比例较大，此时混响较强
   double dryWetRatio;
 
-  ZegoAudioReverbParam(this.roomSize, this.reverberance, this.damping, this.dryWetRatio);
+  ZegoAudioReverbParam(
+      this.roomSize, this.reverberance, this.damping, this.dryWetRatio);
 
   Map<String, dynamic> toMap() {
     return {
@@ -921,8 +958,10 @@ class ZegoMediaplayerCacheResult {
 class ZegoMediaRecordType {
   /// 只录制音频
   static const int Media_RECORD_TYPE_AUDIO = 1;
+
   /// 只录制视频
   static const int Media_RECORD_TYPE_VIDEO = 2;
+
   /// 同时录制音频、视频
   static const int Media_RECORD_TYPE_BOTH = 3;
 }
@@ -930,15 +969,16 @@ class ZegoMediaRecordType {
 class ZegoMediaRecordFormat {
   /// FLV格式
   static const int Media_RECORD_FORMAT_FLV = 1;
+
   /// MP4格式
   static const int Media_RECORD_FORMAT_MP4 = 2;
+
   /// AAC格式
   static const int Media_RECORD_FORMAT_AAC = 4;
 }
 
 /// 媒体录制配置
 class ZegoMediaRecordConfig {
-
   /// 录制类型， 参考 [ZegoMediaRecordType] 定义
   int recordType = ZegoMediaRecordType.Media_RECORD_TYPE_BOTH;
 
