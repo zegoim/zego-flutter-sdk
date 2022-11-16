@@ -3581,6 +3581,11 @@ public class ZegoLiveRoomPlugin implements MethodCallHandler, EventChannel.Strea
             public void onPlayStatsUpdate(ZegoPlayStats stats) {
 
             }
+
+            @Override
+            public void onPlayVideoSuperResolutionUpdate(String streamID, int state, int errorCode) {
+
+            }
         });
 
         mZegoLiveRoom.setZegoLiveEventCallback(new IZegoLiveEventCallback() {

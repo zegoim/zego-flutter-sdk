@@ -112,6 +112,7 @@ namespace AVE
         virtual void SetAudioPlayCallback(AudioPlayCallback *callback) = 0;
         virtual void SetMediaSideCallback(MediaSideCallback *callback) = 0;
         virtual long SetAudioStream(long streamidx) = 0;
+        virtual long SetAudioPublishStream(long streamidx) = 0;
 		virtual long GetAudioStreamCount() = 0;
         virtual void SetRepeatMode(bool repeat_play) = 0;
         virtual void SetLoopCount(int loop_count) = 0;
@@ -131,6 +132,7 @@ namespace AVE
         virtual void SetHttpHeaders(const char *header) = 0;
         // speed between 0.5 ~ 2.0
         virtual int  SetPlaySpeed(float speed) = 0; 
+        virtual void EnableMultiAudioTrackDecode(bool bEnable = false) = 0;
     };
     
     class IAudioEffectPlayer {
