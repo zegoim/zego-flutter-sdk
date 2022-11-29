@@ -16,7 +16,6 @@
 {
     CVPixelBufferRef m_pInputFrameBuffer;
     CVPixelBufferRef m_pRenderFrameBuffer;
-    CVPixelBufferRef m_pTempToCopyFrameBuffer;
     
     CVPixelBufferRef m_pTmpProcessFrameBuffer;
     CVPixelBufferRef m_pTmpProcess2FrameBuffer;
@@ -83,7 +82,6 @@
         m_tmp_buffer_index = 0;
         
         [self createPixelBufferPool:&m_buffer_pool width:_view_width height:_view_height];
-        m_pTempToCopyFrameBuffer = nil;
         // 固定只开三个 buffer 做缓冲
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcessFrameBuffer);
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess2FrameBuffer);
@@ -588,12 +586,6 @@
         [strong_ptr processingData];
     });
     
-//    std::lock_guard<std::mutex> lock(m_mutex);
-//
-//    CVBufferRelease(m_pTempToCopyFrameBuffer);
-//    m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
-//    CVBufferRetain(m_pTempToCopyFrameBuffer);
-//
     CVPixelBufferRef pixelBuffer = m_pRenderFrameBuffer;
     while (!OSAtomicCompareAndSwapPtr(pixelBuffer, nil, (void **)&m_pRenderFrameBuffer)) {
         pixelBuffer = m_pRenderFrameBuffer;
@@ -624,6 +616,13 @@
 - (void)destroyPixelBufferPool:(CVPixelBufferPoolRef)pool {
     if(pool == nil)
         return;
+    
+    CFRelease(self->m_pTmpProcessFrameBuffer);
+    self->m_pTmpProcessFrameBuffer = nil;
+    CFRelease(self->m_pTmpProcess2FrameBuffer);
+    self->m_pTmpProcess2FrameBuffer = nil;
+    CFRelease(self->m_pTmpProcess3FrameBuffer);
+    self->m_pTmpProcess3FrameBuffer = nil;
     
     CVPixelBufferPoolFlushFlags flag = 0;
     CVPixelBufferPoolFlush(pool, flag);
