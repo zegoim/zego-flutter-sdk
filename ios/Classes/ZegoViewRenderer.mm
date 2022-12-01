@@ -610,14 +610,22 @@
     if(pool == nil)
         return;
 
-    CFRelease(self->m_pTmpProcessFrameBuffer);
-    self->m_pTmpProcessFrameBuffer = nil;
-    CFRelease(self->m_pTmpProcess2FrameBuffer);
-    self->m_pTmpProcess2FrameBuffer = nil;
-    CFRelease(self->m_pTmpProcess3FrameBuffer);
-    self->m_pTmpProcess3FrameBuffer = nil;
-    CVBufferRelease(self->m_pTempToCopyFrameBuffer);
-    self->m_pTempToCopyFrameBuffer = nil;
+    if (self->m_pTmpProcessFrameBuffer) {
+        CFRelease(self->m_pTmpProcessFrameBuffer);
+        self->m_pTmpProcessFrameBuffer = nil;
+    }
+    if (self->m_pTmpProcess2FrameBuffer) {
+        CFRelease(self->m_pTmpProcess2FrameBuffer);
+        self->m_pTmpProcess2FrameBuffer = nil;
+    }
+    if (self->m_pTmpProcess3FrameBuffer) {
+        CFRelease(self->m_pTmpProcess3FrameBuffer);
+        self->m_pTmpProcess3FrameBuffer = nil;
+    }
+    if (self->m_pTempToCopyFrameBuffer) {
+        CVBufferRelease(self->m_pTempToCopyFrameBuffer);
+        self->m_pTempToCopyFrameBuffer = nil;
+    }
     
     CVPixelBufferPoolFlushFlags flag = 0;
     CVPixelBufferPoolFlush(pool, flag);
