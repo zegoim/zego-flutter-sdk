@@ -69,7 +69,7 @@ flutter {
 dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    implementation files('../../../android/libs/zegoliveroom.jar')
+    implementation files('../../../android/libs/ZegoLiveRoom.jar')
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
     implementation 'com.tencent.bugly:crashreport:2.6.6'
     implementation 'com.tencent.bugly:nativecrashreport:3.3.1'
