@@ -17,6 +17,9 @@ A new flutter plugin project.
   s.public_header_files = 'Classes/**/*.h'
   s.static_framework = true
   s.dependency 'Flutter'
-  s.vendored_frameworks = 'Libs/ZegoLiveRoom.framework'
+  s.vendored_frameworks = 'libs/ZegoLiveRoom.xcframework'
   s.ios.deployment_target = '9.0'
+
+  # Flutter.framework does not contain a i386 slice.
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
 end
