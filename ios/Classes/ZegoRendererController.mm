@@ -66,6 +66,7 @@
 }
 
 - (BOOL)addRenderer:(ZegoViewRenderer *)renderer ofKey:(NSString *)streamID {
+    NSLog(@"addRenderer streamID %@ renderer: %@", streamID, renderer);
     if([self isStreamExist:streamID]){
         [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] add renderer to map failed, stream has exist: %@", streamID]];
         return NO;
@@ -76,6 +77,7 @@
 }
 
 - (BOOL)removeRenderer:(NSString *)streamID {
+    NSLog(@"removeRenderer streamID %@", streamID);
     if(![self isStreamExist:streamID]) {
         [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] remove renderer to map failed, stream not exist: %@", streamID]];
         return NO;
