@@ -18,8 +18,8 @@
     CVPixelBufferRef m_pTempToCopyFrameBuffer;
     
     CVPixelBufferRef m_pTmpProcessFrameBuffer;
-    CVPixelBufferRef m_pTmpProcess2FrameBuffer;
-    CVPixelBufferRef m_pTmpProcess3FrameBuffer;
+//    CVPixelBufferRef m_pTmpProcess2FrameBuffer;
+//    CVPixelBufferRef m_pTmpProcess3FrameBuffer;
     std::atomic_int m_tmp_buffer_index;
     
     dispatch_queue_t  m_opengl_queue;
@@ -85,8 +85,8 @@
         m_pTempToCopyFrameBuffer = nil;
         // 固定只开三个 buffer 做缓冲
         CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcessFrameBuffer);
-        CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess2FrameBuffer);
-        CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess3FrameBuffer);
+//        CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess2FrameBuffer);
+//        CVPixelBufferPoolCreatePixelBuffer(nil, m_buffer_pool, &m_pTmpProcess3FrameBuffer);       
         
         [ZegoLog logNotice:[NSString stringWithFormat:@"[Flutter-Native] init flutter view renderer. texture id: %lld, is publisher: %d", _textureID, _isPublisher]];
         
@@ -241,14 +241,16 @@
             strong_ptr.view_width = size.width;
             strong_ptr.view_height = size.height;
             
+            self->m_tmp_buffer_index = 0;
+            
             [strong_ptr destroyPixelBufferPool:self->m_buffer_pool];
             [strong_ptr createPixelBufferPool:&self->m_buffer_pool width:strong_ptr.view_width height:strong_ptr.view_height];
             // 固定只开两个 buffer 做双缓冲
             CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcessFrameBuffer);
-            CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcess2FrameBuffer);
-            CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcess3FrameBuffer);
+//            CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcess2FrameBuffer);
+//            CVPixelBufferPoolCreatePixelBuffer(nil, self->m_buffer_pool, &self->m_pTmpProcess3FrameBuffer);
             self->m_config_changed = YES;
-            
+
         }
         
     });
@@ -368,7 +370,7 @@
 
     CVPixelBufferRef processBuffer = nil;
     //m_tmp_buffer_index = m_tmp_buffer_index > 2 ? 0 : m_tmp_buffer_index;
-    int index = m_tmp_buffer_index;
+    int index = 0; //m_tmp_buffer_index;
     if(index > 2) {
         m_tmp_buffer_index = 0;
         index = 0;
@@ -376,13 +378,19 @@
     //NSLog(@"current tmp buffer index: %d", index);
     switch (index) {
         case 0:
-            processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
+            //pre_count = CFGetRetainCount(m_pTmpProcessFrameBuffer);
+            //NSLog(@"processingData, 1 m_pTmpProcessFrameBuffer:%p, count: %ld", m_pTmpProcessFrameBuffer, pre_count);
+            //processBuffer = CVBufferRetain(m_pTmpProcessFrameBuffer);
+            processBuffer = m_pTmpProcessFrameBuffer;
+            //NSLog(@"processingData, 2 m_pTmpProcessFrameBuffer:%p, count: %ld", m_pTmpProcessFrameBuffer, new_count);
             break;
         case 1:
-            processBuffer = CVBufferRetain(m_pTmpProcess2FrameBuffer);
+            //processBuffer = CVBufferRetain(m_pTmpProcess2FrameBuffer);
+//            processBuffer = m_pTmpProcess2FrameBuffer;
             break;
         case 2:
-            processBuffer = CVBufferRetain(m_pTmpProcess3FrameBuffer);
+            //processBuffer = CVBufferRetain(m_pTmpProcess3FrameBuffer);
+//            processBuffer = m_pTmpProcess3FrameBuffer;
             break;
             
         default:
@@ -390,6 +398,9 @@
             break;
     }
     m_tmp_buffer_index ++;
+    
+    if(processBuffer == nil)
+        return;
 
     /* create input frame texture from sdk */
     CVOpenGLESTextureRef texture_input = NULL;
@@ -430,10 +441,17 @@
         
         {
             std::lock_guard<std::mutex> lock(m_mutex);
+            if(self->m_pRenderFrameBuffer)
+            {
+                CVBufferRelease(self->m_pRenderFrameBuffer);
+                self->m_pRenderFrameBuffer= nil;
+            }
+            
             self->m_pRenderFrameBuffer = processBuffer;
+            CVBufferRetain(self->m_pRenderFrameBuffer);
         }
         
-        CFRelease(texture_input);
+        CVBufferRelease(texture_input);
     }
     
     CVBufferRelease(readInputBuffer);
@@ -478,11 +496,22 @@
     
     if(self->m_pInputFrameBuffer) {
         CVBufferRelease(self->m_pInputFrameBuffer);
+        self->m_pInputFrameBuffer = nil;
     }
     self->m_pInputFrameBuffer = srcFrameBuffer;
-    CVBufferRetain(self->m_pInputFrameBuffer);
+    if(self->m_pInputFrameBuffer)
+        CVBufferRetain(self->m_pInputFrameBuffer);
     
     m_isNewFrameAvailable = YES;
+    
+    __weak ZegoViewRenderer *weak_ptr = self;
+    dispatch_async(m_opengl_queue, ^{
+        ZegoViewRenderer *strong_ptr = weak_ptr;
+        if (strong_ptr == nil) {
+            return;
+        }
+        [strong_ptr processingData];
+    });
 }
 
 - (void)setVideoMode:(ZegoRendererViewMode)mode {
@@ -509,19 +538,23 @@
 }
 
 - (void)releaseRenderer:(void(^)())callback {
-    
+     NSLog(@"releaseRenderer enter %@", self);
     dispatch_async(m_opengl_queue, ^{
         
         [EAGLContext setCurrentContext:self.context];
-        
-        if(self->m_pInputFrameBuffer){
-            CVBufferRelease(self->m_pInputFrameBuffer);
-            self->m_pInputFrameBuffer = nil;
+        {
+            std::lock_guard<std::mutex> lock(self->m_input_buffer_mutex);
+            if(self->m_pInputFrameBuffer){
+                CVBufferRelease(self->m_pInputFrameBuffer);
+                self->m_pInputFrameBuffer = nil;
+            }
         }
-        
-        if(self->m_pRenderFrameBuffer){
-            CVBufferRelease(self->m_pRenderFrameBuffer);
-            self->m_pRenderFrameBuffer = nil;
+        {
+            std::lock_guard<std::mutex> lock(self->m_mutex);
+            if(self->m_pRenderFrameBuffer){
+                CVBufferRelease(self->m_pRenderFrameBuffer);
+                self->m_pRenderFrameBuffer = nil;
+            }
         }
         
         if(self->m_output_texture) {
@@ -562,7 +595,6 @@
 
 //释放资源
 -(void)dealloc {
-    
     [self destroyPixelBufferPool:m_buffer_pool];
     
     self.context = nil;
@@ -572,17 +604,15 @@
 #pragma mark - FlutterTexture
 - (CVPixelBufferRef)copyPixelBuffer {
    
-    __weak ZegoViewRenderer *weak_ptr = self;
-    dispatch_async(m_opengl_queue, ^{
-        ZegoViewRenderer *strong_ptr = weak_ptr;
-        [strong_ptr processingData];
-    });
-    
     std::lock_guard<std::mutex> lock(m_mutex);
-
-    CVBufferRelease(m_pTempToCopyFrameBuffer);
+    
+//    if (m_pTempToCopyFrameBuffer) {
+//        CFRelease(m_pTempToCopyFrameBuffer);
+//        m_pTempToCopyFrameBuffer = nil;
+//    }
     m_pTempToCopyFrameBuffer = m_pRenderFrameBuffer;
-    CVBufferRetain(m_pTempToCopyFrameBuffer);
+    if(m_pTempToCopyFrameBuffer)
+        CVBufferRetain(m_pTempToCopyFrameBuffer);
     
     m_isNewFrameAvailable = NO;
     return m_pTempToCopyFrameBuffer;
@@ -609,23 +639,41 @@
 - (void)destroyPixelBufferPool:(CVPixelBufferPoolRef)pool {
     if(pool == nil)
         return;
+//    dispatch_async(m_opengl_queue, ^{
+        try {
+            if (self->m_pTmpProcessFrameBuffer) {
+                CVBufferRelease(self->m_pTmpProcessFrameBuffer);
+                self->m_pTmpProcessFrameBuffer = nil;
+            }
+        } catch (NSException *exception) {
+            NSLog(@"@NSException");
+        }
+        
+//        NSLog(@"destroyPixelBufferPool, 1 m_pTmpProcessFrameBuffer:%p, count: %ld", self->m_pTmpProcessFrameBuffer, CFGetRetainCount( self->m_pTmpProcessFrameBuffer));
+//        if (self->m_pTmpProcess2FrameBuffer) {
+//            CFRelease(self->m_pTmpProcess2FrameBuffer);
+//            self->m_pTmpProcess2FrameBuffer = nil;
+//        }
+//        if (self->m_pTmpProcess3FrameBuffer) {
+//            CFRelease(self->m_pTmpProcess3FrameBuffer);
+//            self->m_pTmpProcess3FrameBuffer = nil;
+//        }
+//    });
 
-    if (self->m_pTmpProcessFrameBuffer) {
-        CFRelease(self->m_pTmpProcessFrameBuffer);
-        self->m_pTmpProcessFrameBuffer = nil;
-    }
-    if (self->m_pTmpProcess2FrameBuffer) {
-        CFRelease(self->m_pTmpProcess2FrameBuffer);
-        self->m_pTmpProcess2FrameBuffer = nil;
-    }
-    if (self->m_pTmpProcess3FrameBuffer) {
-        CFRelease(self->m_pTmpProcess3FrameBuffer);
-        self->m_pTmpProcess3FrameBuffer = nil;
-    }
-    if (self->m_pTempToCopyFrameBuffer) {
-        CVBufferRelease(self->m_pTempToCopyFrameBuffer);
-        self->m_pTempToCopyFrameBuffer = nil;
-    }
+    
+//    {
+//        std::lock_guard<std::mutex> lock(m_mutex);
+//        try {
+//            if (self->m_pTempToCopyFrameBuffer) {
+//                CFRelease(self->m_pTempToCopyFrameBuffer);
+//                self->m_pTempToCopyFrameBuffer = nil;
+//            }
+//        } catch (NSException *exception) {
+//            NSLog(@"@NSException");
+//        }
+//
+//    }
+    
     
     CVPixelBufferPoolFlushFlags flag = 0;
     CVPixelBufferPoolFlush(pool, flag);
